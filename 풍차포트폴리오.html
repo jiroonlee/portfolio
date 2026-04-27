@@ -729,87 +729,148 @@ function grandTotal(){
 
 /* ===== 시세 ===== */
 function withTO(p,ms){return Promise.race([p,new Promise(function(_,r){setTimeout(function(){r(new Error('timeout'));},ms);})]);}
+/* ── 한국 ETF 시세: 3단계 fallback ── */
 async function fetchKR(tk){
-  // 숫자 코드 → 한국 ETF (네이버), 영문/일본 → Yahoo Finance
   if(/^\d+$/.test(tk)){
+    // ① 네이버 모바일 API (CORS 가장 우호적)
     try{
-      var url='https://polling.finance.naver.com/api/realtime?query=SERVICE_ITEM:'+tk;
-    var r=await withTO(fetch(url),6000);
-    var j=await r.json();
-    // 응답 구조: result.areas[0].datas[0].nv (현재가) 또는 sv
-    if(j&&j.result&&j.result.areas){
-      var areas=j.result.areas;
-      for(var ai=0;ai<areas.length;ai++){
-        var datas=areas[ai].datas||[];
-        for(var di=0;di<datas.length;di++){
-          var d=datas[di];
-          if(d.cd===tk||!d.cd){
-            var price=parseInt(d.nv||d.sv||d.pcv||0);
-            if(price>0) return price;
+      var r=await withTO(fetch('https://m.stock.naver.com/api/stock/'+tk+'/integration'),5000);
+      var j=await r.json();
+      var p=j&&j.dealTrendInfos&&j.dealTrendInfos[0]&&parseInt(j.dealTrendInfos[0].closePrice);
+      if(p>0) return p;
+      // 구조2: stockInfo
+      p=j&&j.stockInfo&&parseInt((j.stockInfo.closePrice||'').replace(/,/g,''));
+      if(p>0) return p;
+    }catch(e){}
+    // ② 네이버 polling API
+    try{
+      var r2=await withTO(fetch('https://polling.finance.naver.com/api/realtime?query=SERVICE_ITEM:'+tk),5000);
+      var j2=await r2.json();
+      if(j2&&j2.result&&j2.result.areas){
+        for(var a=0;a<j2.result.areas.length;a++){
+          var datas=j2.result.areas[a].datas||[];
+          for(var di=0;di<datas.length;di++){
+            var p2=parseInt(datas[di].nv||datas[di].sv||datas[di].pcv||0);
+            if(p2>0) return p2;
           }
         }
       }
-    }
-  }catch(e){}
-  try{
-    // fallback: 네이버 시세 JSON API
-    var url2='https://finance.naver.com/item/sise.naver?code='+tk;
-    var r2=await withTO(fetch(url2),6000);
-    var txt=await r2.text();
-    var m=txt.match(/<strong id="_nowVal"[^>]*>\s*([\d,]+)/);
-    if(m) return parseInt(m[1].replace(/,/g,''));
-  }catch(e){}
-  // 숫자 아닌 코드 → Yahoo Finance (일본 ETF 등: 1632.T, CRCL 등)
+    }catch(e){}
+    // ③ 네이버 시세 HTML 파싱
+    try{
+      var r3=await withTO(fetch('https://finance.naver.com/item/sise.naver?code='+tk),5000);
+      var txt=await r3.text();
+      var m=txt.match(/<strong id="_nowVal"[^>]*>\s*([\d,]+)/);
+      if(m) return parseInt(m[1].replace(/,/g,''));
+    }catch(e){}
   } else {
-    var yfTk = /^\d+$/.test(tk) ? tk+'.KS' : (/^\d{4}$/.test(tk) ? tk+'.T' : tk);
-    try {
-      var yurl = 'https://query1.finance.yahoo.com/v8/finance/chart/'+yfTk+'?interval=1d&range=1d';
-      var yr = await withTO(fetch(yurl), 8000);
-      var yj = await yr.json();
-      var price = yj&&yj.chart&&yj.chart.result&&yj.chart.result[0]&&yj.chart.result[0].meta&&yj.chart.result[0].meta.regularMarketPrice;
-      if(price) return Math.round(price);
-    } catch(e) {}
+    // 영문·일본 코드 → Yahoo Finance
+    var yfTk=/^\d{4}$/.test(tk)?tk+'.T':tk;
+    // ① Yahoo Finance v8
+    try{
+      var r4=await withTO(fetch('https://query1.finance.yahoo.com/v8/finance/chart/'+yfTk+'?interval=1d&range=1d'),6000);
+      var j4=await r4.json();
+      var p4=j4&&j4.chart&&j4.chart.result&&j4.chart.result[0]&&j4.chart.result[0].meta&&j4.chart.result[0].meta.regularMarketPrice;
+      if(p4) return Math.round(p4);
+    }catch(e){}
+    // ② Yahoo Finance v7 (대안 엔드포인트)
+    try{
+      var r5=await withTO(fetch('https://query2.finance.yahoo.com/v8/finance/chart/'+yfTk+'?interval=1d&range=1d'),6000);
+      var j5=await r5.json();
+      var p5=j5&&j5.chart&&j5.chart.result&&j5.chart.result[0]&&j5.chart.result[0].meta&&j5.chart.result[0].meta.regularMarketPrice;
+      if(p5) return Math.round(p5);
+    }catch(e){}
   }
   return null;
 }
+
+/* ── 가상화폐: 업비트 → 빗썸 fallback ── */
 async function fetchCrypto(sym){
+  // ① 업비트 (CORS 허용)
   try{
-    var r=await withTO(fetch('https://api.upbit.com/v1/ticker?markets=KRW-'+sym),6000);
+    var r=await withTO(fetch('https://api.upbit.com/v1/ticker?markets=KRW-'+sym),5000);
     var j=await r.json();
-    if(j&&j[0])return{price:j[0].trade_price,high52:j[0].highest_52_week_price};
-  }catch(e){}return null;
-}
-async function fetchFXApi(){
+    if(j&&j[0]) return{price:j[0].trade_price,high52:j[0].highest_52_week_price};
+  }catch(e){}
+  // ② 빗썸 (fallback)
   try{
-    var r=await withTO(fetch('https://open.er-api.com/v6/latest/USD'),6000);
+    var r2=await withTO(fetch('https://api.bithumb.com/public/ticker/'+sym+'_KRW'),5000);
+    var j2=await r2.json();
+    if(j2&&j2.data&&j2.data.closing_price){
+      return{price:parseFloat(j2.data.closing_price),high52:parseFloat(j2.data.max_price||0)};
+    }
+  }catch(e){}
+  return null;
+}
+
+/* ── 환율: 3개 소스 fallback ── */
+async function fetchFXApi(){
+  // ① exchangerate-api (무료, CORS 허용)
+  try{
+    var r=await withTO(fetch('https://open.er-api.com/v6/latest/USD'),5000);
     var j=await r.json();
     if(j.rates&&j.rates.KRW){
       FX.USD=Math.round(j.rates.KRW);
-      if(j.rates.JPY)FX.JPY=Math.round(j.rates.KRW/j.rates.JPY*100)/100;
+      if(j.rates.JPY) FX.JPY=Math.round(j.rates.KRW/j.rates.JPY*100)/100;
+      return;
+    }
+  }catch(e){}
+  // ② frankfurter (유럽중앙은행 기반)
+  try{
+    var r2=await withTO(fetch('https://api.frankfurter.app/latest?from=USD&to=KRW,JPY'),5000);
+    var j2=await r2.json();
+    if(j2.rates&&j2.rates.KRW){
+      FX.USD=Math.round(j2.rates.KRW);
+      if(j2.rates.JPY) FX.JPY=Math.round(j2.rates.KRW/j2.rates.JPY*100)/100;
+      return;
+    }
+  }catch(e){}
+  // ③ 한국수출입은행 (국내 API)
+  try{
+    var today=new Date().toISOString().slice(0,10).replace(/-/g,'');
+    var r3=await withTO(fetch('https://www.koreaexim.go.kr/site/program/financial/exchangeJSON?authkey=SAMPLE&searchdate='+today+'&data=AP01'),4000);
+    var j3=await r3.json();
+    if(Array.isArray(j3)){
+      j3.forEach(function(row){
+        if(row.cur_unit==='USD') FX.USD=Math.round(parseFloat((row.deal_bas_r||'').replace(/,/g,'')));
+        if(row.cur_unit==='JPY(100)') FX.JPY=Math.round(parseFloat((row.deal_bas_r||'').replace(/,/g,''))/100*100)/100;
+      });
     }
   }catch(e){}
 }
 async function fetchAll(){
   setDot('loading');
-  var ok=false;
+  var ok=false, fail=[];
   try{
     await fetchFXApi();
     var seen={},tks=[];
     ACCOUNTS.forEach(function(a){a.holdings.forEach(function(h){if(h.tk&&!seen[h.tk]){seen[h.tk]=1;tks.push(h.tk);}});});
-    await Promise.all(tks.map(async function(tk){var p=await fetchKR(tk);if(p!=null){PRICES[tk]=p;ok=true;}}));
+    CMA.holdings.forEach(function(h){if(h.tk&&!seen[h.tk]){seen[h.tk]=1;tks.push(h.tk);}});
+    await Promise.all(tks.map(async function(tk){
+      var p=await fetchKR(tk);
+      if(p!=null){PRICES[tk]=p;ok=true;}
+      else fail.push(tk);
+    }));
     await Promise.all(['BTC','ETH','SOL','LINK'].map(async function(sym){
-      var d=await fetchCrypto(sym);if(d){PRICES[sym]=d.price;HIGH52[sym]=d.high52;ok=true;}
+      var d=await fetchCrypto(sym);
+      if(d){PRICES[sym]=d.price;HIGH52[sym]=d.high52;ok=true;}
     }));
   }catch(e){}
-  setDot(ok?'ok':'fail');
+  if(ok){
+    var msg='시세:'+new Date().toLocaleTimeString('ko-KR');
+    if(fail.length) msg+=' ('+fail.length+'개 미조회)';
+    setDot('ok',msg);
+  } else {
+    setDot('fail');
+  }
   renderActive();
 }
-function setDot(s){
+function setDot(s,msg){
   var dot=document.getElementById('dot'),upd=document.getElementById('upd');
   if(!dot)return;
   if(s==='loading'){dot.style.background='#f59e0b';upd.textContent='갱신 중...';}
-  else if(s==='fail'){dot.style.background='#9ca3af';upd.textContent='\u26a0 종전가 표시';}
-  else{dot.style.background='#10b981';upd.textContent='시세:'+new Date().toLocaleTimeString('ko-KR');}
+  else if(s==='fail'){dot.style.background='#9ca3af';upd.textContent='\u26a0 시세조회 실패(수동입력 유지)';}
+  else{dot.style.background='#10b981';upd.textContent=msg||('시세:'+new Date().toLocaleTimeString('ko-KR'));}
 }
 
 /* ===== KR 계좌 렌더 ===== */
