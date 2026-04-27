@@ -17,6 +17,7 @@ body{font-family:'Malgun Gothic',-apple-system,sans-serif;font-size:12px;backgro
 .hbtn{border:1px solid rgba(255,255,255,.25);color:#fff;padding:5px 11px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;white-space:nowrap;background:rgba(255,255,255,.08)}
 .hbtn:hover{background:rgba(255,255,255,.18)}
 .hbtn-save{background:#057a55;border-color:#057a55}.hbtn-save:hover{background:#045f42}
+.hbtn-sync{background:#0969da;border-color:#0969da;color:#fff}.hbtn-sync:hover{background:#0757b8}.hbtn-sync.syncing{background:#f59e0b;border-color:#f59e0b}.hbtn-sync.error{background:#ef4444;border-color:#ef4444}
 .nav{background:var(--sur);border-bottom:1px solid var(--brd);display:flex;padding:0 10px;overflow-x:auto;position:sticky;top:var(--hdr);z-index:90;scrollbar-width:none}
 .nav::-webkit-scrollbar{display:none}
 .ntab{padding:8px 10px;font-size:11px;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;color:var(--tx2);font-weight:500;user-select:none}
@@ -275,6 +276,22 @@ tr:hover:not(.trow):not(.nrow):not(.xhdr) td{background:#f8fafc}
     </div>
   </div>
 </div>
+<!-- GitHub 동기화 모달 -->
+<div class="moverlay" id="gh-modal">
+  <div class="modal" style="max-width:460px">
+    <h3>☁️ GitHub 동기화 설정</h3>
+    <p style="font-size:12px;color:var(--tx2);margin-bottom:14px">토큰은 이 기기에만 저장되며 GitHub 외부로 전송되지 않습니다.</p>
+    <div class="mrow"><div class="mlbl">GitHub Token</div>
+      <input class="minp" id="gh-token-inp" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+    </div>
+    <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">
+      <button class="mbtn" onclick="ghSaveToken()" style="background:var(--blu);color:#fff;border-color:var(--blu);font-weight:700">저장 후 동기화</button>
+      <button class="mbtn mbtn-cancel" onclick="closeModal('gh-modal')">취소</button>
+    </div>
+    <div id="gh-status" style="margin-top:10px;font-size:12px;color:var(--tx2)"></div>
+  </div>
+</div>
+
 <div class="hdr">
   <div><div class="hdr-title">🌸 수익은 길게, 손실은 짧게!!!</div><div class="hdr-sub">연금계좌 풍차계획 포트폴리오</div></div>
   <div class="hdr-sp"></div>
@@ -282,6 +299,7 @@ tr:hover:not(.trow):not(.nrow):not(.xhdr) td{background:#f8fafc}
   <div class="dot" id="dot"></div>
   <button class="hbtn hbtn-hide" onclick="exportToExcel()">📥 엑셀저장</button>
   <button class="hbtn hbtn-save" onclick="saveData()">💾 저장</button>
+  <button class="hbtn hbtn-sync" onclick="ghSync()" id="gh-btn" title="GitHub 동기화">☁️ 동기화</button>
   <button class="hbtn hbtn-hide" onclick="changePW()">🔑 비밀번호</button>
   <button class="hbtn" onclick="fetchAll()">🔄 새로고침</button>
 </div>
@@ -462,8 +480,15 @@ function saveData(){
   snaps.sort(function(a,b){return a.date<b.date?-1:1;});
   sSet(SNAPKEY,JSON.stringify(snaps));
   sSet(SKEY,JSON.stringify({accounts:ACCOUNTS,cma:CMA,crypto:CRYPTO,fx:{usd:FX.USD,jpy:FX.JPY},prices:PRICES}));
+  sSet('fp_last_save',now);
   addCL(today,t);
-  alert('\u2705 저장 완료 ('+today+')\n총평가액: '+fmt(t.cur)+'원');
+  // GitHub 토큰 있으면 자동 동기화
+  if(ghGetToken()){
+    ghPush();
+    alert('\u2705 저장 완료 ('+today+')\n총평가액: '+fmt(t.cur)+'원\n\n☁️ GitHub 동기화 중...');
+  } else {
+    alert('\u2705 저장 완료 ('+today+')\n총평가액: '+fmt(t.cur)+'원\n\n☁️ 동기화 버튼으로 GitHub에 백업하면\n모든 기기에서 같은 데이터를 볼 수 있습니다.');
+  }
 }
 var HIST_SNAPS=[
   {date:'2018. 12. 31.',ts:'2018-12-31T00:00:00.000Z',cur:126951000,cost:0,pnl:0,note:''},
@@ -2342,12 +2367,177 @@ function mobShowAccMenu(){
 }
 
 
+/* ===== GitHub 동기화 ===== */
+var GH_REPO='jiroonlee/portfolio';
+var GH_FILE='data.json';
+var GH_TOKEN_KEY='fp_gh_token';
+
+function ghGetToken(){return sGet(GH_TOKEN_KEY)||'';}
+function ghSetToken(t){sSet(GH_TOKEN_KEY,t);}
+
+function ghSync(){
+  var token=ghGetToken();
+  if(!token){
+    // 토큰 미설정 → 설정 모달 열기
+    document.getElementById('gh-token-inp').value='';
+    document.getElementById('gh-status').textContent='';
+    openModal('gh-modal');
+    return;
+  }
+  // 토큰 있으면 바로 올리기
+  ghPush();
+}
+
+function ghSaveToken(){
+  var t=(document.getElementById('gh-token-inp').value||'').trim();
+  if(!t){alert('토큰을 입력하세요.');return;}
+  ghSetToken(t);
+  closeModal('gh-modal');
+  ghPush();
+}
+
+// GitHub에 데이터 업로드
+async function ghPush(){
+  var btn=document.getElementById('gh-btn');
+  btn.textContent='☁️ 저장중...';
+  btn.className='hbtn hbtn-sync syncing';
+
+  // 현재 데이터 패키징
+  var snaps=loadSnaps();
+  var payload={
+    v:3,
+    saved:new Date().toISOString(),
+    data:{accounts:ACCOUNTS,cma:CMA,crypto:CRYPTO,
+          fx:{usd:FX.USD,jpy:FX.JPY},prices:PRICES},
+    snaps:snaps,
+    changelog:JSON.parse(sGet('fp_cl')||'[]')
+  };
+  var content=btoa(unescape(encodeURIComponent(JSON.stringify(payload,null,2))));
+
+  try{
+    var token=ghGetToken();
+    var apiBase='https://api.github.com/repos/'+GH_REPO+'/contents/'+GH_FILE;
+
+    // 기존 파일 SHA 조회 (업데이트 시 필요)
+    var sha=null;
+    try{
+      var r=await fetch(apiBase,{headers:{'Authorization':'token '+token,'Accept':'application/vnd.github.v3+json'}});
+      if(r.ok){var j=await r.json();sha=j.sha;}
+    }catch(e){}
+
+    // 업로드
+    var body={message:'포트폴리오 데이터 저장 '+new Date().toLocaleDateString('ko-KR'),content:content};
+    if(sha) body.sha=sha;
+    var r2=await fetch(apiBase,{
+      method:'PUT',
+      headers:{'Authorization':'token '+token,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
+      body:JSON.stringify(body)
+    });
+
+    if(r2.ok){
+      btn.textContent='☁️ 동기화 ✓';
+      btn.className='hbtn hbtn-sync';
+      btn.style.background='#10b981';btn.style.borderColor='#10b981';
+      setTimeout(function(){
+        btn.textContent='☁️ 동기화';
+        btn.style.background='';btn.style.borderColor='';
+        btn.className='hbtn hbtn-sync';
+      },3000);
+    } else {
+      var err=await r2.json();
+      throw new Error(err.message||r2.status);
+    }
+  }catch(e){
+    btn.textContent='☁️ 실패';
+    btn.className='hbtn hbtn-sync error';
+    setTimeout(function(){btn.textContent='☁️ 동기화';btn.className='hbtn hbtn-sync';},3000);
+    // 토큰 오류면 재설정 유도
+    if(e.message&&(e.message.includes('401')||e.message.includes('Bad credentials'))){
+      if(confirm('토큰이 만료되었거나 잘못되었습니다.\n새 토큰을 입력하시겠어요?')){
+        ghSetToken('');
+        document.getElementById('gh-token-inp').value='';
+        document.getElementById('gh-status').textContent='';
+        openModal('gh-modal');
+      }
+    } else {
+      alert('동기화 실패: '+e.message+'\n\n인터넷 연결을 확인하세요.');
+    }
+  }
+}
+
+// GitHub에서 데이터 불러오기
+async function ghPull(){
+  try{
+    var token=ghGetToken();
+    if(!token) return false;
+    var apiBase='https://api.github.com/repos/'+GH_REPO+'/contents/'+GH_FILE;
+    var headers={'Accept':'application/vnd.github.v3+json'};
+    if(token) headers['Authorization']='token '+token;
+    var r=await fetch(apiBase,{headers:headers});
+    if(!r.ok) return false;
+    var j=await r.json();
+    var decoded=decodeURIComponent(escape(atob(j.content.replace(/\n/g,''))));
+    var obj=JSON.parse(decoded);
+    if(!obj.data||!obj.data.accounts) return false;
+
+    // 로컬보다 GitHub가 최신인지 확인
+    var localSaved=sGet('fp_last_save')||'0';
+    if(obj.saved&&obj.saved<=localSaved){
+      console.log('로컬이 최신, GitHub 불러오기 건너뜀');
+      return false;
+    }
+
+    // 데이터 적용
+    ACCOUNTS=obj.data.accounts;
+    CMA=obj.data.cma;
+    CRYPTO=obj.data.crypto;
+    if(obj.data.fx){FX.USD=obj.data.fx.usd;FX.JPY=obj.data.fx.jpy;}
+    if(obj.data.prices) Object.assign(PRICES,obj.data.prices);
+
+    // localStorage 저장
+    sSet(SKEY,JSON.stringify({accounts:ACCOUNTS,cma:CMA,crypto:CRYPTO,fx:{usd:FX.USD,jpy:FX.JPY},prices:PRICES}));
+
+    // 스냅샷 병합
+    if(obj.snaps&&obj.snaps.length){
+      var existing=loadSnaps();
+      var map={};
+      obj.snaps.forEach(function(s){map[s.date]=s;});
+      existing.forEach(function(s){map[s.date]=s;});
+      sSet(SNAPKEY,JSON.stringify(Object.values(map).sort(function(a,b){return a.date<b.date?-1:1;})));
+    }
+    if(obj.changelog) sSet('fp_cl',JSON.stringify(obj.changelog));
+    sSet('fp_last_save',obj.saved||new Date().toISOString());
+    return true;
+  }catch(e){
+    console.warn('GitHub 불러오기 실패:',e.message);
+    return false;
+  }
+}
+
+
 /* ===== 앱 시작 ===== */
 function startApp(){
   try{loadData();}catch(e){
     ACCOUNTS=JSON.parse(JSON.stringify(DEF.accounts));
     CMA=JSON.parse(JSON.stringify(DEF.cma));
     CRYPTO=JSON.parse(JSON.stringify(DEF.crypto));
+  }
+  // GitHub 토큰 있으면 최신 데이터 자동 로드
+  if(ghGetToken()){
+    var btn=document.getElementById('gh-btn');
+    if(btn){btn.textContent='☁️ 불러오는중...';btn.className='hbtn hbtn-sync syncing';}
+    ghPull().then(function(updated){
+      if(updated){
+        try{loadData();}catch(e){}
+        renderOverview();
+      }
+      if(btn){btn.textContent='☁️ 동기화';btn.className='hbtn hbtn-sync';}
+      setDot('fail');
+      setTimeout(function(){fetchAll();setInterval(fetchAll,60000);},100);
+    });
+  } else {
+    setDot('fail');
+    setTimeout(function(){fetchAll();setInterval(fetchAll,60000);},100);
   }
   // iedit 입력란 천원단위 콤마 이벤트 위임
   // 천원단위 콤마: iedit (납입금액 등 큰 숫자 전용)
