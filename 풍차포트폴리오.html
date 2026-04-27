@@ -437,7 +437,7 @@ const DEF = {
 
 /* ===== 상태 ===== */
 var FX = {USD:1479, JPY:927.83};
-var PRICES = {}, HIGH52 = {};
+var PRICES = {}, HIGH52 = {}, FETCH_LOG = {};
 var SKEY='fp_data', SNAPKEY='fp_snaps', CLKEY='fp_cl';
 var ACCOUNTS, CMA, CRYPTO;
 
@@ -780,34 +780,34 @@ function grandTotal(){
 /* ===== 시세 ===== */
 function withTO(p,ms){
   return Promise.race([p,new Promise(function(_,r){
-    setTimeout(function(){r(new Error('timeout'));},ms);
+    setTimeout(function(){r(new Error('to'));},ms);
   })]);
 }
 
-/* 첫 번째 성공한 결과 반환 (병렬 실행) */
+/* 첫 성공값 반환 (병렬 실행) */
 function fetchFirst(promises){
   return new Promise(function(resolve){
-    var done=false;
-    var total=promises.length;
-    var settled=0;
-    if(total===0){resolve(null);return;}
+    var done=false,settled=0,total=promises.length;
+    if(!total){resolve(null);return;}
     promises.forEach(function(p){
       Promise.resolve(p).then(function(v){
         settled++;
         if(!done&&v!=null&&v>0){done=true;resolve(v);}
-        else if(settled===total&&!done){resolve(null);}
+        else if(settled===total&&!done) resolve(null);
       }).catch(function(){
         settled++;
-        if(settled===total&&!done){resolve(null);}
+        if(settled===total&&!done) resolve(null);
       });
     });
   });
 }
 
-/* Yahoo Finance v8 단일 조회 */
+/* Yahoo Finance v8 chart API */
 async function _yahoo(sym,base){
   try{
-    var r=await withTO(fetch(base+'/v8/finance/chart/'+sym+'?interval=1d&range=1d',{cache:'no-store'}),5000);
+    var r=await withTO(fetch((base||'https://query1.finance.yahoo.com')
+      +'/v8/finance/chart/'+encodeURIComponent(sym)+'?interval=1d&range=5d',
+      {cache:'no-store'}),6000);
     if(!r.ok) return null;
     var j=await r.json();
     var m=j&&j.chart&&j.chart.result&&j.chart.result[0]&&j.chart.result[0].meta;
@@ -815,7 +815,25 @@ async function _yahoo(sym,base){
   }catch(e){return null;}
 }
 
-/* Stooq CSV 조회 (일본 ETF 대체) */
+/* Yahoo Finance v7 quote API (별도 엔드포인트) */
+async function _yahooQ(sym){
+  var bases=[
+    'https://query1.finance.yahoo.com/v7/finance/quote?symbols=',
+    'https://query2.finance.yahoo.com/v7/finance/quote?symbols='
+  ];
+  for(var i=0;i<bases.length;i++){
+    try{
+      var r=await withTO(fetch(bases[i]+encodeURIComponent(sym),{cache:'no-store'}),6000);
+      if(!r.ok) continue;
+      var j=await r.json();
+      var q=j&&j.quoteResponse&&j.quoteResponse.result&&j.quoteResponse.result[0];
+      if(q&&q.regularMarketPrice>0) return q.regularMarketPrice;
+    }catch(e){}
+  }
+  return null;
+}
+
+/* Stooq CSV (일본 ETF 대체) */
 async function _stooq(sym){
   try{
     var r=await withTO(fetch('https://stooq.com/q/l/?s='+sym.toLowerCase()+'&f=c&e=csv'),5000);
@@ -823,21 +841,24 @@ async function _stooq(sym){
     var txt=await r.text();
     var lines=txt.trim().split('\n');
     for(var i=1;i<lines.length;i++){
-      var parts=lines[i].split(',');
-      var p=parseFloat(parts[parts.length-1]);
+      var p=parseFloat(lines[i].split(',').pop());
       if(p>0) return p;
     }
   }catch(e){}
   return null;
 }
 
-/* CORS 프록시 + Yahoo */
+/* CORS 프록시 + Yahoo v8 */
 async function _proxy(sym){
-  var url=encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/'+sym+'?interval=1d&range=1d');
-  var proxies=['https://corsproxy.io/?'+url,'https://api.allorigins.win/raw?url='+url];
+  var yUrl='https://query1.finance.yahoo.com/v8/finance/chart/'
+    +encodeURIComponent(sym)+'?interval=1d&range=5d';
+  var proxies=[
+    'https://corsproxy.io/?'+encodeURIComponent(yUrl),
+    'https://api.allorigins.win/raw?url='+encodeURIComponent(yUrl)
+  ];
   for(var i=0;i<proxies.length;i++){
     try{
-      var r=await withTO(fetch(proxies[i]),6000);
+      var r=await withTO(fetch(proxies[i]),8000);
       if(!r.ok) continue;
       var j=await r.json();
       var m=j&&j.chart&&j.chart.result&&j.chart.result[0]&&j.chart.result[0].meta;
@@ -847,10 +868,13 @@ async function _proxy(sym){
   return null;
 }
 
-/* 네이버 CORS 프록시 */
+/* 네이버 CORS 프록시 (한국 ETF) */
 async function _naver(tk){
-  var url=encodeURIComponent('https://polling.finance.naver.com/api/realtime?query=SERVICE_ITEM:'+tk);
-  var proxies=['https://corsproxy.io/?'+url,'https://api.allorigins.win/raw?url='+url];
+  var url='https://polling.finance.naver.com/api/realtime?query=SERVICE_ITEM:'+tk;
+  var proxies=[
+    'https://corsproxy.io/?'+encodeURIComponent(url),
+    'https://api.allorigins.win/raw?url='+encodeURIComponent(url)
+  ];
   for(var i=0;i<proxies.length;i++){
     try{
       var r=await withTO(fetch(proxies[i]),6000);
@@ -871,42 +895,50 @@ async function _naver(tk){
 }
 
 async function fetchKR(tk){
-  var p;
-  /* 한국 ETF (6자리, 숫자+영숫자: 441640, 0144L0, 0066W0 등) */
+  var p,label;
+  /* ── 한국 ETF: 6자리 (441640, 0144L0, 0066W0 등) ── */
   if(/^[0-9][0-9A-Za-z]{5}$/.test(tk)){
     p=await fetchFirst([
       _yahoo(tk+'.KS','https://query1.finance.yahoo.com'),
       _yahoo(tk+'.KS','https://query2.finance.yahoo.com'),
-      _naver(tk)
+      _yahooQ(tk+'.KS'),
+      _naver(tk),
+      _proxy(tk+'.KS')
     ]);
-    return p?Math.round(p):null;
+    if(p){FETCH_LOG[tk]={p:Math.round(p),t:Date.now()};return Math.round(p);}
+    return null;
   }
-  /* 일본 ETF (4자리 숫자: 1632, 1540, 2621) */
+  /* ── 일본 ETF: 4자리 (1632, 1540, 2621) ── */
   if(/^\d{4}$/.test(tk)){
     p=await fetchFirst([
       _yahoo(tk+'.T','https://query1.finance.yahoo.com'),
       _yahoo(tk+'.T','https://query2.finance.yahoo.com'),
+      _yahooQ(tk+'.T'),
       _stooq(tk+'.jp'),
+      _stooq(tk+'.t'),
       _proxy(tk+'.T')
     ]);
-    return p?Math.round(p):null;
+    if(p){FETCH_LOG[tk]={p:Math.round(p),t:Date.now()};return Math.round(p);}
+    return null;
   }
-  /* 미국 주식/ETF (영문: CRCL 등) */
+  /* ── 미국 주식/ETF: 영문 (CRCL 등) ── */
   p=await fetchFirst([
     _yahoo(tk,'https://query1.finance.yahoo.com'),
     _yahoo(tk,'https://query2.finance.yahoo.com'),
+    _yahooQ(tk),
     _proxy(tk)
   ]);
-  return p?(Math.round(p*100)/100):null;
+  if(p){var v=Math.round(p*100)/100;FETCH_LOG[tk]={p:v,t:Date.now()};return v;}
+  return null;
 }
 
 async function fetchCrypto(sym){
-  var p=await fetchFirst([
+  var obj=await fetchFirst([
     (async function(){
       try{
         var r=await withTO(fetch('https://api.upbit.com/v1/ticker?markets=KRW-'+sym),5000);
         var j=await r.json();
-        return(j&&j[0])?{price:j[0].trade_price,high52:j[0].highest_52_week_price}:null;
+        return(j&&j[0])?{price:j[0].trade_price,high52:j[0].highest_52_week_price,_v:j[0].trade_price}:null;
       }catch(e){return null;}
     })(),
     (async function(){
@@ -914,30 +946,34 @@ async function fetchCrypto(sym){
         var r=await withTO(fetch('https://api.bithumb.com/public/ticker/'+sym+'_KRW'),5000);
         var j=await r.json();
         return(j&&j.data&&j.data.closing_price)?
-          {price:parseFloat(j.data.closing_price),high52:parseFloat(j.data.max_price||0)}:null;
+          {price:parseFloat(j.data.closing_price),high52:parseFloat(j.data.max_price||0),
+           _v:parseFloat(j.data.closing_price)}:null;
       }catch(e){return null;}
     })()
   ]);
-  return p||null;
+  return obj||null;
 }
 
 async function fetchFXApi(){
-  var r1=(async function(){
-    try{
-      var r=await withTO(fetch('https://open.er-api.com/v6/latest/USD'),5000);
-      var j=await r.json();
-      return(j.rates&&j.rates.KRW)?{usd:Math.round(j.rates.KRW),jpy:j.rates.JPY?Math.round(j.rates.KRW/j.rates.JPY*100)/100:null}:null;
-    }catch(e){return null;}
-  })();
-  var r2=(async function(){
-    try{
-      var r=await withTO(fetch('https://api.frankfurter.app/latest?from=USD&to=KRW,JPY'),5000);
-      var j=await r.json();
-      return(j.rates&&j.rates.KRW)?{usd:Math.round(j.rates.KRW),jpy:j.rates.JPY?Math.round(j.rates.KRW/j.rates.JPY*100)/100:null}:null;
-    }catch(e){return null;}
-  })();
-  var fx=await fetchFirst([r1,r2]);
-  if(fx){FX.USD=fx.usd;if(fx.jpy)FX.JPY=fx.jpy;}
+  var fx=await fetchFirst([
+    (async function(){
+      try{
+        var r=await withTO(fetch('https://open.er-api.com/v6/latest/USD'),5000);
+        var j=await r.json();
+        return(j.rates&&j.rates.KRW)?{usd:Math.round(j.rates.KRW),
+          jpy:j.rates.JPY?Math.round(j.rates.KRW/j.rates.JPY*100)/100:null,_v:j.rates.KRW}:null;
+      }catch(e){return null;}
+    })(),
+    (async function(){
+      try{
+        var r=await withTO(fetch('https://api.frankfurter.app/latest?from=USD&to=KRW,JPY'),5000);
+        var j=await r.json();
+        return(j.rates&&j.rates.KRW)?{usd:Math.round(j.rates.KRW),
+          jpy:j.rates.JPY?Math.round(j.rates.KRW/j.rates.JPY*100)/100:null,_v:j.rates.KRW}:null;
+      }catch(e){return null;}
+    })()
+  ]);
+  if(fx&&fx.usd){FX.USD=fx.usd;if(fx.jpy)FX.JPY=fx.jpy;}
 }
 
 async function fetchAll(){
@@ -951,19 +987,20 @@ async function fetchAll(){
     CMA.holdings.forEach(function(h){
       if(h.tk&&!seen[h.tk]){seen[h.tk]=1;tks.push(h.tk);}
     });
-    /* FX + 전체 종목 + 코인 모두 동시 조회 */
+    console.log('[fetchAll] 조회 티커:', tks);
     await Promise.all([
       fetchFXApi(),
       ...tks.map(async function(tk){
         var p=await fetchKR(tk);
-        if(p!=null){PRICES[tk]=p;ok=true;}else fail.push(tk);
+        if(p!=null){PRICES[tk]=p;ok=true;console.log('[시세]',tk,'=',p);}
+        else{fail.push(tk);console.warn('[시세실패]',tk);}
       }),
       ...['BTC','ETH','SOL','LINK'].map(async function(sym){
         var d=await fetchCrypto(sym);
         if(d){PRICES[sym]=d.price;HIGH52[sym]=d.high52;ok=true;}
       })
     ]);
-  }catch(e){}
+  }catch(e){console.error('[fetchAll error]',e);}
   if(ok){
     var msg='\uc2dc\uc138:'+new Date().toLocaleTimeString('ko-KR');
     if(fail.length) msg+=' (\ubbf8\uc870\ud68c:'+fail.join(',')+ ')';
@@ -2675,6 +2712,8 @@ function startApp(){
     CRYPTO=JSON.parse(JSON.stringify(DEF.crypto));
   }
   try{migrateTickers();}catch(err){}
+  // 마이그레이션 결과 즉시 저장 (다음 로드에서도 유지)
+  try{sSet(SKEY,JSON.stringify({accounts:ACCOUNTS,cma:CMA,crypto:CRYPTO,fx:{usd:FX.USD,jpy:FX.JPY},prices:PRICES}));}catch(err){}
   function applyComma(el){
     var n=parseFloat((el.value||'').replace(/,/g,''));
     if(!isNaN(n)&&n>=1000) el.value=Math.round(n).toLocaleString('ko-KR');
