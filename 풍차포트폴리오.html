@@ -1,0 +1,2396 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>풍차계획 포트폴리오</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--bg:#f0f2f5;--sur:#fff;--brd:#d0d7de;--brd2:#e8ecf0;--tx:#1a1d23;--tx2:#6b7280;--tx3:#9ca3af;--blu:#1a56db;--blu2:#ebf3ff;--blu3:#0c3e9e;--grn:#057a55;--grn2:#e8f7f1;--red:#c81e1e;--red2:#fde8e8;--pur:#6c2bd9;--pur2:#f0ebff;--gbg:#f3f4f6;--hdr:46px;--r:8px;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Malgun Gothic',-apple-system,sans-serif;font-size:12px;background:var(--bg);color:var(--tx)}
+.hdr{background:#1a1d23;color:#fff;height:var(--hdr);display:flex;align-items:center;padding:0 14px;gap:8px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.hdr-title{font-size:15px;font-weight:700}.hdr-sub{font-size:11px;color:#9ca3af}.hdr-sp{flex:1}
+.upd{font-size:11px;color:#9ca3af;white-space:nowrap}
+.dot{width:7px;height:7px;border-radius:50%;background:#f59e0b;flex-shrink:0}
+.hbtn{border:1px solid rgba(255,255,255,.25);color:#fff;padding:5px 11px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;white-space:nowrap;background:rgba(255,255,255,.08)}
+.hbtn:hover{background:rgba(255,255,255,.18)}
+.hbtn-save{background:#057a55;border-color:#057a55}.hbtn-save:hover{background:#045f42}
+.nav{background:var(--sur);border-bottom:1px solid var(--brd);display:flex;padding:0 10px;overflow-x:auto;position:sticky;top:var(--hdr);z-index:90;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.ntab{padding:8px 10px;font-size:11px;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;color:var(--tx2);font-weight:500;user-select:none}
+.ntab.on{color:var(--blu);border-bottom-color:var(--blu);font-weight:700}
+.ntab:hover:not(.on){background:var(--gbg)}
+.page{display:none;padding:8px;max-width:1600px;margin:0 auto}
+.page.on{display:block}
+.fxbar{background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);padding:5px 11px;margin-bottom:6px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;font-size:12px}
+.fxitem{display:flex;align-items:center;gap:5px;color:var(--tx2)}
+.fxinp{border:1px solid var(--brd);border-radius:4px;padding:3px 6px;width:76px;font-size:12px;text-align:right;background:#fff;color:var(--tx);font-family:inherit}
+.fxinp:focus{outline:none;border-color:var(--blu)}
+.abadge{font-size:9px;background:var(--blu2);color:var(--blu);padding:1px 5px;border-radius:3px;font-weight:700}
+.sec{background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);margin-bottom:6px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.sechdr{padding:6px 12px;background:#f8fafc;border-bottom:1px solid var(--brd2);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.sectitle{font-size:13px;font-weight:700}.secsub{font-size:11px;color:var(--tx2)}
+.ahdr{padding:7px 12px;border-bottom:1px solid var(--brd2)}
+.ameta{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:8px}
+.aname{font-size:14px;font-weight:700}.adate{font-size:11px;color:var(--tx2)}
+.anote{font-size:11px;color:var(--blu);background:var(--blu2);padding:2px 7px;border-radius:10px}
+.irow{display:flex;gap:4px;flex-wrap:wrap}
+.ibox{background:var(--gbg);border:1px solid var(--brd2);border-radius:6px;padding:5px 9px;min-width:90px}
+.ibox-grn{background:var(--grn2);border-color:#b7e4cf}
+.ilbl{font-size:9px;color:var(--tx2);margin-bottom:1px;font-weight:600}
+.ival{font-size:12px;font-weight:700}
+.ival.pos{color:var(--grn)}.ival.neg{color:var(--red)}.ival.blu{color:var(--blu)}.ival.grn{color:var(--grn)}.ival.pur{color:var(--pur)}
+.iedit{border:1px solid var(--brd);border-radius:4px;padding:3px 6px;font-size:12px;font-family:inherit;color:var(--tx);background:#fff;width:100%;margin-top:2px}
+.iedit:focus{outline:none;border-color:var(--blu)}
+.twrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{padding:4px 5px;text-align:right;font-size:10px;color:var(--tx2);font-weight:700;background:#f8fafc;border-bottom:1px solid var(--brd);white-space:nowrap}
+th:first-child{text-align:left}
+td{padding:4px 5px;border-bottom:1px solid var(--brd2);text-align:right;white-space:nowrap;vertical-align:middle}
+td:first-child{text-align:left}
+tr:last-child td{border-bottom:none}
+tr:hover:not(.trow):not(.nrow):not(.xhdr) td{background:#f8fafc}
+.trow td{background:#eff6ff;font-weight:700;border-top:2px solid var(--brd)}
+.nrow td{background:#fffbf0;color:#92400e;font-size:11px;text-align:left;padding:5px 9px}
+.xhdr td{background:var(--gbg);font-size:11px;font-weight:700;color:var(--tx2);text-align:left;padding:5px 9px;border-bottom:1px solid var(--brd)}
+.pos{color:var(--grn);font-weight:600}.neg{color:var(--red);font-weight:600}
+.tname{font-weight:600;line-height:1.4}.tsub{font-size:10px;color:var(--tx2);margin-top:1px}
+.ed{background:transparent;border:1px solid transparent;border-radius:3px;padding:1px 3px;text-align:right;font-family:inherit;font-size:11px;color:inherit;cursor:text}
+.ed:hover{border-color:var(--brd);background:#fff}
+.ed:focus{border-color:var(--blu);background:#fff;outline:none;box-shadow:0 0 0 2px rgba(26,86,219,.1)}
+.auto{color:var(--blu)}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px;padding:8px}
+.scard{background:var(--gbg);border-radius:6px;padding:7px 10px;border:1px solid var(--brd2)}
+.scard-grn{background:var(--grn2);border-color:#b7e4cf}
+.slbl{font-size:10px;color:var(--tx2);margin-bottom:2px;font-weight:700}
+.sval{font-size:14px;font-weight:700;line-height:1.2}.ssub{font-size:10px;color:var(--tx2);margin-top:2px}
+.drow{display:flex;gap:10px;padding:5px 11px;font-size:11px;color:var(--tx2);border-top:1px solid var(--brd2);flex-wrap:wrap;background:#fafcff}
+.drow strong{color:var(--tx);font-weight:700}
+.btn{padding:4px 11px;border-radius:5px;cursor:pointer;font-size:12px;font-weight:600;border:1px solid var(--brd);font-family:inherit}
+.btn-add{background:var(--blu);color:#fff;border-color:var(--blu)}.btn-add:hover{background:var(--blu3)}
+.btn-del{background:transparent;color:var(--red);border:none;padding:2px 6px;font-size:11px;cursor:pointer}.btn-del:hover{color:#8b0000}
+.tbbar{padding:5px 11px;display:flex;gap:7px;border-top:1px solid var(--brd2);background:#fafcff}
+.ccards{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:8px;padding:11px}
+.ccard{border-radius:8px;padding:11px 13px;border:1px solid var(--brd2)}
+.ccoin{font-size:11px;font-weight:700;margin-bottom:4px}
+.cval{font-size:15px;font-weight:700}.cpct{font-size:12px;font-weight:600;margin-top:2px}
+.mbar{height:4px;background:var(--brd2);border-radius:2px;margin-top:6px;overflow:hidden}
+.mfill{height:100%;border-radius:2px}
+.ptabs{display:flex;gap:4px;padding:10px 13px;border-bottom:1px solid var(--brd2);flex-wrap:wrap}
+.ptab{padding:4px 12px;border-radius:16px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--brd);color:var(--tx2);background:#fff;font-family:inherit}
+.ptab.on{background:var(--blu);color:#fff;border-color:var(--blu)}
+.chart-wrap{padding:13px;position:relative}
+.chart-wrap canvas{max-height:270px}
+.hist-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px;padding:11px;border-top:1px solid var(--brd2)}
+.hist-card{background:var(--gbg);border-radius:6px;padding:8px 10px;border:1px solid var(--brd2)}
+.cl-entry{border:1px solid var(--brd2);border-radius:8px;padding:10px 13px;margin-bottom:8px}
+.cl-time{font-size:10px;color:var(--tx3);margin-bottom:2px}
+.moverlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;display:none;align-items:center;justify-content:center}
+.moverlay.show{display:flex}
+.modal{background:#fff;border-radius:12px;padding:22px;width:420px;max-width:93vw;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.3)}
+.modal h3{font-size:15px;font-weight:700;margin-bottom:13px}
+.mrow{margin-bottom:10px}.mlbl{font-size:11px;font-weight:700;color:var(--tx2);margin-bottom:3px}
+.minp{width:100%;border:1px solid var(--brd);border-radius:6px;padding:7px 9px;font-size:13px;font-family:inherit;color:var(--tx)}
+.msel{width:100%;border:1px solid var(--brd);border-radius:6px;padding:7px 9px;font-size:13px;font-family:inherit;background:#fff;color:var(--tx)}
+.minp:focus,.msel:focus{outline:none;border-color:var(--blu)}
+.mbtns{display:flex;gap:8px;justify-content:flex-end;margin-top:15px}
+.mbtn{padding:7px 15px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;border:1px solid var(--brd);font-family:inherit}
+.mbtn-ok{background:var(--blu);color:#fff;border-color:var(--blu)}
+.mbtn-cancel{background:#fff;color:var(--tx2)}
+.mgrid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+/* ── 테이블 첫 열 고정 (모바일에서 종목명 항상 보임) ── */
+@media(max-width:768px){
+  table td:first-child, table th:first-child{
+    position:sticky;left:0;background:var(--sur);z-index:2;
+    box-shadow:2px 0 4px rgba(0,0,0,.06);
+  }
+  table tr.trow td:first-child{background:#eff6ff;}
+  table tr.xhdr td:first-child{background:var(--gbg);}
+  /* 하단 모바일 퀵메뉴 */
+  #mob-bar{
+    display:none;
+    position:fixed;bottom:0;left:0;right:0;z-index:200;
+    background:var(--sur);border-top:1px solid var(--brd);
+    padding:6px 4px env(safe-area-inset-bottom);
+    display:flex;justify-content:space-around;align-items:center;
+  }
+  .mob-btn{
+    display:flex;flex-direction:column;align-items:center;gap:2px;
+    font-size:9px;color:var(--tx2);cursor:pointer;padding:4px 6px;
+    border-radius:8px;border:none;background:none;font-family:inherit;
+    min-width:48px;
+  }
+  .mob-btn .mico{font-size:18px;line-height:1;}
+  .mob-btn.on{color:var(--blu);}
+  /* 하단 바 공간 확보 */
+  body{padding-bottom:calc(56px + env(safe-area-inset-bottom));}
+}
+@media(min-width:769px){
+  #mob-bar{display:none !important;}
+  body{padding-bottom:0;}
+}
+@media(max-width:768px){
+  /* 헤더: 2줄 레이아웃 */
+  .hdr{height:auto;min-height:var(--hdr);flex-wrap:wrap;padding:6px 10px;gap:5px;}
+  .hdr-title{font-size:13px;}.hdr-sub{display:none;}
+  .hdr-sp{display:none;}
+  .hbtn{padding:5px 9px;font-size:11px;}
+  /* 헤더 버튼 중 엑셀저장·비밀번호 숨김 (저장·새로고침만 표시) */
+  .hbtn-hide{display:none;}
+  /* nav 탭: 터치 여백 확보 */
+  .ntab{padding:10px 11px;font-size:11px;}
+  /* 페이지 패딩 */
+  .page{padding:6px;}
+  /* 테이블: 가로스크롤 힌트 */
+  .twrap{overflow-x:auto;-webkit-overflow-scrolling:touch;position:relative;}
+  .twrap::after{content:'';position:absolute;top:0;right:0;width:24px;height:100%;background:linear-gradient(to right,transparent,rgba(0,0,0,.06));pointer-events:none;}
+  th,td{padding:4px 5px;font-size:11px;}
+  /* 요약 카드: 2열 */
+  .sgrid,.ccards{grid-template-columns:repeat(2,1fr);}
+  .sval{font-size:13px;}
+  /* 입력 박스 */
+  .ed{min-height:26px;font-size:11px;padding:2px 4px;}
+  .iedit{min-height:30px;font-size:12px;}
+  .fxinp{width:72px;font-size:12px;}
+  /* ibox 정보박스 */
+  .irow{gap:3px;}
+  .ibox{min-width:78px;padding:4px 7px;}
+  .ival{font-size:12px;}
+  /* 모달 */
+  .modal{padding:16px;width:100%;max-width:96vw;}
+  /* 차트 높이 */
+  .chart-wrap canvas{max-height:200px;}
+  /* 히스토리 카드 2열 */
+  .hist-grid{grid-template-columns:repeat(2,1fr);}
+  /* 코인 카드 2열 */
+  .ccards{grid-template-columns:repeat(2,1fr);}
+}
+/* ── 소형 모바일 (375px 이하) ── */
+@media(max-width:400px){
+  .ntab{padding:8px 8px;font-size:10px;}
+  .sgrid{grid-template-columns:repeat(2,1fr);}
+  .sval{font-size:12px;}
+  th,td{padding:3px 4px;font-size:10px;}
+  .hbtn{padding:4px 7px;font-size:10px;}
+}
+/* ── 로그인 ── */
+#pw-screen{position:fixed;inset:0;background:linear-gradient(135deg,#1a1d23,#1a3a5c);z-index:9999;display:flex;align-items:center;justify-content:center}
+.pw-box{background:#fff;border-radius:16px;padding:36px 30px;width:340px;max-width:92vw;box-shadow:0 20px 60px rgba(0,0,0,.4);text-align:center}
+.pw-icon{font-size:42px;margin-bottom:10px}
+.pw-title{font-size:18px;font-weight:700;color:#1a1d23;margin-bottom:4px}
+.pw-sub{font-size:12px;color:#6b7280;margin-bottom:22px}
+.pw-lbl{font-size:12px;font-weight:700;color:#374151;text-align:left;margin-bottom:5px;display:block}
+.pw-inp{width:100%;border:1.5px solid #d1d5db;border-radius:8px;padding:12px 13px;font-size:15px;font-family:inherit;box-sizing:border-box;margin-bottom:12px}
+.pw-inp:focus{outline:none;border-color:#1a56db;box-shadow:0 0 0 3px rgba(26,86,219,.12)}
+.pw-btn{width:100%;background:#1a56db;color:#fff;border:none;border-radius:8px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
+.pw-btn:hover{background:#0c3e9e}
+.pw-err{background:#fde8e8;color:#c81e1e;border-radius:6px;padding:9px;font-size:12px;margin-bottom:12px;display:none}
+.pw-info{font-size:11px;color:#9ca3af;margin-top:12px}
+</style>
+</head>
+<body>
+
+<!-- 종목추가 KR -->
+<div class="moverlay" id="add-modal">
+  <div class="modal"><h3>+ 종목 추가</h3>
+    <input type="hidden" id="add-accid">
+    <div class="mrow"><div class="mlbl">종목명</div><input class="minp" id="add-name" placeholder="예: TIGER 미국S&P500"></div>
+    <div class="mrow"><div class="mlbl">네이버 종목코드 (없으면 빈칸)</div><input class="minp" id="add-tk" placeholder="예: 360750"></div>
+    <div class="mgrid2">
+      <div class="mrow"><div class="mlbl">수량</div><input class="minp" id="add-qty" type="number" placeholder="0"></div>
+      <div class="mrow"><div class="mlbl">매입단가(원)</div><input class="minp" id="add-cost" type="number" placeholder="0"></div>
+    </div>
+    <div class="mrow"><div class="mlbl">전고점</div><input class="minp" id="add-high" type="number" placeholder="0"></div>
+    <div class="mrow"><div class="mlbl">1주당 분배금 (없으면 빈칸)</div><input class="minp" id="add-dpu" type="number" placeholder="0"></div>
+    <div class="mbtns">
+      <button class="mbtn mbtn-cancel" onclick="closeModal('add-modal')">취소</button>
+      <button class="mbtn mbtn-ok" onclick="doAddHolding()">추가</button>
+    </div>
+  </div>
+</div>
+<!-- CMA 종목추가 -->
+<div class="moverlay" id="cma-modal">
+  <div class="modal"><h3>+ CMA 종목 추가</h3>
+    <div class="mrow"><div class="mlbl">종목명</div><input class="minp" id="cm-name" placeholder="예: TOPIX ETF"></div>
+    <div class="mrow"><div class="mlbl">설명 (선택)</div><input class="minp" id="cm-sub" placeholder="예: 연2%배당"></div>
+    <div class="mrow"><div class="mlbl">통화</div>
+      <select class="msel" id="cm-cur"><option value="JPY">JPY (엔화)</option><option value="USD">USD (달러)</option><option value="KRW">KRW (원화)</option></select>
+    </div>
+    <div class="mrow"><label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="cm-isrp"> RP/현금 (수량 없이 금액만)</label></div>
+    <div class="mgrid2">
+      <div class="mrow"><div class="mlbl">수량</div><input class="minp" id="cm-qty" type="number" placeholder="0"></div>
+      <div class="mrow"><div class="mlbl">매입단가(현지)</div><input class="minp" id="cm-cost" type="number" placeholder="0"></div>
+    </div>
+    <div class="mgrid2">
+      <div class="mrow"><div class="mlbl">매입환율</div><input class="minp" id="cm-fx" type="number" placeholder="0"></div>
+      <div class="mrow"><div class="mlbl">전고점</div><input class="minp" id="cm-high" type="number" placeholder="0"></div>
+    </div>
+    <div class="mrow"><div class="mlbl">연간배당(현지통화)</div><input class="minp" id="cm-dist" type="number" placeholder="0"></div>
+    <div class="mbtns">
+      <button class="mbtn mbtn-cancel" onclick="closeModal('cma-modal')">취소</button>
+      <button class="mbtn mbtn-ok" onclick="doAddCMA()">추가</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── 비밀번호 화면 ── -->
+<div id="pw-screen" style="display:none">
+  <div class="pw-box">
+    <div class="pw-icon">🌸</div>
+    <div class="pw-title">풍차계획 포트폴리오</div>
+    <div class="pw-sub" id="pw-sub">수익은 길게, 손실은 짧게!!!</div>
+    <div class="pw-err" id="pw-err"></div>
+    <label class="pw-lbl" id="pw-lbl">비밀번호</label>
+    <input type="password" class="pw-inp" id="pw-inp" placeholder="비밀번호를 입력하세요">
+    <button class="pw-btn" id="pw-btn">확인</button>
+    <div class="pw-info" id="pw-info">30일간 자동 로그인 유지</div>
+  </div>
+</div>
+
+
+<!-- 코인 추가 모달 -->
+<div class="moverlay" id="add-crypto-modal">
+  <div class="modal">
+    <h3>+ 가상화폐 종목 추가</h3>
+    <div class="mrow"><div class="mlbl">거래소</div>
+      <select class="msel" id="acr-ex">
+        <option value="B">빗썸 (Bithumb)</option>
+        <option value="U">업비트 (Upbit)</option>
+      </select>
+    </div>
+    <div class="mgrid2">
+      <div class="mrow"><div class="mlbl">종목명</div><input class="minp" id="acr-name" placeholder="예: 리플(XRP)"></div>
+      <div class="mrow"><div class="mlbl">심볼</div><input class="minp" id="acr-sym" placeholder="예: XRP"></div>
+    </div>
+    <div class="mgrid2">
+      <div class="mrow"><div class="mlbl">수량</div><input class="minp" id="acr-qty" type="number" placeholder="0"></div>
+      <div class="mrow"><div class="mlbl">매입단가(원)</div><input class="minp" id="acr-cost" type="number" placeholder="0"></div>
+    </div>
+    <div class="mrow"><div class="mlbl">전고점(원)</div><input class="minp" id="acr-high" type="number" placeholder="0"></div>
+    <div class="mbtns">
+      <button class="mbtn mbtn-cancel" onclick="closeModal('add-crypto-modal')">취소</button>
+      <button class="mbtn mbtn-ok" onclick="doAddCrypto()">추가</button>
+    </div>
+  </div>
+</div>
+<div class="hdr">
+  <div><div class="hdr-title">🌸 수익은 길게, 손실은 짧게!!!</div><div class="hdr-sub">연금계좌 풍차계획 포트폴리오</div></div>
+  <div class="hdr-sp"></div>
+  <div class="upd" id="upd">종전가</div>
+  <div class="dot" id="dot"></div>
+  <button class="hbtn hbtn-hide" onclick="exportToExcel()">📥 엑셀저장</button>
+  <button class="hbtn hbtn-save" onclick="saveData()">💾 저장</button>
+  <button class="hbtn hbtn-hide" onclick="changePW()">🔑 비밀번호</button>
+  <button class="hbtn" onclick="fetchAll()">🔄 새로고침</button>
+</div>
+<div class="nav">
+  <div class="ntab on"  onclick="go('overview',this)">📊 전체현황</div>
+  <div class="ntab" onclick="go('holdings',this)">📋 종목총괄</div>
+  <div class="ntab" onclick="go('mf-ira',this)">퇴직연금(미래)</div>
+  <div class="ntab" onclick="go('mf-pension',this)">개인연금(미래)</div>
+  <div class="ntab" onclick="go('mf-isa',this)">ISA(미래)</div>
+  <div class="ntab" onclick="go('ss-pension',this)">개인연금(삼성)</div>
+  <div class="ntab" onclick="go('mf-irp2',this)">IRP(미래)</div>
+  <div class="ntab" onclick="go('cma',this)">CMA 해외주식</div>
+  <div class="ntab" onclick="go('crypto',this)">가상화폐</div>
+  <div class="ntab" onclick="go('history',this)">📈 자산변동</div>
+  <div class="ntab" onclick="go('changelog',this)">📝 변경이력</div>
+</div>
+
+<!-- 모바일 하단 퀵 메뉴 -->
+<div id="mob-bar">
+  <button class="mob-btn on" id="mob-ov" onclick="go('overview',null);mobSel('mob-ov')">
+    <span class="mico">📊</span>전체현황
+  </button>
+  <button class="mob-btn" id="mob-hd" onclick="go('holdings',null);mobSel('mob-hd')">
+    <span class="mico">📋</span>종목총괄
+  </button>
+  <button class="mob-btn" id="mob-ac" onclick="mobShowAccMenu()">
+    <span class="mico">🏦</span>계좌
+  </button>
+  <button class="mob-btn" id="mob-cr" onclick="go('crypto',null);mobSel('mob-cr')">
+    <span class="mico">₿</span>가상화폐
+  </button>
+  <button class="mob-btn" id="mob-hi" onclick="go('history',null);mobSel('mob-hi')">
+    <span class="mico">📈</span>자산변동
+  </button>
+</div>
+
+<!-- 모바일 계좌 선택 시트 -->
+<div id="mob-acc-sheet" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:300;background:var(--sur);border-radius:16px 16px 0 0;box-shadow:0 -4px 20px rgba(0,0,0,.18);padding:16px 0 calc(12px + env(safe-area-inset-bottom))">
+  <div style="text-align:center;margin-bottom:10px"><div style="width:36px;height:4px;background:var(--brd);border-radius:2px;margin:0 auto"></div></div>
+  <div style="font-size:13px;font-weight:700;padding:0 18px 10px;color:var(--tx2)">계좌 선택</div>
+  <div id="mob-acc-list"></div>
+  <button onclick="document.getElementById('mob-acc-sheet').style.display='none'" style="width:calc(100% - 32px);margin:8px 16px 0;padding:11px;border:1px solid var(--brd);border-radius:8px;font-size:13px;font-family:inherit;background:#fff;cursor:pointer;color:var(--tx2)">닫기</button>
+</div>
+<div id="mob-acc-overlay" onclick="document.getElementById('mob-acc-sheet').style.display='none';document.getElementById('mob-acc-overlay').style.display='none'" style="display:none;position:fixed;inset:0;z-index:290;background:rgba(0,0,0,.4)"></div>
+<div class="page on" id="pg-overview"></div>
+<div class="page" id="pg-holdings"></div>
+<div class="page" id="pg-mf-ira"></div>
+<div class="page" id="pg-mf-pension"></div>
+<div class="page" id="pg-mf-isa"></div>
+<div class="page" id="pg-ss-pension"></div>
+<div class="page" id="pg-mf-irp2"></div>
+<div class="page" id="pg-cma"></div>
+<div class="page" id="pg-crypto"></div>
+<div class="page" id="pg-history"></div>
+<div class="page" id="pg-changelog"></div>
+<script>
+
+const DEF = {
+ accounts:[
+  {id:'mf-ira',name:'미래_퇴직개인연금(퇴직금)',openDate:'23.2.15',note:'*23.12.20.개시',
+   accDep:186882881,depositsYr:0,accWit:100000,withdrawalsYr:0,extraLabel:'이연퇴직금',extraVal:0,annualDistRate:0.0738,
+   holdings:[
+    {n:'KODEX 미국배당커버드콜액티브',tk:'449770',qty:10000,cost:11646,high:13088,mI:null,mM:990000},
+    {n:'KODEX 미국성장커버드콜액티브',tk:'449780',qty:10000,cost:9795,high:10045,mI:930000,mM:null},
+    {n:'KODEX 미국나스닥100',tk:'379800',qty:243,cost:26034,high:26470,mI:null,mM:null},
+    {n:'TIME 미국나스닥100액티브',tk:'441680',qty:550,cost:37187,high:45410,mI:null,mM:null},
+    {n:'ACE 테슬라밸류체인액티브',tk:'426800',qty:1000,cost:11824,high:23435,mI:null,mM:null},
+    {n:'ACE 구글밸류체인액티브',tk:'426810',qty:1000,cost:16868,high:22000,mI:null,mM:null},
+    {n:'SOL 국제금',tk:'411060',qty:500,cost:12322,high:16900,mI:null,mM:null}
+   ]},
+  {id:'mf-pension',name:'미래_개인연금(비과세재원/ISA입금)',openDate:'20.3.20',note:'*25.3.20.요건 충족',
+   accDep:190614135,depositsYr:0,accWit:64698793,withdrawalsYr:0,extraLabel:'비과세원금',extraVal:99333476,annualDistRate:0.0767,
+   holdings:[
+    {n:'KODEX 미국배당커버드콜액티브',tk:'449770',qty:8000,cost:11508,high:13088,mI:null,mM:792000},
+    {n:'KODEX 미국성장커버드콜액티브',tk:'449780',qty:8000,cost:9802,high:10045,mI:744000,mM:null},
+    {n:'KODEX 미국나스닥100',tk:'379800',qty:288,cost:26020,high:26470,mI:null,mM:null},
+    {n:'TIME 미국나스닥100액티브',tk:'441680',qty:500,cost:37074,high:45410,mI:null,mM:null},
+    {n:'ACE 테슬라밸류체인액티브',tk:'426800',qty:500,cost:13296,high:23435,mI:null,mM:null},
+    {n:'ACE 구글밸류체인액티브',tk:'426810',qty:500,cost:16732,high:22000,mI:null,mM:null},
+    {n:'SOL 국제금',tk:'411060',qty:300,cost:13935,high:16900,mI:null,mM:null}
+   ]},
+  {id:'mf-isa',name:'미래_ISA(만기후,삼성ISA신규)',openDate:'23.8.22',note:'*26.8.22.요건 충족',
+   accDep:80000000,depositsYr:0,accWit:-15101360,withdrawalsYr:0,extraLabel:null,extraVal:0,annualDistRate:0.0821,
+   holdings:[
+    {n:'KODEX 미국배당커버드콜액티브',tk:'449770',qty:3750,cost:11967,high:13088,mI:null,mM:371250},
+    {n:'KODEX 미국성장커버드콜액티브',tk:'449780',qty:3750,cost:9757,high:10045,mI:348750,mM:null},
+    {n:'TIME 미국나스닥100액티브',tk:'441680',qty:58,cost:43942,high:45410,mI:null,mM:null},
+    {n:'ACE 테슬라밸류체인액티브',tk:'426800',qty:58,cost:22363,high:23435,mI:null,mM:0},
+    {n:'ACE 구글밸류체인액티브',tk:'426810',qty:500,cost:16855,high:22000,mI:null,mM:null},
+    {n:'SOL 국제금',tk:'411060',qty:300,cost:14517,high:16900,mI:null,mM:null}
+   ]},
+  {id:'ss-pension',name:'삼성_개인연금(과세/적립투자)',openDate:'20.3.24',note:'*25.3.24.요건 충족',
+   accDep:58983298,depositsYr:0,accWit:0,withdrawalsYr:0,extraLabel:'비과세원금',extraVal:27983298,annualDistRate:0.0826,
+   holdings:[
+    {n:'KODEX 미국배당커버드콜액티브',tk:'449770',qty:2750,cost:11656,high:13088,mI:null,mM:272250},
+    {n:'KODEX 미국성장커버드콜액티브',tk:'449780',qty:2750,cost:9811,high:10045,mI:255750,mM:null},
+    {n:'KODEX 미국나스닥100',tk:'379800',qty:5,cost:25925,high:26470,mI:null,mM:null},
+    {n:'TIME 미국나스닥100액티브',tk:'441680',qty:50,cost:39786,high:45410,mI:null,mM:null},
+    {n:'ACE 테슬라밸류체인액티브',tk:'426800',qty:500,cost:21394,high:23435,mI:null,mM:null},
+    {n:'ACE 구글밸류체인액티브',tk:'426810',qty:1,cost:20755,high:22000,mI:0,mM:0}
+   ]},
+  {id:'mf-irp2',name:'미래에셋 IRP(적립투자)',openDate:'25.4.29',note:'*30.4.29.요건 충족',
+   accDep:6000000,depositsYr:0,accWit:0,withdrawalsYr:0,extraLabel:'비과세원금',extraVal:0,annualDistRate:null,
+   holdings:[
+    {n:'KODEX 미국나스닥100',tk:'379800',qty:168,cost:25294,high:25930,mI:null,mM:null},
+    {n:'ACE미국나스닥100채권혼합',tk:'441640',qty:155,cost:14911,high:15400,mI:null,mM:null}
+   ]}
+ ],
+ cma:{
+  name:'미래_CMA 계좌(해외주식)',accDep:46991907,depositsYr:0,accWit:-7310401,withdrawalsYr:0,
+  holdings:[
+   {n:'TOPIX-17(1632)',sub:'연2.05%배당(7월)',cur:'JPY',qty:100,cost:27681.1,avgFX:981.19,high:39440,distAnn:727},
+   {n:'Japan Physical Gold(1540)',sub:'',cur:'JPY',qty:150,cost:19765.17,avgFX:931.94,high:26585,distAnn:0},
+   {n:'20+YEAR US(2621)',sub:'연3%배당(2,5,8,11월)',cur:'JPY',qty:1500,cost:1292.54,avgFX:900.2,high:1335,distAnn:32},
+   {n:'서클(CRCL)',sub:'',cur:'USD',qty:50,cost:155.62,avgFX:1405.14,high:298.99,distAnn:null},
+   {n:'CMA RP(USD)_3.75%',sub:'',cur:'USD',qty:1,cost:1000,avgFX:1496.4,high:null,distAnn:null,isRP:true},
+   {n:'CMA RP(원)_2.5%',sub:'',cur:'KRW',qty:1,cost:2480341,avgFX:null,high:null,distAnn:null,isRP:true}
+  ]},
+ crypto:{
+  deposits:71996257.55,
+  bithumb:[
+   {n:'비트코인(BTC)',sym:'BTC',sr:'',stk:0.10070176,qty:0.08535105,cost:152780084,high:179734000},
+   {n:'이더리움(ETH)',sym:'ETH',sr:'3.1%',stk:2,qty:2,cost:4959842,high:6849000},
+   {n:'솔라나(SOL)',sym:'SOL',sr:'6.29%',stk:30,qty:35.32638811,cost:291792,high:450000},
+   {n:'체인링크(LINK)',sym:'LINK',sr:'',stk:0,qty:150.95651523,cost:33273,high:65000}
+  ],
+  upbit:[
+   {n:'비트코인(BTC)',sym:'BTC',sr:'',stk:0.10042053,qty:0.05855577,cost:149487568,high:179734000},
+   {n:'이더리움(ETH)',sym:'ETH',sr:'2.94%',stk:2,qty:2.01254636,cost:4722036,high:6849000},
+   {n:'솔라나(SOL)',sym:'SOL',sr:'6.12%',stk:30,qty:34.59026054,cost:303402.5,high:450000},
+   {n:'체인링크(LINK)',sym:'LINK',sr:'',stk:0,qty:158.20327156,cost:31317,high:65000}
+  ]}
+};
+
+
+/* ===== 상태 ===== */
+var FX = {USD:1479, JPY:927.83};
+var PRICES = {}, HIGH52 = {};
+var SKEY='fp_data', SNAPKEY='fp_snaps', CLKEY='fp_cl';
+var ACCOUNTS, CMA, CRYPTO;
+
+/* ===== 저장소 ===== */
+function sGet(k){try{var v=localStorage.getItem(k);if(v!==null)return v;}catch(e){}try{var v=sessionStorage.getItem(k);if(v!==null)return v;}catch(e){}return null;}
+function sSet(k,v){try{localStorage.setItem(k,v);}catch(e){}try{sessionStorage.setItem(k,v);}catch(e){}}
+
+/* ===== 데이터 로드/저장 ===== */
+function loadData(){
+  try{
+    var s=JSON.parse(sGet(SKEY)||'null');
+    if(s&&s.accounts&&s.cma&&s.crypto){
+      ACCOUNTS=s.accounts;CMA=s.cma;CRYPTO=s.crypto;
+      if(s.fx){FX.USD=s.fx.usd||FX.USD;FX.JPY=s.fx.jpy||FX.JPY;}
+      if(s.prices){Object.assign(PRICES,s.prices);}
+      // DEF의 extraLabel/annualDistRate 강제 적용 (버전 업데이트 반영)
+      DEF.accounts.forEach(function(def){
+        var acc=ACCOUNTS.find(function(a){return a.id===def.id;});
+        if(acc){
+          acc.extraLabel=def.extraLabel;
+          acc.annualDistRate=def.annualDistRate;
+          // extraVal은 사용자 입력값 유지
+        }
+      });
+      return;
+    }
+  }catch(e){}
+  ACCOUNTS=JSON.parse(JSON.stringify(DEF.accounts));
+  CMA=JSON.parse(JSON.stringify(DEF.cma));
+  CRYPTO=JSON.parse(JSON.stringify(DEF.crypto));
+}
+function saveData(){
+  var today=new Date().toLocaleDateString('ko-KR');
+  var now=new Date().toISOString();
+  var t=grandTotal();
+  var snaps=loadSnaps();
+  var idx=snaps.findIndex(function(s){return s.date===today;});
+  var snap={date:today,ts:now,cur:t.cur,cost:t.cost,pnl:t.pnl,note:''};
+  if(idx>=0)snaps[idx]=snap;else snaps.push(snap);
+  snaps.sort(function(a,b){return a.date<b.date?-1:1;});
+  sSet(SNAPKEY,JSON.stringify(snaps));
+  sSet(SKEY,JSON.stringify({accounts:ACCOUNTS,cma:CMA,crypto:CRYPTO,fx:{usd:FX.USD,jpy:FX.JPY},prices:PRICES}));
+  addCL(today,t);
+  alert('\u2705 저장 완료 ('+today+')\n총평가액: '+fmt(t.cur)+'원');
+}
+var HIST_SNAPS=[
+  {date:'2018. 12. 31.',ts:'2018-12-31T00:00:00.000Z',cur:126951000,cost:0,pnl:0,note:''},
+  {date:'2019. 12. 31.',ts:'2019-12-31T00:00:00.000Z',cur:180566000,cost:0,pnl:0,note:''},
+  {date:'2020. 12. 31.',ts:'2020-12-31T00:00:00.000Z',cur:307102000,cost:0,pnl:0,note:'해외주식투자시작'},
+  {date:'2021. 12. 31.',ts:'2021-12-31T00:00:00.000Z',cur:460810000,cost:0,pnl:0,note:''},
+  {date:'2022. 4. 25.',ts:'2022-04-25T00:00:00.000Z',cur:297558987,cost:0,pnl:0,note:'러우전쟁(금리인상)'},
+  {date:'2022. 12. 31.',ts:'2022-12-31T00:00:00.000Z',cur:330974000,cost:0,pnl:0,note:'퇴직재산신고'},
+  {date:'2023. 8. 12.',ts:'2023-08-12T00:00:00.000Z',cur:481154323,cost:0,pnl:0,note:'퇴직금(1억9천)'},
+  {date:'2024. 8. 31.',ts:'2024-08-31T00:00:00.000Z',cur:546287780,cost:0,pnl:0,note:'부산전세(5천5백/8천)_ISA및연금계좌 55백만원, 동산파크5백, 학자금대출상환 2천만'},
+  {date:'2024. 9. 22.',ts:'2024-09-22T00:00:00.000Z',cur:562017508,cost:0,pnl:0,note:''},
+  {date:'2024. 11. 1.',ts:'2024-11-01T00:00:00.000Z',cur:580783803,cost:0,pnl:0,note:''},
+  {date:'2024. 12. 11.',ts:'2024-12-11T00:00:00.000Z',cur:720526850,cost:0,pnl:0,note:'럭스전세(9천3백/1억5천)_보증금반환10백만원, 박현숙38백만원, 국내주식및가상화폐 9천3백 이민경7백'},
+  {date:'2025. 4. 20.',ts:'2025-04-20T00:00:00.000Z',cur:630351736,cost:0,pnl:0,note:'트럼프 관세전쟁'},
+  {date:'2025. 6. 2.',ts:'2025-06-02T00:00:00.000Z',cur:681871635,cost:0,pnl:0,note:''},
+  {date:'2025. 7. 11.',ts:'2025-07-11T00:00:00.000Z',cur:710009942,cost:0,pnl:0,note:''},
+  {date:'2025. 7. 23.',ts:'2025-07-23T00:00:00.000Z',cur:749702099,cost:0,pnl:0,note:''},
+  {date:'2025. 8. 8.',ts:'2025-08-08T00:00:00.000Z',cur:762905382,cost:0,pnl:0,note:''},
+  {date:'2025. 8. 16.',ts:'2025-08-16T00:00:00.000Z',cur:774108786,cost:0,pnl:0,note:''},
+  {date:'2025. 8. 20.',ts:'2025-08-20T00:00:00.000Z',cur:761576598,cost:0,pnl:0,note:''},
+  {date:'2025. 8. 22.',ts:'2025-08-22T00:00:00.000Z',cur:760446468,cost:0,pnl:0,note:''},
+  {date:'2025. 8. 24.',ts:'2025-08-24T00:00:00.000Z',cur:766794045,cost:0,pnl:0,note:''},
+  {date:'2025. 8. 25.',ts:'2025-08-25T00:00:00.000Z',cur:773354210,cost:0,pnl:0,note:''},
+  {date:'2025. 8. 26.',ts:'2025-08-26T00:00:00.000Z',cur:772368188,cost:0,pnl:0,note:''},
+  {date:'2025. 8. 29.',ts:'2025-08-29T00:00:00.000Z',cur:771664116,cost:0,pnl:0,note:''},
+  {date:'2025. 8. 31.',ts:'2025-08-31T00:00:00.000Z',cur:772800950,cost:0,pnl:0,note:''},
+  {date:'2025. 9. 1.',ts:'2025-09-01T00:00:00.000Z',cur:769717472,cost:0,pnl:0,note:''},
+  {date:'2025. 9. 2.',ts:'2025-09-02T00:00:00.000Z',cur:773285496,cost:0,pnl:0,note:''},
+  {date:'2025. 9. 3.',ts:'2025-09-03T00:00:00.000Z',cur:773239350,cost:0,pnl:0,note:''},
+  {date:'2025. 9. 4.',ts:'2025-09-04T00:00:00.000Z',cur:774998822,cost:0,pnl:0,note:''},
+  {date:'2025. 9. 5.',ts:'2025-09-05T00:00:00.000Z',cur:780236549,cost:0,pnl:0,note:''},
+  {date:'2025. 9. 6.',ts:'2025-09-06T00:00:00.000Z',cur:780563190,cost:0,pnl:0,note:''},
+  {date:'2025. 9. 9.',ts:'2025-09-09T00:00:00.000Z',cur:780708361,cost:0,pnl:0,note:''},
+  {date:'2025. 9. 10.',ts:'2025-09-10T00:00:00.000Z',cur:785165533,cost:0,pnl:0,note:''},
+  {date:'2025. 9. 11.',ts:'2025-09-11T00:00:00.000Z',cur:786719061,cost:0,pnl:0,note:''},
+  {date:'2025. 9. 15.',ts:'2025-09-15T00:00:00.000Z',cur:796853985,cost:0,pnl:0,note:''},
+  {date:'2025. 9. 17.',ts:'2025-09-17T00:00:00.000Z',cur:798610418,cost:0,pnl:0,note:''},
+  {date:'2025. 9. 23.',ts:'2025-09-23T00:00:00.000Z',cur:813132472,cost:0,pnl:0,note:''},
+  {date:'2025. 9. 24.',ts:'2025-09-24T00:00:00.000Z',cur:810077578,cost:0,pnl:0,note:''},
+  {date:'2025. 9. 26.',ts:'2025-09-26T00:00:00.000Z',cur:811317691,cost:0,pnl:0,note:''},
+  {date:'2025. 9. 29.',ts:'2025-09-29T00:00:00.000Z',cur:809822315,cost:0,pnl:0,note:''},
+  {date:'2025. 9. 30.',ts:'2025-09-30T00:00:00.000Z',cur:812855196,cost:0,pnl:0,note:''},
+  {date:'2025. 10. 2.',ts:'2025-10-02T00:00:00.000Z',cur:822203544,cost:0,pnl:0,note:''},
+  {date:'2025. 10. 3.',ts:'2025-10-03T00:00:00.000Z',cur:825005147,cost:0,pnl:0,note:''},
+  {date:'2025. 10. 4.',ts:'2025-10-04T00:00:00.000Z',cur:824535616,cost:0,pnl:0,note:''},
+  {date:'2025. 10. 6.',ts:'2025-10-06T00:00:00.000Z',cur:827151200,cost:0,pnl:0,note:''},
+  {date:'2025. 10. 7.',ts:'2025-10-07T00:00:00.000Z',cur:828154815,cost:0,pnl:0,note:''},
+  {date:'2025. 10. 8.',ts:'2025-10-08T00:00:00.000Z',cur:827661817,cost:0,pnl:0,note:''},
+  {date:'2025. 10. 9.',ts:'2025-10-09T00:00:00.000Z',cur:828086017,cost:0,pnl:0,note:''},
+  {date:'2025. 10. 10.',ts:'2025-10-10T00:00:00.000Z',cur:837184244,cost:0,pnl:0,note:''},
+  {date:'2025. 10. 11.',ts:'2025-10-11T00:00:00.000Z',cur:828376357,cost:0,pnl:0,note:'미중전쟁 재발(희토료 및 보복관세)'},
+  {date:'2025. 10. 13.',ts:'2025-10-13T00:00:00.000Z',cur:826318502,cost:0,pnl:0,note:''},
+  {date:'2025. 10. 14.',ts:'2025-10-14T00:00:00.000Z',cur:827480832,cost:0,pnl:0,note:''},
+  {date:'2025. 10. 15.',ts:'2025-10-15T00:00:00.000Z',cur:829786464,cost:0,pnl:0,note:''},
+  {date:'2025. 10. 16.',ts:'2025-10-16T00:00:00.000Z',cur:828763841,cost:0,pnl:0,note:''},
+  {date:'2025. 10. 17.',ts:'2025-10-17T00:00:00.000Z',cur:822648683,cost:0,pnl:0,note:'미 지역은행 위기 부각'},
+  {date:'2025. 10. 20.',ts:'2025-10-20T00:00:00.000Z',cur:829776794,cost:0,pnl:0,note:''},
+  {date:'2025. 10. 21.',ts:'2025-10-21T00:00:00.000Z',cur:837884424,cost:0,pnl:0,note:''},
+  {date:'2025. 10. 22.',ts:'2025-10-22T00:00:00.000Z',cur:836048373,cost:0,pnl:0,note:''},
+  {date:'2025. 10. 23.',ts:'2025-10-23T00:00:00.000Z',cur:834029316,cost:0,pnl:0,note:''},
+  {date:'2025. 10. 24.',ts:'2025-10-24T00:00:00.000Z',cur:841092962,cost:0,pnl:0,note:''},
+  {date:'2025. 10. 25.',ts:'2025-10-25T00:00:00.000Z',cur:842479786,cost:0,pnl:0,note:''},
+  {date:'2025. 10. 27.',ts:'2025-10-27T00:00:00.000Z',cur:850117927,cost:0,pnl:0,note:''},
+  {date:'2025. 10. 28.',ts:'2025-10-28T00:00:00.000Z',cur:855297335,cost:0,pnl:0,note:''},
+  {date:'2025. 10. 29.',ts:'2025-10-29T00:00:00.000Z',cur:856027776,cost:0,pnl:0,note:''},
+  {date:'2025. 10. 30.',ts:'2025-10-30T00:00:00.000Z',cur:846707098,cost:0,pnl:0,note:'한미관세협상타결 환율하락, fomc 13월금리매파적발언'},
+  {date:'2025. 10. 31.',ts:'2025-10-31T00:00:00.000Z',cur:842693157,cost:0,pnl:0,note:''},
+  {date:'2025. 11. 4.',ts:'2025-11-04T00:00:00.000Z',cur:822092849,cost:0,pnl:0,note:'셧다운 장기화, 고점 논란 조정'},
+  {date:'2025. 11. 6.',ts:'2025-11-06T00:00:00.000Z',cur:839405195,cost:0,pnl:0,note:''},
+  {date:'2025. 11. 7.',ts:'2025-11-07T00:00:00.000Z',cur:834527685,cost:0,pnl:0,note:''},
+  {date:'2025. 11. 11.',ts:'2025-11-11T00:00:00.000Z',cur:849829037,cost:0,pnl:0,note:'셧다운 종료기대감'},
+  {date:'2025. 11. 12.',ts:'2025-11-12T00:00:00.000Z',cur:850471774,cost:0,pnl:0,note:''},
+  {date:'2025. 11. 14.',ts:'2025-11-14T00:00:00.000Z',cur:815007793,cost:0,pnl:0,note:'물가인상, 금리인하지연, ai버블 우려 등'},
+  {date:'2025. 11. 18.',ts:'2025-11-18T00:00:00.000Z',cur:811592231,cost:0,pnl:0,note:''},
+  {date:'2025. 11. 19.',ts:'2025-11-19T00:00:00.000Z',cur:803869477,cost:0,pnl:0,note:''},
+  {date:'2025. 11. 20.',ts:'2025-11-20T00:00:00.000Z',cur:819490008,cost:0,pnl:0,note:''},
+  {date:'2025. 11. 21.',ts:'2025-11-21T00:00:00.000Z',cur:794309702,cost:0,pnl:0,note:''},
+  {date:'2025. 11. 24.',ts:'2025-11-24T00:00:00.000Z',cur:804116960,cost:0,pnl:0,note:''},
+  {date:'2025. 11. 25.',ts:'2025-11-25T00:00:00.000Z',cur:816828100,cost:0,pnl:0,note:''},
+  {date:'2025. 11. 26.',ts:'2025-11-26T00:00:00.000Z',cur:822806226,cost:0,pnl:0,note:''},
+  {date:'2025. 11. 27.',ts:'2025-11-27T00:00:00.000Z',cur:827003276,cost:0,pnl:0,note:''},
+  {date:'2025. 11. 28.',ts:'2025-11-28T00:00:00.000Z',cur:832091290,cost:0,pnl:0,note:''},
+  {date:'2025. 12. 1.',ts:'2025-12-01T00:00:00.000Z',cur:825233766,cost:0,pnl:0,note:''},
+  {date:'2025. 12. 2.',ts:'2025-12-02T00:00:00.000Z',cur:826417422,cost:0,pnl:0,note:''},
+  {date:'2025. 12. 5.',ts:'2025-12-05T00:00:00.000Z',cur:840177256,cost:0,pnl:0,note:''},
+  {date:'2025. 12. 11.',ts:'2025-12-11T00:00:00.000Z',cur:843363401,cost:0,pnl:0,note:''},
+  {date:'2025. 12. 16.',ts:'2025-12-16T00:00:00.000Z',cur:823566792,cost:0,pnl:0,note:''},
+  {date:'2025. 12. 17.',ts:'2025-12-17T00:00:00.000Z',cur:832273134,cost:0,pnl:0,note:''},
+  {date:'2025. 12. 31.',ts:'2025-12-31T00:00:00.000Z',cur:824987544,cost:0,pnl:0,note:''},
+  {date:'2026. 1. 2.',ts:'2026-01-02T00:00:00.000Z',cur:839489244,cost:0,pnl:0,note:'차값 현숙(2천만원)_연금1800/isa200'},
+  {date:'2026. 1. 5.',ts:'2026-01-05T00:00:00.000Z',cur:849905293,cost:0,pnl:0,note:'현숙 _ 2백ISA입금'},
+  {date:'2026. 1. 6.',ts:'2026-01-06T00:00:00.000Z',cur:859644465,cost:0,pnl:0,note:''},
+  {date:'2026. 1. 9.',ts:'2026-01-09T00:00:00.000Z',cur:858483908,cost:0,pnl:0,note:''},
+  {date:'2026. 1. 10.',ts:'2026-01-10T00:00:00.000Z',cur:860609558,cost:0,pnl:0,note:''},
+  {date:'2026. 1. 13.',ts:'2026-01-13T00:00:00.000Z',cur:878685430,cost:0,pnl:0,note:''},
+  {date:'2026. 1. 14.',ts:'2026-01-14T00:00:00.000Z',cur:880722799,cost:0,pnl:0,note:''},
+  {date:'2026. 1. 19.',ts:'2026-01-19T00:00:00.000Z',cur:871432024,cost:0,pnl:0,note:''},
+  {date:'2026. 1. 20.',ts:'2026-01-20T00:00:00.000Z',cur:867307683,cost:0,pnl:0,note:''},
+  {date:'2026. 1. 21.',ts:'2026-01-21T00:00:00.000Z',cur:861462477,cost:0,pnl:0,note:''},
+  {date:'2026. 1. 22.',ts:'2026-01-22T00:00:00.000Z',cur:864295349,cost:0,pnl:0,note:''},
+  {date:'2026. 1. 23.',ts:'2026-01-23T00:00:00.000Z',cur:866901825,cost:0,pnl:0,note:''},
+  {date:'2026. 1. 26.',ts:'2026-01-26T00:00:00.000Z',cur:851682053,cost:0,pnl:0,note:''},
+  {date:'2026. 1. 27.',ts:'2026-01-27T00:00:00.000Z',cur:858213891,cost:0,pnl:0,note:''},
+  {date:'2026. 1. 28.',ts:'2026-01-28T00:00:00.000Z',cur:854903030,cost:0,pnl:0,note:''},
+  {date:'2026. 1. 29.',ts:'2026-01-29T00:00:00.000Z',cur:853443736,cost:0,pnl:0,note:''},
+  {date:'2026. 1. 30.',ts:'2026-01-30T00:00:00.000Z',cur:838905460,cost:0,pnl:0,note:''},
+  {date:'2026. 2. 2.',ts:'2026-02-02T00:00:00.000Z',cur:829224178,cost:0,pnl:0,note:''},
+  {date:'2026. 2. 3.',ts:'2026-02-03T00:00:00.000Z',cur:849735214,cost:0,pnl:0,note:''},
+  {date:'2026. 2. 4.',ts:'2026-02-04T00:00:00.000Z',cur:848331181,cost:0,pnl:0,note:''},
+  {date:'2026. 2. 6.',ts:'2026-02-06T00:00:00.000Z',cur:827813921,cost:0,pnl:0,note:''},
+  {date:'2026. 2. 9.',ts:'2026-02-09T00:00:00.000Z',cur:850167961,cost:0,pnl:0,note:''},
+  {date:'2026. 2. 10.',ts:'2026-02-10T00:00:00.000Z',cur:849235452,cost:0,pnl:0,note:''},
+  {date:'2026. 2. 12.',ts:'2026-02-12T00:00:00.000Z',cur:839751515,cost:0,pnl:0,note:''},
+  {date:'2026. 2. 13.',ts:'2026-02-13T00:00:00.000Z',cur:825784635,cost:0,pnl:0,note:''},
+  {date:'2026. 2. 19.',ts:'2026-02-19T00:00:00.000Z',cur:831709527,cost:0,pnl:0,note:''},
+  {date:'2026. 2. 20.',ts:'2026-02-20T00:00:00.000Z',cur:833462020,cost:0,pnl:0,note:''},
+  {date:'2026. 2. 24.',ts:'2026-02-24T00:00:00.000Z',cur:826714758,cost:0,pnl:0,note:''},
+  {date:'2026. 2. 26.',ts:'2026-02-26T00:00:00.000Z',cur:828615628,cost:0,pnl:0,note:''},
+  {date:'2026. 2. 27.',ts:'2026-02-27T00:00:00.000Z',cur:829778161,cost:0,pnl:0,note:''},
+  {date:'2026. 3. 2.',ts:'2026-03-02T00:00:00.000Z',cur:829395470,cost:0,pnl:0,note:''},
+  {date:'2026. 3. 3.',ts:'2026-03-03T00:00:00.000Z',cur:835375208,cost:0,pnl:0,note:''},
+  {date:'2026. 3. 4.',ts:'2026-03-04T00:00:00.000Z',cur:831694641,cost:0,pnl:0,note:''},
+  {date:'2026. 3. 5.',ts:'2026-03-05T00:00:00.000Z',cur:844536208,cost:0,pnl:0,note:''},
+  {date:'2026. 3. 6.',ts:'2026-03-06T00:00:00.000Z',cur:843734715,cost:0,pnl:0,note:''},
+  {date:'2026. 3. 10.',ts:'2026-03-10T00:00:00.000Z',cur:838058559,cost:0,pnl:0,note:''},
+  {date:'2026. 3. 11.',ts:'2026-03-11T00:00:00.000Z',cur:840456857,cost:0,pnl:0,note:''},
+  {date:'2026. 3. 13.',ts:'2026-03-13T00:00:00.000Z',cur:837162487,cost:0,pnl:0,note:''},
+  {date:'2026. 3. 16.',ts:'2026-03-16T00:00:00.000Z',cur:835526940,cost:0,pnl:0,note:''},
+  {date:'2026. 3. 17.',ts:'2026-03-17T00:00:00.000Z',cur:838599861,cost:0,pnl:0,note:''},
+  {date:'2026. 3. 18.',ts:'2026-03-18T00:00:00.000Z',cur:846747758,cost:0,pnl:0,note:''},
+  {date:'2026. 3. 19.',ts:'2026-03-19T00:00:00.000Z',cur:836256025,cost:0,pnl:0,note:''},
+  {date:'2026. 3. 20.',ts:'2026-03-20T00:00:00.000Z',cur:834086453,cost:0,pnl:0,note:''},
+  {date:'2026. 3. 23.',ts:'2026-03-23T00:00:00.000Z',cur:816398928,cost:0,pnl:0,note:''},
+  {date:'2026. 3. 26.',ts:'2026-03-26T00:00:00.000Z',cur:829366481,cost:0,pnl:0,note:''},
+  {date:'2026. 3. 30.',ts:'2026-03-30T00:00:00.000Z',cur:802725828,cost:0,pnl:0,note:''},
+  {date:'2026. 4. 1.',ts:'2026-04-01T00:00:00.000Z',cur:828143714,cost:0,pnl:0,note:''},
+  {date:'2026. 4. 2.',ts:'2026-04-02T00:00:00.000Z',cur:823500975,cost:0,pnl:0,note:''},
+  {date:'2026. 4. 6.',ts:'2026-04-06T00:00:00.000Z',cur:833607908,cost:0,pnl:0,note:''},
+  {date:'2026. 4. 9.',ts:'2026-04-09T00:00:00.000Z',cur:841358929,cost:0,pnl:0,note:''},
+  {date:'2026. 4. 14.',ts:'2026-04-14T00:00:00.000Z',cur:849737018,cost:0,pnl:0,note:''},
+  {date:'2026. 4. 16.',ts:'2026-04-16T00:00:00.000Z',cur:862082227,cost:0,pnl:0,note:''},
+  {date:'2026. 4. 17.',ts:'2026-04-17T00:00:00.000Z',cur:868609965,cost:0,pnl:0,note:''},
+  {date:'2026. 4. 21.',ts:'2026-04-21T00:00:00.000Z',cur:874749942,cost:0,pnl:0,note:''},
+  {date:'2026. 4. 22.',ts:'2026-04-22T00:00:00.000Z',cur:874737232,cost:0,pnl:0,note:''}
+];
+function loadSnaps(){
+  var stored;
+  try{stored=JSON.parse(sGet(SNAPKEY)||'[]');}catch(e){stored=[];}
+  // HIST_SNAPS와 localStorage 병합: 같은 날짜면 localStorage 우선
+  var map={};
+  HIST_SNAPS.forEach(function(h){map[h.date]=h;});
+  stored.forEach(function(s){map[s.date]=s;});
+  return Object.values(map).sort(function(a,b){return a.ts<b.ts?-1:1;});
+}
+
+/* ===== 헬퍼 ===== */
+function fmt(n){return(n==null||isNaN(n))?'-':Math.round(n).toLocaleString('ko-KR');}
+
+function pc(n){return n>0?'pos':n<0?'neg':'';}
+function fmtPct(r){return(r==null||isNaN(r))?'-':(r>=0?'+':'')+(r*100).toFixed(2)+'%';}
+function pf(v){var n=parseFloat(String(v||'').replace(/,/g,''));return isNaN(n)?0:n;}
+
+// 인라인 에디터 — 따옴표 충돌 없이 data 속성 사용
+function ed(val,fn,w){
+  w=w||76;
+  var v=(val!=null)?String(val):'';
+  // fn에서 this.value를 직접 onchange attribute로 (단순 함수 호출만)
+  // fn 예시: setCH(0,'qty',this.value) → onchange 속성에 안전하게 삽입
+  var safeAttr=fn.replace(/"/g,'&quot;');
+  return '<input class="ed" style="width:'+w+'px" value="'+v+'" onchange="'+safeAttr+'">';
+}
+function escAttr(s){return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;');}
+
+function ibox(lbl,val,cls,grn,sub){
+  return '<div class="ibox'+(grn?' ibox-grn':'')+'"><div class="ilbl">'+lbl+'</div>'
+    +'<div class="ival'+(cls?' '+cls:'')+'">'+(val||'')+'</div>'
+    +(sub?'<div style="font-size:10px;color:var(--tx2);margin-top:1px">'+sub+'</div>':'')+'</div>';
+}
+// ── 입력 박스 헬퍼 (따옴표 충돌 없는 data속성 방식) ──
+function fmtComma(v){
+  var n=Math.round(parseFloat(String(v||0).replace(/,/g,'')))||0;
+  return n>=1000||n<=-1000 ? n.toLocaleString('ko-KR') : String(n);
+}
+// 수정가능 input 박스: data-id, data-field 속성으로 저장
+function mkIE(lbl, val, accId, field) {
+  var dv = fmtComma(val);
+  return '<div class="ibox">'
+    + '<div class="ilbl">'+lbl+'</div>'
+    + '<input class="iedit" data-id="'+accId+'" data-field="'+field+'" value="'+dv+'" onchange="iChange(this)">'
+    + '</div>';
+}
+// 읽기전용 값 박스
+function mkIV(lbl, val, cls, domId) {
+  return '<div class="ibox">'
+    + '<div class="ilbl">'+lbl+'</div>'
+    + '<div class="ival'+(cls?' '+cls:'')+(domId?' id="'+domId+'"':'')+'">'+(val||'')+'</div>'
+    + '</div>';
+}
+// 읽기전용 값 박스 (녹색)
+function mkIVg(lbl, val, domId) {
+  return '<div class="ibox ibox-grn">'
+    + '<div class="ilbl">'+lbl+'</div>'
+    + '<div class="ival grn"'+(domId?' id="'+domId+'"':'')+'>'+val+'</div>'
+    + '</div>';
+}
+// 통합 onchange 핸들러
+function iChange(el) {
+  var accId = el.getAttribute('data-id');
+  var field = el.getAttribute('data-field');
+  var raw   = parseFloat(el.value.replace(/,/g, '')) || 0;
+  var a = findAcc(accId);
+  if (!a) return;
+
+  if (field === 'depYr') {
+    var oldYr = a.depositsYr || 0;
+    a.accDep = (a.accDep||0) - oldYr + raw;
+    a.depositsYr = raw;
+    renderKR(a, 'pg-'+accId);
+  } else if (field === 'witYr') {
+    var oldYr2 = a.withdrawalsYr || 0;
+    a.accWit = (a.accWit||0) - oldYr2 + raw;
+    a.withdrawalsYr = raw;
+    renderKR(a, 'pg-'+accId);
+  } else {
+    a[field] = raw;
+    _recalcTotals(accId, 'pg-'+accId);
+  }
+  if (curPage !== 'overview') renderOverview();
+}
+
+function iboxE(lbl,val,fn){
+  // 천원단위 콤마 표시 (1000 이상)
+  var dv=(val&&Math.abs(val)>=1000)?Math.round(val).toLocaleString('ko-KR'):(val||0);
+  // fn을 data 속성에 저장하고 공통 핸들러로 실행 (따옴표 충돌 방지)
+  return '<div class="ibox"><div class="ilbl">'+lbl+'</div>'
+    +'<input class="iedit" data-fn="'+fn.replace(/"/g,'&quot;')+'" value="'+dv+'" onchange="runFn(this)"></div>';
+}
+function badge(live){
+  return live
+    ?'<span style="font-size:9px;background:var(--blu2);color:var(--blu);padding:1px 3px;border-radius:3px;margin-right:2px">실시간</span>'
+    :'<span style="font-size:9px;background:var(--gbg);color:var(--tx3);padding:1px 3px;border-radius:3px;margin-right:2px">종전가</span>';
+}
+
+function liveP(h){return(h.tk&&PRICES[h.tk]!=null)?PRICES[h.tk]:h.cost;}
+function isLv(h){return !!(h.tk&&PRICES[h.tk]!=null);}
+function cmaFX(h){return h.cur==='JPY'?FX.JPY:h.cur==='USD'?FX.USD:1;}
+function cmaCostKRW(h){var fx=h.avgFX||(h.cur==='JPY'?FX.JPY:h.cur==='USD'?FX.USD:1);if(h.isRP)return h.cost*fx;return h.cost*(h.qty||0)*fx;}
+function cmaCurKRW(h){var fx=cmaFX(h);var p=h.curPrice!=null?h.curPrice:h.cost;if(h.isRP)return p*fx;return p*(h.qty||0)*fx;}
+
+function grandTotal(){
+  var cost=0,cur=0;
+  ACCOUNTS.forEach(function(a){a.holdings.forEach(function(h){
+    if(h.isMMF)return;cost+=h.cost*h.qty;cur+=liveP(h)*h.qty;
+  });});
+  CMA.holdings.forEach(function(h){cost+=cmaCostKRW(h);cur+=cmaCurKRW(h);});
+  [].concat(CRYPTO.bithumb,CRYPTO.upbit).forEach(function(h){
+    var p=PRICES[h.sym]!=null?PRICES[h.sym]:h.cost;
+    var tq=(h.stk||0)+(h.qty||0);
+    cost+=h.cost*tq;cur+=p*tq;
+  });
+  return{cost:Math.round(cost),cur:Math.round(cur),pnl:Math.round(cur-cost)};
+}
+
+/* ===== 시세 ===== */
+function withTO(p,ms){return Promise.race([p,new Promise(function(_,r){setTimeout(function(){r(new Error('timeout'));},ms);})]);}
+async function fetchKR(tk){
+  // 숫자 코드 → 한국 ETF (네이버), 영문/일본 → Yahoo Finance
+  if(/^\d+$/.test(tk)){
+    try{
+      var url='https://polling.finance.naver.com/api/realtime?query=SERVICE_ITEM:'+tk;
+    var r=await withTO(fetch(url),6000);
+    var j=await r.json();
+    // 응답 구조: result.areas[0].datas[0].nv (현재가) 또는 sv
+    if(j&&j.result&&j.result.areas){
+      var areas=j.result.areas;
+      for(var ai=0;ai<areas.length;ai++){
+        var datas=areas[ai].datas||[];
+        for(var di=0;di<datas.length;di++){
+          var d=datas[di];
+          if(d.cd===tk||!d.cd){
+            var price=parseInt(d.nv||d.sv||d.pcv||0);
+            if(price>0) return price;
+          }
+        }
+      }
+    }
+  }catch(e){}
+  try{
+    // fallback: 네이버 시세 JSON API
+    var url2='https://finance.naver.com/item/sise.naver?code='+tk;
+    var r2=await withTO(fetch(url2),6000);
+    var txt=await r2.text();
+    var m=txt.match(/<strong id="_nowVal"[^>]*>\s*([\d,]+)/);
+    if(m) return parseInt(m[1].replace(/,/g,''));
+  }catch(e){}
+  // 숫자 아닌 코드 → Yahoo Finance (일본 ETF 등: 1632.T, CRCL 등)
+  } else {
+    var yfTk = /^\d+$/.test(tk) ? tk+'.KS' : (/^\d{4}$/.test(tk) ? tk+'.T' : tk);
+    try {
+      var yurl = 'https://query1.finance.yahoo.com/v8/finance/chart/'+yfTk+'?interval=1d&range=1d';
+      var yr = await withTO(fetch(yurl), 8000);
+      var yj = await yr.json();
+      var price = yj&&yj.chart&&yj.chart.result&&yj.chart.result[0]&&yj.chart.result[0].meta&&yj.chart.result[0].meta.regularMarketPrice;
+      if(price) return Math.round(price);
+    } catch(e) {}
+  }
+  return null;
+}
+async function fetchCrypto(sym){
+  try{
+    var r=await withTO(fetch('https://api.upbit.com/v1/ticker?markets=KRW-'+sym),6000);
+    var j=await r.json();
+    if(j&&j[0])return{price:j[0].trade_price,high52:j[0].highest_52_week_price};
+  }catch(e){}return null;
+}
+async function fetchFXApi(){
+  try{
+    var r=await withTO(fetch('https://open.er-api.com/v6/latest/USD'),6000);
+    var j=await r.json();
+    if(j.rates&&j.rates.KRW){
+      FX.USD=Math.round(j.rates.KRW);
+      if(j.rates.JPY)FX.JPY=Math.round(j.rates.KRW/j.rates.JPY*100)/100;
+    }
+  }catch(e){}
+}
+async function fetchAll(){
+  setDot('loading');
+  var ok=false;
+  try{
+    await fetchFXApi();
+    var seen={},tks=[];
+    ACCOUNTS.forEach(function(a){a.holdings.forEach(function(h){if(h.tk&&!seen[h.tk]){seen[h.tk]=1;tks.push(h.tk);}});});
+    await Promise.all(tks.map(async function(tk){var p=await fetchKR(tk);if(p!=null){PRICES[tk]=p;ok=true;}}));
+    await Promise.all(['BTC','ETH','SOL','LINK'].map(async function(sym){
+      var d=await fetchCrypto(sym);if(d){PRICES[sym]=d.price;HIGH52[sym]=d.high52;ok=true;}
+    }));
+  }catch(e){}
+  setDot(ok?'ok':'fail');
+  renderActive();
+}
+function setDot(s){
+  var dot=document.getElementById('dot'),upd=document.getElementById('upd');
+  if(!dot)return;
+  if(s==='loading'){dot.style.background='#f59e0b';upd.textContent='갱신 중...';}
+  else if(s==='fail'){dot.style.background='#9ca3af';upd.textContent='\u26a0 종전가 표시';}
+  else{dot.style.background='#10b981';upd.textContent='시세:'+new Date().toLocaleTimeString('ko-KR');}
+}
+
+/* ===== KR 계좌 렌더 ===== */
+function renderKR(acc, cid) {
+  var id = acc.id;
+  var tCost=0, tCur=0, tDist=0;
+
+  var rowsHtml = acc.holdings.map(function(h, i) {
+    if (h.isMMF) return '';
+    var price = liveP(h), live = isLv(h);
+    var costV = h.cost * (h.qty||0);
+    var curV  = price  * (h.qty||0);
+    var pnlR  = costV > 0 ? (curV - costV) / costV : 0;
+    var highR = (h.high && price > 0) ? (price - h.high) / h.high : 0;
+    var dpu   = h.dpu != null ? h.dpu : null;
+    var mDist = dpu != null ? Math.round(dpu * (h.qty||0)) : ((h.mI||0)+(h.mM||0));
+    tCost += costV; tCur += curV; tDist += mDist;
+    var qid = cid + '_' + i;
+    var row = '<tr>';
+    // 종목명 + 코드 아래 표시
+    row += '<td style="min-width:130px"><div class="tname">' + h.n + '</div>'
+         + (h.tk ? '<div style="font-size:9px;color:var(--tx3)">' + h.tk + '</div>' : '')
+         + '</td>';
+    row += '<td><input class="ed" id="' + qid + '_qty" style="width:55px"'
+         + ' value="' + (h.qty != null ? h.qty : '') + '"'
+         + ' onchange="onQty(this,\'' + id + '\',' + i + ')"></td>';
+    row += '<td><input class="ed" id="' + qid + '_dpu" style="width:58px"'
+         + ' value="' + (dpu != null ? dpu : '') + '"'
+         + ' onchange="onDpu(this,\'' + id + '\',' + i + ')" placeholder="-"></td>';
+    row += '<td><input class="ed" id="' + qid + '_cost" style="width:70px"'
+         + ' value="' + (h.cost != null ? h.cost : '') + '"'
+         + ' onchange="onCost(this,\'' + id + '\',' + i + ')"></td>';
+    row += '<td class="' + (live ? 'auto' : '') + '">'
+         + (h.tk ? badge(live) : '')
+         + '<input class="ed" id="' + qid + '_price" style="width:72px"'
+         + ' value="' + price + '"'
+         + ' onchange="onPrice(this,\'' + id + '\',' + i + ')"></td>';
+    row += '<td><input class="ed" id="' + qid + '_high" style="width:68px"'
+         + ' value="' + (h.high != null ? h.high : '') + '"'
+         + ' onchange="onHigh(this,\'' + id + '\',' + i + ')"></td>';
+    row += '<td class="auto" id="' + qid + '_costV" style="font-weight:600">' + fmt(costV) + '</td>';
+    row += '<td class="auto" id="' + qid + '_curV"  style="font-weight:600">' + fmt(curV)  + '</td>';
+    row += '<td id="' + qid + '_pnlR"  class="' + pc(pnlR)  + '">' + fmtPct(pnlR)  + '</td>';
+    row += '<td id="' + qid + '_highR" class="' + pc(highR) + '">' + fmtPct(highR) + '</td>';
+    if (dpu != null) {
+      row += '<td class="auto" id="' + qid + '_dist" style="color:var(--grn);font-weight:600">' + (mDist ? fmt(mDist) : '-') + '</td>';
+    } else {
+      row += '<td><input class="ed" id="' + qid + '_dist" style="width:68px;color:var(--grn)"'
+           + ' value="' + (mDist || '') + '"'
+           + ' onchange="onDist(this,\'' + id + '\',' + i + ')"></td>';
+    }
+    row += '<td><button class="btn-del" onclick="delH(\'' + id + '\',' + i + ')">\u2715</button></td>';
+    row += '</tr>';
+    return row;
+  }).join('');
+
+  var annDist  = tDist * 12;
+  var pnlR     = tCost > 0 ? (tCur - tCost) / tCost : 0;
+  var accDep   = acc.accDep   || 0;
+  var accWit   = acc.accWit   || 0;
+  var depYr    = acc.depositsYr  || 0;
+  var witYr    = acc.withdrawalsYr || 0;
+  var real     = accDep - accWit;
+  var pnlReal  = real > 0 ? (tCur - real) / real : 0;  // 실납입금대비 수익률
+
+  var html = '';
+  html += '<div class="sec"><div class="ahdr">';
+  html += '<div class="ameta"><span class="aname">' + acc.name + '</span>';
+  html += '<span class="adate">(' + acc.openDate + ')</span>';
+  html += '<span class="anote">' + acc.note + '</span></div>';
+  html += '<div class="irow">';
+  // 당해납입
+  html += mkIE('\ub2f9\ud574\ub0a9\uc785(\uc6d0)', depYr, id, 'depYr');
+  // 누적납입
+  html += mkIE('\ub204\uc801\ub0a9\uc785(\uc6d0)', accDep, id, 'accDep');
+  // 당해인출
+  html += mkIE('\ub2f9\ud574\uc778\ucd9c(\uc6d0)', witYr, id, 'witYr');
+  // 누적인출
+  html += mkIE('\ub204\uc801\uc778\ucd9c(\uc6d0)', accWit, id, 'accWit');
+  // 자동계산 박스들
+  html += mkIV('\uc2e4\ub0a9\uc785\uae08\uc561', fmt(real)+'\uc6d0', '', cid+'_real');
+  html += mkIV('\ub9e4\uc785\ucd1d\uc561', fmt(tCost)+'\uc6d0', '', cid+'_tcost');
+  html += mkIV('\ud604\uc7ac\ucd1d\uc561', fmt(tCur)+'\uc6d0', 'blu', cid+'_tcur');
+  html += mkIV('\ud3c9\uac00\uc190\uc775', (tCur-tCost>=0?'+':'')+fmt(tCur-tCost)+'\uc6d0', pc(tCur-tCost), cid+'_pnl');
+  html += mkIV('\uc218\uc775\ub960', fmtPct(pnlR), pc(pnlR), cid+'_pnlr');
+  html += mkIV('\uc2e4\ub0a9\ub300\ube44 \ud3c9\uac00\uc190\uc775', (tCur-real>=0?'+':'')+fmt(tCur-real)+'\uc6d0', pc(tCur-real), cid+'_pnlreal_abs');
+  html += mkIV('\uc218\uc775\ub960(\uc2e4\ub0a9)', fmtPct(pnlReal), pc(pnlReal), cid+'_pnlreal');
+  html += mkIVg('\uc6d4\ubd84\ubc30\uae08', fmt(tDist)+'\uc6d0', cid+'_dist');
+  html += mkIVg('\uc5f0\uac04\ubd84\ubc30\uae08', fmt(annDist)+'\uc6d0', cid+'_adist');
+  // extraLabel (이연퇴직금, 비과세원금 등)
+  if (acc.extraLabel) html += mkIE(acc.extraLabel+'(\uc6d0)', acc.extraVal||0, id, 'extraVal');
+  html += '</div></div>';
+  html += '<div class="twrap"><table><thead><tr>';
+  html += '<th style="text-align:left;min-width:130px">\uc885\ubaa9\uba85</th>';
+  html += '<th>\uc218\ub7c9</th>';
+  html += '<th>\ubd84\ubc30\uae08</th>';
+  html += '<th>\ub9e4\uc785\ub2e8\uac00</th><th>\ud604\uc7ac\uac00</th><th>\uc804\uace0\uc810</th>';
+  html += '<th>\ub9e4\uc785\ucd1d\uc561</th>';
+  html += '<th>\ud604\uc7ac\ucd1d\uc561</th>';
+  html += '<th>\uc218\uc775\ub960</th><th>\uc804\uace0\uc810\ub300\ube44</th>';
+  html += '<th>\uc6d4\ubd84\ubc30\uae08</th>';
+  html += '<th></th></tr></thead>';
+  html += '<tbody>' + rowsHtml;
+  html += '<tr class="trow">';
+  html += '<td>\ud569 \uacc4</td><td colspan="5"></td>';
+  html += '<td class="auto" id="' + cid + '_tot_cost">' + fmt(tCost) + '</td>';
+  html += '<td class="auto" id="' + cid + '_tot_cur">'  + fmt(tCur)  + '</td>';
+  html += '<td class="' + pc(pnlR) + '" id="' + cid + '_tot_pnlr">' + fmtPct(pnlR) + '</td>';
+  html += '<td></td>';
+  html += '<td class="auto" style="color:var(--grn)" id="' + cid + '_tot_dist">' + fmt(tDist) + '</td>';
+  html += '<td></td></tr>';
+  html += '</tbody></table></div>';
+  html += '<div class="tbbar"><button class="btn btn-add" onclick="openAddModal(\'' + id + '\')">+ \uc885\ubaa9 \ucd94\uac00</button></div>';
+  html += '<div class="drow">';
+  html += '<span>\uc6d4 \ubd84\ubc30\uae08: <strong style="color:var(--grn)" id="' + cid + '_drow_dist">' + fmt(tDist) + '\uc6d0</strong></span> ';
+  html += '<span>\uc5f0\uac04\ubd84\ubc30\uae08\ud569\uacc4 <strong style="color:#6b7280" id="' + cid + '_drow_adist">' + fmt(annDist) + '\uc6d0</strong></span>';
+  if (acc.annualDistRate) html += ' <span>\ubd84\ubc30\uc728: <strong>' + (acc.annualDistRate*100).toFixed(2) + '%</strong></span>';
+  html += '</div></div>';
+
+  document.getElementById(cid).innerHTML = html;
+}
+
+// ── 입력 핸들러 ──
+function onQty(el, id, i)  { var a=findAcc(id); if(!a)return; a.holdings[i].qty=pf(el.value);   _recalcRow(id,i); renderOverview(); }
+function onCost(el, id, i) { var a=findAcc(id); if(!a)return; a.holdings[i].cost=pf(el.value);  _recalcRow(id,i); renderOverview(); }
+function onHigh(el, id, i) {
+  var a=findAcc(id); if(!a)return;
+  var val=pf(el.value);
+  var tk=a.holdings[i].tk;
+  a.holdings[i].high=val;
+  if(tk){
+    ACCOUNTS.forEach(function(acc2){
+      acc2.holdings.forEach(function(hh,ii){
+        if(hh.tk===tk && !(acc2.id===id && ii===i)){
+          hh.high=val;
+          var hinp=document.getElementById('pg-'+acc2.id+'_'+ii+'_high');
+          if(hinp && document.activeElement!==hinp) hinp.value=val;
+          _recalcRow(acc2.id,ii);
+        }
+      });
+    });
+  }
+  _recalcRow(id,i);
+}
+function onDpu(el, id, i) {
+  var a=findAcc(id); if(!a)return;
+  var v=el.value.trim();
+  var val=(v===''?null:pf(v));
+  var tk=a.holdings[i].tk;
+  // 같은 티커 모든 계좌에 동일 분배금 적용
+  ACCOUNTS.forEach(function(acc2){
+    acc2.holdings.forEach(function(hh,ii){
+      if(hh.tk && hh.tk===tk){
+        hh.dpu=val;
+        // 현재 렌더된 input도 업데이트
+        var qid2='pg-'+acc2.id+'_'+ii;
+        var dinp=document.getElementById(qid2+'_dpu');
+        if(dinp && document.activeElement!==dinp) dinp.value=(val!=null?val:'');
+        _recalcRow(acc2.id,ii);
+      }
+    });
+  });
+  // 티커 없는 경우 해당 항목만 적용
+  if(!tk){ a.holdings[i].dpu=val; _recalcRow(id,i); }
+}
+function onDist(el, id, i) {
+  // dpu 없을 때 직접 입력 (mI+mM 합산 저장)
+  var a=findAcc(id); if(!a)return;
+  var v=pf(el.value);
+  a.holdings[i].mI=v; a.holdings[i].mM=0;
+  _recalcRow(id,i);
+  renderOverview();
+}
+
+function setAcctV(id, field, v) {
+  var a=findAcc(id); if(!a)return;
+  a[field]=pf(v);  // pf() 내부에서 콤마 제거
+  var cid='pg-'+id;
+  _recalcTotals(id, cid);
+  if(curPage!=='overview') renderOverview();
+}
+
+// 특정 행 재계산 → DOM 업데이트
+function _recalcRow(id, i) {
+  var a=findAcc(id); if(!a)return;
+  var h=a.holdings[i]; if(!h||h.isMMF)return;
+  var cid='pg-'+id, qid=cid+'_'+i;
+  var price=liveP(h);
+  var costV=h.cost*(h.qty||0), curV=price*(h.qty||0);
+  var pnlR=costV>0?(curV-costV)/costV:0;
+  var highR=(h.high&&price>0)?(price-h.high)/h.high:0;
+  var dpu=h.dpu!=null?h.dpu:null;
+  var mDist=dpu!=null?Math.round(dpu*(h.qty||0)):((h.mI||0)+(h.mM||0));
+  _setText(qid+'_costV', fmt(costV));
+  _setText(qid+'_curV',  fmt(curV));
+  _setCell(qid+'_pnlR',  fmtPct(pnlR),  pc(pnlR));
+  _setCell(qid+'_highR', fmtPct(highR), pc(highR));
+  // 월분배금: dpu있으면 자동셀, 없으면 입력셀
+  if(dpu!=null){ _setText(qid+'_dist', mDist?fmt(mDist):'-'); }
+  // 현재가 input 동기화
+  var pinp=document.getElementById(qid+'_price');
+  if(pinp && document.activeElement!==pinp) pinp.value=price;
+  _recalcTotals(id, cid);
+}
+
+// 합계행 + 요약박스 재계산
+function _recalcTotals(id, cid) {
+  var a=findAcc(id); if(!a)return;
+  var tCost=0, tCur=0, tDist=0;
+  a.holdings.forEach(function(h){
+    if(h.isMMF)return;
+    tCost+=h.cost*(h.qty||0); tCur+=liveP(h)*(h.qty||0);
+    var dpu=h.dpu!=null?h.dpu:null;
+    tDist+=(dpu!=null?Math.round(dpu*(h.qty||0)):((h.mI||0)+(h.mM||0)));
+  });
+  var annDist=tDist*12;
+  var pnlR=tCost>0?(tCur-tCost)/tCost:0;
+  var real=(a.accDep||0)-(a.accWit||0);
+  var pnl=tCur-tCost;
+  var pnlReal=real>0?(tCur-real)/real:0;
+  _setText(cid+'_real',  fmt(real)+'원');
+  _setText(cid+'_tcost', fmt(tCost)+'원');
+  _setText(cid+'_tcur',  fmt(tCur)+'원');
+  _setCell(cid+'_pnl',   (pnl>=0?'+':'')+fmt(pnl)+'원', pc(pnl));
+  _setCell(cid+'_pnlr',  fmtPct(pnlR), pc(pnlR));
+  var _pnlRA=tCur-real; _setCell(cid+'_pnlreal_abs', (_pnlRA>=0?'+':'')+fmt(_pnlRA)+'\uc6d0', pc(_pnlRA));
+  _setCell(cid+'_pnlreal', fmtPct(pnlReal), pc(pnlReal));
+  _setText(cid+'_dist',  fmt(tDist)+'원');
+  _setText(cid+'_adist', fmt(annDist)+'원');
+  _setText(cid+'_tot_cost', fmt(tCost));
+  _setText(cid+'_tot_cur',  fmt(tCur));
+  _setCell(cid+'_tot_pnlr', fmtPct(pnlR), pc(pnlR));
+  _setText(cid+'_tot_dist', fmt(tDist));
+  _setText(cid+'_drow_dist',  fmt(tDist)+'원');
+  _setText(cid+'_drow_adist', fmt(annDist)+'원');
+}
+
+// ── 당해연도 납입/인출 핸들러 ──
+function onDepYr(id, v) {
+  var a=findAcc(id); if(!a) return;
+  var newVal=pf(v);
+  var oldVal=a.depositsYr||0;
+  // 누적: 기존 당해값 빼고 새 값 더하기
+  a.accDep=(a.accDep||0)-oldVal+newVal;
+  a.depositsYr=newVal;
+  renderKR(a,'pg-'+id);
+  _recalcTotals(id,'pg-'+id);
+  if(curPage!=='overview') renderOverview();
+}
+function onWitYr(id, v) {
+  var a=findAcc(id); if(!a) return;
+  var newVal=pf(v);
+  var oldVal=a.withdrawalsYr||0;
+  a.accWit=(a.accWit||0)-oldVal+newVal;
+  a.withdrawalsYr=newVal;
+  renderKR(a,'pg-'+id);
+  _recalcTotals(id,'pg-'+id);
+  if(curPage!=='overview') renderOverview();
+}
+function mkCMAE(lbl, val, field) {
+  var dv = fmtComma(val);
+  return '<div class="ibox">'
+    + '<div class="ilbl">'+lbl+'</div>'
+    + '<input class="iedit" data-field="'+field+'" value="'+dv+'" onchange="cmaChange(this)">'
+    + '</div>';
+}
+function cmaChange(el) {
+  var field = el.getAttribute('data-field');
+  var raw = parseFloat(el.value.replace(/,/g, '')) || 0;
+  if (field === 'depYr') {
+    var oldYr = CMA.depositsYr||0;
+    CMA.accDep = (CMA.accDep||0) - oldYr + raw;
+    CMA.depositsYr = raw;
+  } else if (field === 'witYr') {
+    var oldYr2 = CMA.withdrawalsYr||0;
+    CMA.accWit = (CMA.accWit||0) - oldYr2 + raw;
+    CMA.withdrawalsYr = raw;
+  } else {
+    CMA[field] = raw;
+  }
+  renderCMA();
+  if (curPage !== 'overview') renderOverview();
+}
+
+function onCMADepYr(v) {
+  var nv=pf(v), ov=CMA.depositsYr||0;
+  CMA.accDep=(CMA.accDep||0)-ov+nv;
+  CMA.depositsYr=nv;
+  renderCMA(); if(curPage!=='overview') renderOverview();
+}
+function onCMAWitYr(v) {
+  var nv=pf(v), ov=CMA.withdrawalsYr||0;
+  CMA.accWit=(CMA.accWit||0)-ov+nv;
+  CMA.withdrawalsYr=nv;
+  renderCMA(); if(curPage!=='overview') renderOverview();
+}
+function runFn(el) {
+  // 더 이상 사용하지 않음 (iChange/cmaChange로 대체)
+}
+
+function onExtraVal(el) {
+  var id = el.getAttribute('data-accid');
+  var field = el.getAttribute('data-field');
+  var a = findAcc(id);
+  if (!a) return;
+  a[field] = pf(el.value);
+  if (curPage !== 'overview') renderOverview();
+}
+
+function onPrice(el, id, i) {
+  var a=findAcc(id); if(!a) return;
+  var val=pf(el.value);
+  var tk=a.holdings[i].tk;
+  if(tk){
+    PRICES[tk]=val;
+    ACCOUNTS.forEach(function(acc2){
+      acc2.holdings.forEach(function(hh,ii){
+        if(hh.tk===tk) _recalcRow(acc2.id,ii);
+      });
+    });
+  } else { a.holdings[i].cost=val; _recalcRow(id,i); }
+  if(curPage!=='overview') renderOverview();
+}
+
+function _setText(id,txt){ var el=document.getElementById(id); if(el) el.textContent=txt; }
+function _setCell(id,txt,cls){ var el=document.getElementById(id); if(!el)return; el.textContent=txt; el.className=cls; }
+
+/* ===== CMA 렌더 ===== */
+function renderCMA(){
+  var tCostK=0, tCurK=0;
+  var rowsArr=CMA.holdings.map(function(h,i){
+    var curFX=cmaFX(h);
+    var buyFX=h.avgFX||curFX;
+    var costK=cmaCostKRW(h);
+    var curK=cmaCurKRW(h);
+    var pnlR=costK>0?(curK-costK)/costK:0;
+    var priceL=h.curPrice!=null?h.curPrice:h.cost;
+    var highR=(h.high&&priceL>0)?(priceL-h.high)/h.high:null;
+    var fxStr=h.cur==='JPY'?'\uc5d4\xd7'+FX.JPY:h.cur==='USD'?'\ub2ec\ub7ec\xd7'+FX.USD:'\uc6d0\ud654';
+    var curFXlabel=h.cur==='KRW'?'-':curFX.toFixed(2);
+    var buyFXlabel=h.cur==='KRW'?'-':buyFX.toFixed(2);
+    tCostK+=costK; tCurK+=curK;
+    var delFn='delCH('+i+')';
+    var avgFXinp=h.cur==='KRW'
+      ?'<span style="color:var(--tx3)">-</span>'
+      :'<input class="ed" style="width:68px" value="'+buyFX.toFixed(2)+'" onchange="setCH('+i+',\'avgFX\',this.value)" placeholder="\ub9e4\uc785\ud658\uc728">';
+    if(h.isRP){
+      return '<tr>'
+        +'<td><div class="tname">'+h.n+'</div></td>'
+        +'<td style="text-align:center;color:var(--tx3)">-</td>'
+        +'<td><input class="ed" style="width:86px" value="'+h.cost+'" onchange="setCH('+i+',\'cost\',this.value)"> '+h.cur+'</td>'
+        +'<td>'+avgFXinp+'</td>'
+        +'<td>-</td>'
+        +'<td><input class="ed" style="width:86px" value="'+priceL+'" onchange="setCH('+i+',\'curPrice\',this.value)"> '+h.cur+'</td>'
+        +'<td class="auto" title="\ub9e4\uc785\ud658\uc728 '+buyFXlabel+' \uc801\uc6a9">'+fmt(costK)+'</td>'
+        +'<td class="auto" style="font-weight:600" title="\ud604\uc7ac\ud658\uc728 '+curFXlabel+' \uc801\uc6a9">'+fmt(curK)+'</td>'
+        +'<td class="'+pc(pnlR)+'">'+fmtPct(pnlR)+'</td>'
+        +'<td>-</td>'
+        +'<td><button class="btn-del" onclick="'+delFn+'">\u2715</button></td>'
+        +'</tr>';
+    }
+    return '<tr>'
+      +'<td><div class="tname">'+h.n+'</div><div style="font-size:9px;color:var(--tx3)">'+(h.sub||'')+'</div></td>'
+      +'<td><input class="ed" style="width:56px" value="'+(h.qty||'')+'" onchange="setCH('+i+',\'qty\',this.value)"></td>'
+      +'<td><input class="ed" style="width:78px" value="'+h.cost+'" onchange="setCH('+i+',\'cost\',this.value)"> '+h.cur+'</td>'
+      +'<td>'+avgFXinp+'</td>'
+      +'<td><input class="ed" style="width:64px" value="'+(h.high||'')+'" onchange="setCH('+i+',\'high\',this.value)"></td>'
+      +'<td><input class="ed" style="width:78px" value="'+priceL+'" onchange="setCH('+i+',\'curPrice\',this.value)"> '+h.cur+'</td>'
+      +'<td class="auto" title="\ub9e4\uc785\ud658\uc728 '+buyFXlabel+' \uc801\uc6a9">'+fmt(costK)+'</td>'
+      +'<td class="auto" style="font-weight:600" title="\ud604\uc7ac\ud658\uc728 '+curFXlabel+' \uc801\uc6a9">'+fmt(curK)+'</td>'
+      +'<td class="'+pc(pnlR)+'">'+fmtPct(pnlR)+'</td>'
+      +'<td class="'+(highR!=null?pc(highR):'')+'">'+( highR!=null?fmtPct(highR):'-')+'</td>'
+      +'<td><button class="btn-del" onclick="'+delFn+'">\u2715</button></td>'
+      +'</tr>';
+  });
+
+  var pnlTot=tCurK-tCostK, pnlR=tCostK>0?pnlTot/tCostK:0;
+  var accDep=CMA.accDep||0, accWit=CMA.accWit||0;
+  var depYr=CMA.depositsYr||0, witYr=CMA.withdrawalsYr||0;
+  var realInv=accDep-accWit;
+  var pnlReal=realInv>0?(tCurK-realInv)/realInv:0;
+
+  document.getElementById('pg-cma').innerHTML=[
+    '<div class="fxbar">',
+    '<div class="fxitem">\uc6d0/\ub2ec\ub7ec(USD): <input class="fxinp" value="'+FX.USD+'" onchange="FX.USD=+this.value;renderActive()"> <span class="abadge">\uc790\ub3d9\uac31\uc2e0</span></div>',
+    '<div class="fxitem">\uc6d0/\uc5d4(JPY): <input class="fxinp" value="'+FX.JPY+'" onchange="FX.JPY=+this.value;renderActive()"> <span class="abadge">\uc790\ub3d9\uac31\uc2e0</span></div>',
+    '<span style="font-size:11px;color:var(--tx3)">\u203b \ud658\uc728 \uc790\ub3d9\ubc18\uc601, \uc9c1\uc811\uc218\uc815 \uac00\ub2a5</span></div>',
+    '<div class="sec"><div class="ahdr">',
+    '<div class="ameta"><span class="aname">'+CMA.name+'</span></div>',
+    '<div class="irow">',
+    mkCMAE('\ub2f9\ud574\ub0a9\uc785(\uc6d0)', depYr,  'depYr'),
+    mkCMAE('\ub204\uc801\ub0a9\uc785(\uc6d0)', accDep, 'accDep'),
+    mkCMAE('\ub2f9\ud574\uc778\ucd9c(\uc6d0)', witYr,  'witYr'),
+    mkCMAE('\ub204\uc801\uc778\ucd9c(\uc6d0)', accWit, 'accWit'),
+    ibox('\uc2e4\ub0a9\uc785\uae08\uc561',fmt(realInv)+'\uc6d0'),
+    ibox('\ub9e4\uc785\ucd1d\uc561(\uc6d0)',fmt(tCostK)+'\uc6d0'),
+    ibox('\ud604\uc7ac\ucd1d\uc561(\uc6d0)',fmt(tCurK)+'\uc6d0','blu'),
+    ibox('\ud3c9\uac00\uc190\uc775',(pnlTot>=0?'+':'')+fmt(pnlTot)+'\uc6d0',pc(pnlTot)),
+    ibox('\uc218\uc775\ub960',fmtPct(pnlR),pc(pnlR)),
+    ibox('\uc2e4\ub0a9\ub300\ube44 \ud3c9\uac00\uc190\uc775',(tCurK-realInv>=0?'+':'')+fmt(tCurK-realInv)+'\uc6d0',pc(tCurK-realInv)),
+    ibox('\uc218\uc775\ub960(\uc2e4\ub0a9\uc785\ub300\ube44)',fmtPct(pnlReal),pc(pnlReal)),
+    '</div></div>',
+    '<div class="twrap"><table><thead><tr>',
+    '<th style="text-align:left;min-width:150px">\uc885\ubaa9\uba85</th>',
+    '<th>\uc218\ub7c9</th><th>\ub9e4\uc785\ub2e8\uac00(\ud604\uc9c0)</th><th>\ub9e4\uc785\ud658\uc728</th><th>\uc804\uace0\uc810</th><th>\ud604\uc7ac\uac00(\ud604\uc9c0)</th>',
+    '<th>\ub9e4\uc785\ucd1d\uc561(\uc6d0)</th>',
+    '<th>\ud604\uc7ac\ucd1d\uc561(\uc6d0)</th>',
+    '<th>\uc218\uc775\ub960</th><th>\uc804\uace0\uc810\ub300\ube44</th>',
+    '<th></th></tr></thead>',
+    '<tbody>',rowsArr.join(''),
+    '<tr class="trow"><td>\ud569 \uacc4</td><td colspan="5"></td>',
+    '<td class="auto">'+fmt(tCostK)+'</td>',
+    '<td class="auto">'+fmt(tCurK)+'</td>',
+    '<td class="'+pc(pnlR)+'">'+fmtPct(pnlR)+'</td>',
+    '<td></td><td></td>',
+    '</tr></tbody></table></div>',
+    '<div class="tbbar"><button class="btn btn-add" onclick="openModal(\'cma-modal\')">&plus; \uc885\ubaa9 \ucd94\uac00</button></div>',
+    '<div class="drow">',
+    '<span>\uc2e4\ub0a9\uc785\uae08\uc561: <strong>'+fmt(realInv)+'\uc6d0</strong></span> ',
+    '<span style="font-size:10px;color:var(--tx3)">\u203b '+FX.JPY+'\uc6d0/\uc5d4, '+FX.USD+'\uc6d0/\ub2ec\ub7ec \uc801\uc6a9</span>',
+    '</div></div>'
+  ].join('');
+}
+
+
+/* ===== 가상화폐 렌더 ===== */
+function renderCrypto(force){
+  // fetchAll 60초 타이머 등 외부 재렌더 시 편집 중인 input 보호
+  // setCB/setCU에서 force=true로 호출 시 가드 우회
+  if(!force){
+    var ae=document.activeElement;
+    var pg=document.getElementById('pg-crypto');
+    if(ae&&ae.classList.contains('ed')&&pg&&pg.contains(ae)) return;
+  }
+  var CSYM=['BTC','ETH','SOL','LINK'];
+  var CLBL={BTC:'\ube44\ud2b8\ucf54\uc778',ETH:'\uc774\ub354\ub9ac\uc6c0',SOL:'\uc194\ub77c\ub098',LINK:'\uccb4\uc778\ub9c1\ud06c'};
+  var CEMJ={BTC:'\u20bf',ETH:'\u039e',SOL:'\u25ce',LINK:'\u2b21'};
+  var CCOL={BTC:'#f7931a',ETH:'#627eea',SOL:'#9945ff',LINK:'#2a5ada'};
+  // 모든 종목 심볼 수집 (동적)
+  var allSyms=[]; var symSet={};
+  [].concat(CRYPTO.bithumb,CRYPTO.upbit).forEach(function(h){
+    if(!symSet[h.sym]){symSet[h.sym]=1;allSyms.push(h.sym);}
+  });
+  var all=[].concat(CRYPTO.bithumb,CRYPTO.upbit);
+
+  var summ=allSyms.map(function(sym){
+    var items=all.filter(function(h){return h.sym===sym;});
+    var lbl=items[0].n||sym;
+    var price=PRICES[sym]!=null?PRICES[sym]:items[0].cost;
+    var high52=HIGH52[sym]!=null?HIGH52[sym]:items[0].high;
+    var tQ=items.reduce(function(s,h){return s+(h.qty||0)+(h.stk||0);},0);
+    var tC=items.reduce(function(s,h){return s+h.cost*((h.qty||0)+(h.stk||0));},0);
+    var tV=price*tQ;
+    var pnlR=tC>0?(tV-tC)/tC:0, highR=high52>0?(price-high52)/high52:0;
+    var col=CCOL[sym]||'#6b7280', emj=CEMJ[sym]||'\u25a0';
+    return{sym:sym,label:lbl,emoji:emj,color:col,price:price,high52:high52,tQ:tQ,tC:tC,tV:tV,pnlR:pnlR,highR:highR};
+  });
+  var gC=summ.reduce(function(s,c){return s+c.tC;},0);
+  var gV=summ.reduce(function(s,c){return s+c.tV;},0);
+  var gPnl=gV-gC, gPnlR=gC>0?gPnl/gC:0;
+
+  var cards=summ.map(function(co){
+    return '<div class="ccard" style="border-color:'+co.color+'44">'
+      +'<div class="ccoin" style="color:'+co.color+'">'+co.emoji+' '+co.label+'</div>'
+      +'<div class="cval">'+fmt(co.tV)+'\uc6d0</div>'
+      +'<div class="cpct '+pc(co.pnlR)+'">'+fmtPct(co.pnlR)+'</div>'
+      +'<div style="font-size:9px;color:var(--tx2);margin-top:3px">\ubcf4\uc720: '+co.tQ.toFixed(4)+' | \ud604\uc7ac\uac00: '+fmt(co.price)+'\uc6d0</div>'
+      +'<div class="mbar"><div class="mfill" style="width:'+Math.min(100,Math.max(0,(1+co.pnlR)*50))+'%;background:'+(co.pnlR>=0?'#057a55':'#c81e1e')+'"></div></div>'
+      +'<div style="font-size:9px;color:var(--tx3);margin-top:2px">52\uc8fc\uace0\uc810\ub300\ube44: <span class="'+pc(co.highR)+'">'+fmtPct(co.highR)+'</span></div>'
+      +'</div>';
+  }).join('');
+
+  function exRows(list, ex){
+    var sC=0, sV=0;
+    var rows=list.map(function(h,i){
+      var price=PRICES[h.sym]!=null?PRICES[h.sym]:h.cost;
+      var high52=HIGH52[h.sym]!=null?HIGH52[h.sym]:h.high;
+      var tq=(h.stk||0)+(h.qty||0);
+      var cost=h.cost*tq, cur=price*tq;
+      var pnlR=cost>0?(cur-cost)/cost:0, highR=high52>0?(price-high52)/high52:0;
+      var live=PRICES[h.sym]!=null;
+      sC+=cost; sV+=cur;
+      var qfn=ex==='B'?'setCB('+i+',\'qty\',this.value)':'setCU('+i+',\'qty\',this.value)';
+      var sfn=ex==='B'?'setCB('+i+',\'stk\',this.value)':'setCU('+i+',\'stk\',this.value)';
+      var cfn=ex==='B'?'setCB('+i+',\'cost\',this.value)':'setCU('+i+',\'cost\',this.value)';
+      return '<tr>'
+        +'<td><div class="tname">'+h.n
+        +(h.sr?' <span style="font-size:9px;background:var(--pur2);color:var(--pur);padding:1px 3px;border-radius:3px">'+h.sr+' \uc2a4\ud14c\uc774\ud0b9</span>':'')
+        +'</div></td>'
+        +'<td><input class="ed" style="width:110px" value="'+(h.stk||'')+'" onchange="'+sfn+'"></td>'
+        +'<td><input class="ed" style="width:115px" value="'+h.qty+'" onchange="'+qfn+'"></td>'
+        +'<td><input class="ed" style="width:88px" value="'+h.cost+'" onchange="'+cfn+'"></td>'
+        +'<td class="'+(live?'auto':'')+'">'+badge(live)+fmt(price)+'</td>'
+        +'<td class="auto">'+fmt(cost)+'</td>'
+        +'<td class="auto" style="font-weight:600">'+fmt(cur)+'</td>'
+        +'<td class="'+pc(pnlR)+'">'+fmtPct(pnlR)+'</td>'
+        +'<td class="'+pc(highR)+'">'+fmtPct(highR)+'</td>'
+        +'<td class="'+pc(pnlR)+'">'+(cur>=cost?'+':'')+fmt(cur-cost)+'\uc6d0</td>'
+        +'<td><button class="btn-del" onclick="delCrypto(\''+ex+'\','+i+')">\u2715</button></td>'
+        +'</tr>';
+    });
+    var sPR=sC>0?(sV-sC)/sC:0;
+    rows.push('<tr class="trow"><td>'+(ex==='B'?'\ube57\uc12c':'\uc5c5\ube44\ud2b8')+' \uc18c\uacc4</td><td colspan="4"></td>'
+      +'<td class="auto">'+fmt(sC)+'</td><td class="auto">'+fmt(sV)+'</td>'
+      +'<td class="'+pc(sPR)+'">'+fmtPct(sPR)+'</td><td></td>'
+      +'<td class="'+pc(sV-sC)+'">'+(sV>=sC?'+':'')+fmt(sV-sC)+'\uc6d0</td><td></td></tr>');
+    return{html:rows.join(''),cost:sC,cur:sV};
+  }
+  var bith=exRows(CRYPTO.bithumb,'B'), ubit=exRows(CRYPTO.upbit,'U');
+
+  document.getElementById('pg-crypto').innerHTML=[
+    '<div class="sec"><div class="sechdr"><span class="sectitle">\ud83d\udcb0 \uac00\uc0c1\ud654\ud3d0 \ucd1d\uad04</span>',
+    '<span class="secsub">\ube57\uc12c+\uc5c5\ube44\ud2b8 \ud569\uc0b0 | \uc5c5\ube44\ud2b8 API \uc790\ub3d9\ubc18\uc601</span></div>',
+    '<div class="sgrid" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr))">',
+    '<div class="scard"><div class="slbl">\ub9e4\uc785\ucd1d\uc561</div><div class="sval">'+fmt(gC)+'\uc6d0</div></div>',
+    '<div class="scard"><div class="slbl">\ud604\uc7ac\ud3c9\uac00\uc561</div><div class="sval" style="color:var(--blu)">'+fmt(gV)+'\uc6d0</div></div>',
+    '<div class="scard"><div class="slbl">\ud3c9\uac00\uc190\uc775</div><div class="sval '+pc(gPnl)+'">'+(gPnl>=0?'+':'')+fmt(gPnl)+'\uc6d0</div></div>',
+    '<div class="scard"><div class="slbl">\uc218\uc775\ub960</div><div class="sval '+pc(gPnlR)+'" style="font-size:15px">'+fmtPct(gPnlR)+'</div></div>',
+    '</div>',
+    '<div style="padding:0 10px 10px"><div style="font-size:11px;font-weight:700;color:var(--tx2);margin-bottom:5px">\ucf54\uc778\ubcc4 \ud604\ud669</div>',
+    '<div class="ccards" style="padding:0">'+cards+'</div></div></div>',
+    '<div class="sec"><div class="sechdr"><span class="sectitle">\uac70\ub798\uc18c\ubcc4 \ubcf4\uc720 \ud604\ud669</span>',
+    '<button class="btn btn-add" style="margin-left:auto;padding:3px 9px;font-size:11px" onclick="openModal(\'add-crypto-modal\')">&plus; \ucf54\uc778 \ucd94\uac00</button>',
+    '</div>',
+    '<div class="twrap"><table><thead><tr>',
+    '<th style="text-align:left;min-width:160px">\uc885\ubaa9\uba85</th>',
+    '<th>\uc2a4\ud14c\uc774\ud0b9</th>',
+    '<th>\uc218\ub7c9</th>',
+    '<th>\ub9e4\uc785\ub2e8\uac00</th>',
+    '<th>\ud604\uc7ac\uac00</th>',
+    '<th>\ub9e4\uc785\ucd1d\uc561</th>',
+    '<th>\ud604\uc7ac\ucd1d\uc561</th>',
+    '<th>\uc218\uc775\ub960</th><th>\uc804\uace0\uc810\ub300\ube44</th><th>\ud3c9\uac00\uc190\uc775</th><th></th>',
+    '</tr></thead><tbody>',
+    '<tr class="xhdr"><td colspan="11">\ud83d\udd38 \ube57\uc12c (Bithumb)</td></tr>',bith.html,
+    '<tr class="xhdr"><td colspan="11">\ud83d\udd39 \uc5c5\ube44\ud2b8 (Upbit)</td></tr>',ubit.html,
+    '<tr class="trow"><td>\uc804\uccb4 \ud569\uacc4</td><td colspan="4"></td>',
+    '<td class="auto">'+fmt(gC)+'</td><td class="auto">'+fmt(gV)+'</td>',
+    '<td class="'+pc(gPnlR)+'">'+fmtPct(gPnlR)+'</td><td></td>',
+    '<td class="'+pc(gPnl)+'">'+(gPnl>=0?'+':'')+fmt(gPnl)+'\uc6d0</td><td></td>',
+    '</tr></tbody></table></div></div>'
+  ].join('');
+}
+
+
+/* ===== 종목총괄 렌더 ===== */
+function renderHoldings(){
+  var totalCur=0;
+  var map={};
+
+  // KR 계좌
+  ACCOUNTS.forEach(function(acc){
+    acc.holdings.forEach(function(h){
+      if(h.isMMF) return;
+      var price=liveP(h), qty=h.qty||0;
+      var cost=h.cost*qty, cur=price*qty;
+      var key=h.tk||('__'+h.n);
+      if(!map[key]){
+        map[key]={n:h.n,tk:h.tk||null,type:'KR ETF',
+          totalQty:0,totalCost:0,totalCur:0,price:price,
+          dpu:h.dpu!=null?h.dpu:null,accs:[]};
+      }
+      map[key].totalQty+=qty;
+      map[key].totalCost+=cost;
+      map[key].totalCur+=cur;
+      map[key].price=price; // 마지막 계좌 현재가 (동일 티커)
+      map[key].accs.push(acc.name);
+      if(h.dpu!=null) map[key].dpu=h.dpu;
+      totalCur+=cur;
+    });
+  });
+
+  // CMA (원화 환산 기준)
+  CMA.holdings.forEach(function(h){
+    var costK=cmaCostKRW(h), curK=cmaCurKRW(h);
+    var qty=h.qty||1;
+    var key='__cma__'+h.n;
+    var cur2=h.cur==='JPY'?'JPY':h.cur==='USD'?'USD':'KRW';
+    // 현재가(원환산): curK / qty
+    map[key]={n:h.n,tk:null,type:'해외/RP('+cur2+')',
+      totalQty:qty,totalCost:costK,totalCur:curK,
+      price:qty>0?Math.round(curK/qty):0,
+      dpu:h.distAnn?Math.round(h.distAnn*(FX[h.cur]||1)):null,
+      accs:[CMA.name]};
+    totalCur+=curK;
+  });
+
+  // 가상화폐
+  var allCrypto=[].concat(CRYPTO.bithumb,CRYPTO.upbit);
+  var cryptoMap={};
+  allCrypto.forEach(function(h){
+    var price=PRICES[h.sym]!=null?PRICES[h.sym]:h.cost;
+    var tq=(h.stk||0)+(h.qty||0);
+    var cost=h.cost*tq, cur=price*tq;
+    if(!cryptoMap[h.sym]){cryptoMap[h.sym]={n:h.n,sym:h.sym,cost:0,cur:0,qty:0,price:price};}
+    cryptoMap[h.sym].cost+=cost;
+    cryptoMap[h.sym].cur+=cur;
+    cryptoMap[h.sym].qty+=tq;
+    cryptoMap[h.sym].price=price;
+    totalCur+=cur;
+  });
+  Object.keys(cryptoMap).forEach(function(sym){
+    var c=cryptoMap[sym];
+    map['__crypto__'+sym]={n:c.n,tk:null,type:'가상화폐',
+      totalQty:c.qty,totalCost:c.cost,totalCur:c.cur,price:c.price,
+      dpu:null,accs:['빗썸/업비트']};
+  });
+
+  var rows=Object.values(map).sort(function(a,b){return b.totalCur-a.totalCur;});
+
+  var tableRows=rows.map(function(r,idx){
+    var pnl=r.totalCur-r.totalCost;
+    var pnlR=r.totalCost>0?pnl/r.totalCost:0;
+    var wt=totalCur>0?r.totalCur/totalCur*100:0;
+    var avgCost=r.totalQty>0?Math.round(r.totalCost/r.totalQty):0;
+    // 수량 표시: 코인은 소수점, ETF는 정수
+    var qtyStr=r.type==='가상화폐'?r.totalQty.toFixed(4):fmt(Math.round(r.totalQty));
+    var wtBar='<div style="background:var(--gbg);border-radius:3px;height:5px;margin-top:3px">'
+      +'<div style="background:var(--blu);width:'+Math.min(100,wt).toFixed(1)+'%;height:5px;border-radius:3px"></div></div>';
+    var monthDist=r.dpu&&r.totalQty?Math.round(r.dpu*r.totalQty):null;
+    return '<tr>'
+      +'<td style="text-align:right;color:var(--tx3);font-size:10px;padding-right:4px">'+(idx+1)+'</td>'
+      +'<td style="text-align:left"><div style="font-weight:600;font-size:12px">'+r.n+'</div>'
+        +'<div style="font-size:9px;color:var(--tx3)">'+r.type
+        +(r.accs.length?'ㆍ'+(r.accs.length>2?r.accs[0]+' 외 '+(r.accs.length-1)+'개':r.accs.join(', ')):'')+'</div></td>'
+      +'<td style="text-align:right">'+qtyStr+'</td>'
+      +'<td style="text-align:right">'+fmt(avgCost)+'</td>'
+      +'<td style="text-align:right;color:var(--blu)">'+fmt(Math.round(r.price))+'</td>'
+      +'<td style="text-align:right">'+fmt(Math.round(r.totalCost))+'</td>'
+      +'<td style="text-align:right;font-weight:700">'+fmt(Math.round(r.totalCur))+'</td>'
+      +'<td class="'+pc(pnl)+'" style="text-align:right">'+(pnl>=0?'+':'')+fmt(Math.round(pnl))+'</td>'
+      +'<td class="'+pc(pnlR)+'" style="text-align:right">'+fmtPct(pnlR)+'</td>'
+      +'<td style="text-align:right"><div>'
+        +'<span style="font-weight:700;color:var(--blu)">'+wt.toFixed(1)+'%</span>'
+        +wtBar+'</div></td>'
+      +'<td style="text-align:right;color:var(--grn)">'+(monthDist?fmt(monthDist):'-')+'</td>'
+      +'</tr>';
+  }).join('');
+
+  var gPnl=rows.reduce(function(s,r){return s+r.totalCur-r.totalCost;},0);
+  var gCost=rows.reduce(function(s,r){return s+r.totalCost;},0);
+  var gPnlR=gCost>0?gPnl/gCost:0;
+  var gDist=rows.reduce(function(s,r){return s+(r.dpu&&r.totalQty?Math.round(r.dpu*r.totalQty):0);},0);
+
+  document.getElementById('pg-holdings').innerHTML=[
+    '<div class="sec"><div class="sechdr">',
+    '<span class="sectitle">📋 투자종목 총괄현황</span>',
+    '<span class="secsub">전체 '+rows.length+'개 종목 ㆍ 동일종목 합산</span></div>',
+    '<div class="sgrid" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))">',
+    '<div class="scard"><div class="slbl">전체 종목수</div><div class="sval">'+rows.length+'개</div></div>',
+    '<div class="scard"><div class="slbl">전체 평가액</div><div class="sval" style="color:var(--blu)">'+fmt(Math.round(totalCur))+'원</div></div>',
+    '<div class="scard"><div class="slbl">평가손익</div><div class="sval '+pc(gPnl)+'">'+(gPnl>=0?'+':'')+fmt(Math.round(gPnl))+'원</div></div>',
+    '<div class="scard"><div class="slbl">수익률</div><div class="sval '+pc(gPnlR)+'">'+fmtPct(gPnlR)+'</div></div>',
+    '<div class="scard"><div class="slbl">월 분배금 합계</div><div class="sval" style="color:var(--grn)">'+fmt(gDist)+'원</div></div>',
+    '</div>',
+    '<div class="twrap" style="padding:0 13px 13px"><table style="table-layout:fixed;width:100%">',
+    '<colgroup>',
+    '<col style="width:28px">',   // #
+    '<col>',                       // 종목명 (flex)
+    '<col style="width:72px">',   // 합계수량
+    '<col style="width:88px">',   // 평균매입단가
+    '<col style="width:88px">',   // 현재가
+    '<col style="width:95px">',   // 매입총액
+    '<col style="width:95px">',   // 현재총액
+    '<col style="width:88px">',   // 평가손익
+    '<col style="width:62px">',   // 수익률
+    '<col style="width:70px">',   // 비중
+    '<col style="width:72px">',   // 월분배금
+    '</colgroup>',
+    '<thead><tr>',
+    '<th style="text-align:center">#</th>',
+    '<th style="text-align:left">종목명</th>',
+    '<th style="text-align:right">합계수량</th>',
+    '<th style="text-align:right">평균매입단가</th>',
+    '<th style="text-align:right">현재가</th>',
+    '<th style="text-align:right">매입총액</th>',
+    '<th style="text-align:right">현재총액</th>',
+    '<th style="text-align:right">평가손익</th>',
+    '<th style="text-align:right">수익률</th>',
+    '<th style="text-align:right">비중</th>',
+    '<th style="text-align:right">월분배금</th>',
+    '</tr></thead>',
+    '<tbody>'+tableRows+'</tbody>',
+    '<tr class="trow">',
+    '<td colspan="2">전체 합계</td>',
+    '<td colspan="3"></td>',
+    '<td style="text-align:right">'+fmt(Math.round(gCost))+'</td>',
+    '<td style="text-align:right;font-weight:700">'+fmt(Math.round(totalCur))+'</td>',
+    '<td class="'+pc(gPnl)+'" style="text-align:right">'+(gPnl>=0?'+':'')+fmt(Math.round(gPnl))+'</td>',
+    '<td class="'+pc(gPnlR)+'" style="text-align:right">'+fmtPct(gPnlR)+'</td>',
+    '<td style="text-align:right;font-weight:700;color:var(--blu)">100%</td>',
+    '<td style="text-align:right;color:var(--grn)">'+fmt(gDist)+'</td>',
+    '</tr>',
+    '</table></div></div>'
+  ].join('');
+}
+
+
+/* ===== 전체현황 렌더 ===== */
+function renderOverview(){
+  var gDep=0,gWit=0,gCost=0,gCur=0,gDist=0,gExtra=0,gExtraTax=0,gExtraRet=0;
+  var rows=[];
+  ACCOUNTS.forEach(function(acc){
+    var cost=0,cur=0,dist=0;
+    acc.holdings.forEach(function(h){
+      if(h.isMMF)return;
+      cost+=h.cost*(h.qty||0); cur+=liveP(h)*(h.qty||0);
+      var dpu=h.dpu!=null?h.dpu:null;
+      dist+=(dpu!=null?Math.round(dpu*(h.qty||0)):((h.mI||0)+(h.mM||0)));
+    });
+    var accDep=acc.accDep||0, accWit=acc.accWit||0;
+    var real=accDep-accWit;
+    var pnlR=cost>0?(cur-cost)/cost:0;
+    var pnlReal=real>0?(cur-real)/real:0;
+    gDep+=accDep; gWit+=accWit;
+    gCost+=cost; gCur+=cur; gDist+=dist;
+    if(acc.extraVal){
+      gExtra+=acc.extraVal;
+      if(acc.extraLabel==='\uc774\uc5f0\ud1f4\uc9c1\uae08') gExtraRet+=acc.extraVal;
+      else gExtraTax+=acc.extraVal;
+    }
+    rows.push('<tr>'
+      +'<td style="font-weight:700">'+acc.name+'</td>'
+      +'<td>'+fmt(accDep)+'</td>'
+      +'<td>'+fmt(accWit)+'</td>'
+      +'<td>'+fmt(real)+'</td>'
+      +'<td>'+fmt(cost)+'</td>'
+      +'<td style="font-weight:700">'+fmt(cur)+'</td>'
+      +'<td class="'+pc(cur-cost)+'">'+(cur>=cost?'+':'')+fmt(cur-cost)+'</td>'
+      +'<td class="'+pc(pnlR)+'">'+fmtPct(pnlR)+'</td>'
+      +'<td class="'+pc(pnlReal)+'">'+fmtPct(pnlReal)+'</td>'
+      +'<td>'+(acc.annualDistRate?(acc.annualDistRate*100).toFixed(2)+'%':'-')+'</td>'
+      +'<td>'+(dist?fmt(dist):'-')+'</td>'
+      +'</tr>');
+  });
+
+  var cmaCT=0,cmaCR=0;
+  CMA.holdings.forEach(function(h){ cmaCT+=cmaCostKRW(h); cmaCR+=cmaCurKRW(h); });
+  var cmaAccDep=CMA.accDep||0, cmaAccWit=CMA.accWit||0;
+  var cmaReal=cmaAccDep-cmaAccWit;
+  gDep+=cmaAccDep; gWit+=cmaAccWit;
+  gCost+=cmaCT; gCur+=cmaCR;
+  var cmaPR=cmaCT>0?(cmaCR-cmaCT)/cmaCT:0;
+  var cmaPReal=cmaReal>0?(cmaCR-cmaReal)/cmaReal:0;
+  rows.push('<tr>'
+    +'<td style="font-weight:700">'+CMA.name+'</td>'
+    +'<td>'+fmt(cmaAccDep)+'</td>'
+    +'<td>'+fmt(cmaAccWit)+'</td>'
+    +'<td>'+fmt(cmaReal)+'</td>'
+    +'<td>'+fmt(cmaCT)+'</td>'
+    +'<td style="font-weight:700">'+fmt(cmaCR)+'</td>'
+    +'<td class="'+pc(cmaCR-cmaCT)+'">'+(cmaCR>=cmaCT?'+':'')+fmt(cmaCR-cmaCT)+'</td>'
+    +'<td class="'+pc(cmaPR)+'">'+fmtPct(cmaPR)+'</td>'
+    +'<td class="'+pc(cmaPReal)+'">'+fmtPct(cmaPReal)+'</td>'
+    +'<td>-</td><td>-</td></tr>');
+
+  var crC=0,crV=0;
+  [].concat(CRYPTO.bithumb,CRYPTO.upbit).forEach(function(h){
+    var p=PRICES[h.sym]!=null?PRICES[h.sym]:h.cost;
+    var tq=(h.stk||0)+(h.qty||0);
+    crC+=h.cost*tq; crV+=p*tq;
+  });
+  gCost+=crC; gCur+=crV;
+  var crPR=crC>0?(crV-crC)/crC:0;
+  rows.push('<tr>'
+    +'<td style="font-weight:700">\uac00\uc0c1\ud654\ud3d0 (\ube57\uc12c+\uc5c5\ube44\ud2b8)</td>'
+    +'<td>-</td><td>-</td>'
+    +'<td>'+fmt(crC)+'</td>'
+    +'<td>'+fmt(crC)+'</td>'
+    +'<td style="font-weight:700">'+fmt(crV)+'</td>'
+    +'<td class="'+pc(crV-crC)+'">'+(crV>=crC?'+':'')+fmt(crV-crC)+'</td>'
+    +'<td class="'+pc(crPR)+'">'+fmtPct(crPR)+'</td>'
+    +'<td>-</td><td>-</td><td>-</td></tr>');
+
+  var gReal=gDep-gWit+crC, gPnl=gCur-gCost;
+  var gPnlR=gCost>0?gPnl/gCost:0, gPnlRL=gReal>0?(gCur-gReal)/gReal:0;
+  var gAnnDist=gDist*12;
+
+  /* ── 자산구성 계산 ── */
+  var _cashKw=['CD\uae08\ub9ac','MMF','\uba38\ub2c8\ub9c8\ucf13','\ud604\uae08\uc131','\ub2e8\uae30\ucc44','\ub2e8\uae30\uc790\uae08'];
+  function _isCashH(n){return n&&_cashKw.some(function(kw){return n.indexOf(kw)>=0;});}
+  var catCC=0, catMain=0, catCash=0;
+  ACCOUNTS.forEach(function(acc){
+    acc.holdings.forEach(function(h){
+      if(h.isMMF) return;  // gCur와 동일하게 isMMF 제외
+      var v=liveP(h)*(h.qty||0);
+      if(_isCashH(h.n)){catCash+=v;}
+      else if(h.n&&h.n.indexOf('\ucee4\ubc84\ub4dc\ucf5c')>=0){catCC+=v;}
+      else{catMain+=v;}
+    });
+  });
+  CMA.holdings.forEach(function(h){
+    var v=cmaCurKRW(h);
+    if(h.isRP||_isCashH(h.n)) catCash+=v; else catMain+=v;
+  });
+  var catCrypto=crV;
+  var catTotal=catCC+catMain+catCrypto+catCash;
+  function cpct(v){return catTotal>0?(v/catTotal*100).toFixed(1):'0.0';}
+  var pCC=+cpct(catCC), pMain=+cpct(catMain), pCrypto=+cpct(catCrypto), pCash=+cpct(catCash);
+
+  /* ── 통화별 자산현황 계산 ── */
+  var curUSD=0, curJPY=0, curKRW=0;
+  var _usdKw=['\ubbf8\uad6d','\ub098\uc2a4\ub2e5','\ud14c\uc2ac\ub77c','\uad6c\uae00','\ucee4\ubc84\ub4dc\ucf5c','\uad6d\uc81c\uae08','US\ubd04\ub4dc','S&P'];
+  var _jpyKw=['\uc77c\ubcf8','TOPIX','Japan','\uc5d4\ud654'];
+  ACCOUNTS.forEach(function(acc){
+    acc.holdings.forEach(function(h){
+      if(h.isMMF) return;
+      var v=liveP(h)*(h.qty||0);
+      var n=h.n||'';
+      if(_usdKw.some(function(kw){return n.indexOf(kw)>=0;})) curUSD+=v;
+      else if(_jpyKw.some(function(kw){return n.indexOf(kw)>=0;})) curJPY+=v;
+      else curKRW+=v;
+    });
+  });
+  CMA.holdings.forEach(function(h){
+    var v=cmaCurKRW(h);
+    if(h.cur==='USD') curUSD+=v;
+    else if(h.cur==='JPY') curJPY+=v;
+    else curKRW+=v;
+  });
+  var curCrypto=crV;
+  var curTotal=curUSD+curJPY+curKRW+curCrypto||1;
+  function cpctC(v){return(v/curTotal*100).toFixed(1);}
+  var pUSD=+cpctC(curUSD),pJPY=+cpctC(curJPY),pKRW=+cpctC(curKRW),pCrypto2=+cpctC(curCrypto);
+
+  var compSection=[
+    '<div class="sec"><div class="sechdr">',
+    '<span class="sectitle">\ud83c\udf67 \uc790\uc0b0\uad6c\uc131 \ud604\ud669</span>',
+    '<span class="secsub">\ud604\uc7ac\ud3c9\uac00\uc561 \uae30\uc900</span></div>',
+    /* 스택 바 */
+    '<div style="padding:10px 12px 4px">',
+    '<div style="display:flex;height:22px;border-radius:6px;overflow:hidden;gap:1px">',
+    (pCC>0?'<div style="flex:'+pCC+';background:#6c2bd9;display:flex;align-items:center;justify-content:center"><span style="font-size:9px;color:#fff;font-weight:700">'+pCC+'%</span></div>':''),
+    (pMain>0?'<div style="flex:'+pMain+';background:#1a56db;display:flex;align-items:center;justify-content:center"><span style="font-size:9px;color:#fff;font-weight:700">'+pMain+'%</span></div>':''),
+    (pCrypto>0?'<div style="flex:'+pCrypto+';background:#f59e0b;display:flex;align-items:center;justify-content:center"><span style="font-size:9px;color:#fff;font-weight:700">'+pCrypto+'%</span></div>':''),
+    (pCash>0?'<div style="flex:'+pCash+';background:#057a55;display:flex;align-items:center;justify-content:center"><span style="font-size:9px;color:#fff;font-weight:700">'+pCash+'%</span></div>':''),
+    '</div></div>',
+    /* 범례 + 카드 */
+    '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:6px;padding:8px 12px 12px">',
+    /* 커버드콜 */
+    '<div style="background:#f0ebff;border:1px solid #c4b5fd;border-radius:6px;padding:8px 10px">',
+    '<div style="display:flex;align-items:center;gap:5px;margin-bottom:4px">',
+    '<div style="width:10px;height:10px;border-radius:2px;background:#6c2bd9;flex-shrink:0"></div>',
+    '<span style="font-size:10px;font-weight:700;color:#6c2bd9">\ucee4\ubc84\ub4dc\ucf5c ETF</span></div>',
+    '<div style="font-size:14px;font-weight:700;color:#6c2bd9">'+pCC+'%</div>',
+    '<div style="font-size:11px;color:#6b7280;margin-top:2px">'+fmt(catCC)+'\uc6d0</div>',
+    '</div>',
+    /* 본주 ETF */
+    '<div style="background:#ebf3ff;border:1px solid #93c5fd;border-radius:6px;padding:8px 10px">',
+    '<div style="display:flex;align-items:center;gap:5px;margin-bottom:4px">',
+    '<div style="width:10px;height:10px;border-radius:2px;background:#1a56db;flex-shrink:0"></div>',
+    '<span style="font-size:10px;font-weight:700;color:#1a56db">\ubcf8\uc8fc ETF</span></div>',
+    '<div style="font-size:14px;font-weight:700;color:#1a56db">'+pMain+'%</div>',
+    '<div style="font-size:11px;color:#6b7280;margin-top:2px">'+fmt(catMain)+'\uc6d0</div>',
+    '</div>',
+    /* 가상화폐 */
+    '<div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:6px;padding:8px 10px">',
+    '<div style="display:flex;align-items:center;gap:5px;margin-bottom:4px">',
+    '<div style="width:10px;height:10px;border-radius:2px;background:#f59e0b;flex-shrink:0"></div>',
+    '<span style="font-size:10px;font-weight:700;color:#b45309">\uac00\uc0c1\ud654\ud3d0</span></div>',
+    '<div style="font-size:14px;font-weight:700;color:#b45309">'+pCrypto+'%</div>',
+    '<div style="font-size:11px;color:#6b7280;margin-top:2px">'+fmt(catCrypto)+'\uc6d0</div>',
+    '</div>',
+    /* 현금성 */
+    '<div style="background:#e8f7f1;border:1px solid #6ee7b7;border-radius:6px;padding:8px 10px">',
+    '<div style="display:flex;align-items:center;gap:5px;margin-bottom:4px">',
+    '<div style="width:10px;height:10px;border-radius:2px;background:#057a55;flex-shrink:0"></div>',
+    '<span style="font-size:10px;font-weight:700;color:#057a55">\ud604\uae08\uc131(RP/\uc678\ud654 \ub4f1)</span></div>',
+    '<div style="font-size:14px;font-weight:700;color:#057a55">'+pCash+'%</div>',
+    '<div style="font-size:11px;color:#6b7280;margin-top:2px">'+fmt(catCash)+'\uc6d0</div>',
+    '</div>',
+    '</div></div>'
+  ].join('');
+
+  /* ── 통화별 자산현황 섹션 ── */
+  function _cBar(p,bg){
+    return p>0?'<div style="flex:'+p+';background:'+bg+';display:flex;align-items:center;justify-content:center"><span style="font-size:9px;color:#fff;font-weight:700">'+p+'%</span></div>':'';
+  }
+  function _cCard(dot,label,color,bg,border,pct,val,sub){
+    return '<div style="background:'+bg+';border:1px solid '+border+';border-radius:6px;padding:8px 10px">'
+      +'<div style="display:flex;align-items:center;gap:5px;margin-bottom:4px">'
+      +'<div style="width:10px;height:10px;border-radius:2px;background:'+dot+';flex-shrink:0"></div>'
+      +'<span style="font-size:10px;font-weight:700;color:'+color+'">'+label+'</span></div>'
+      +'<div style="font-size:14px;font-weight:700;color:'+color+'">'+pct+'%</div>'
+      +'<div style="font-size:11px;color:#6b7280;margin-top:2px">'+val+'</div>'
+      +(sub?'<div style="font-size:10px;color:#9ca3af;margin-top:1px">'+sub+'</div>':'')
+      +'</div>';
+  }
+  var curSection=[
+    '<div class="sec"><div class="sechdr">',
+    '<span class="sectitle">\ud83c\udf10 \ud1b5\ud654\ubcc4 \uc790\uc0b0\ud604\ud669</span>',
+    '<span class="secsub">\ud604\uc7ac\ud3c9\uac00\uc561 \uae30\uc900(\uc6d0\ud654\ud658\uc0b0)</span></div>',
+    '<div style="padding:10px 12px 4px">',
+    '<div style="display:flex;height:22px;border-radius:6px;overflow:hidden;gap:1px">',
+    _cBar(pUSD,'#16a34a'),
+    _cBar(pJPY,'#d97706'),
+    _cBar(pKRW,'#1a56db'),
+    _cBar(pCrypto2,'#f59e0b'),
+    '</div></div>',
+    '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:6px;padding:8px 12px 12px">',
+    _cCard('#16a34a','\uB2EC\uB7EC\uC790\uC0B0(USD)','#15803d','#f0fdf4','#86efac',pUSD,fmt(curUSD)+'\uc6d0','\u2248$'+Math.round(curUSD/(FX.USD||1500)).toLocaleString('ko-KR')),
+    _cCard('#d97706','\uc5d4\ud654\uc790\uc0b0(JPY)','#92400e','#fffbeb','#fcd34d',pJPY,fmt(curJPY)+'\uc6d0','\u2248\xa5'+Math.round(curJPY/(FX.JPY||9.5)).toLocaleString('ko-KR')),
+    _cCard('#1a56db','\uc6d0\ud654\uc790\uc0b0(KRW)','#1e3a8a','#eff6ff','#93c5fd',pKRW,fmt(curKRW)+'\uc6d0',''),
+    _cCard('#f59e0b','\uac00\uc0c1\ud654\ud3d0','#92400e','#fffbeb','#fcd34d',pCrypto2,fmt(curCrypto)+'\uc6d0',''),
+    '</div></div>'
+  ].join('');
+
+  document.getElementById('pg-overview').innerHTML=[
+    '<div class="fxbar">',
+    '<div class="fxitem">\uc6d0/\ub2ec\ub7ec: <input class="fxinp" value="'+FX.USD+'" onchange="FX.USD=+this.value;renderActive()"></div>',
+    '<div class="fxitem">\uc6d0/\uc5d4: <input class="fxinp" value="'+FX.JPY+'" onchange="FX.JPY=+this.value;renderActive()"></div>',
+    '<span class="abadge">\uc790\ub3d9\uac31\uc2e0</span>',
+    '<span style="font-size:11px;color:var(--tx3)">\ud83d\udcbe \uc800\uc7a5 \ubc84\ud2bc\uc73c\ub85c \uc77c\ubcc4 \uc790\uc0b0\uae30\ub85d \uc800\uc7a5</span></div>',
+    '<div class="sec"><div class="sechdr">',
+    '<span class="sectitle">\ud83d\udcc8 \uc804\uccb4 \ud3ec\ud2b8\ud3f4\ub9ac\uc624 \ucd1d\uad04</span>',
+    '<span class="secsub">'+new Date().toLocaleDateString('ko-KR')+' \uae30\uc900</span></div>',
+    '<div class="sgrid">',
+    '<div class="scard"><div class="slbl">\ucd1d \ub0a9\uc785\uae08\uc561</div><div class="sval">'+fmt(gDep)+'\uc6d0</div></div>',
+    '<div class="scard"><div class="slbl">\ucd1d \uc778\ucd9c\uae08\uc561</div><div class="sval neg">'+fmt(Math.abs(gWit))+'\uc6d0</div></div>',
+    '<div class="scard"><div class="slbl">\uc2e4\ud22c\uc790\uae08</div><div class="sval">'+fmt(gReal)+'\uc6d0</div></div>',
+    '<div class="scard"><div class="slbl">\ub9e4\uc785\ucd1d\uc561</div><div class="sval">'+fmt(gCost)+'\uc6d0</div></div>',
+    '<div class="scard"><div class="slbl">\ud604\uc7ac\ud3c9\uac00\uc561</div><div class="sval" style="color:var(--blu)">'+fmt(gCur)+'\uc6d0</div></div>',
+    '<div class="scard"><div class="slbl">\ud3c9\uac00\uc190\uc775</div><div class="sval '+pc(gPnl)+'">'+(gPnl>=0?'+':'')+fmt(gPnl)+'\uc6d0</div></div>',
+    '<div class="scard"><div class="slbl">\uc218\uc775\ub960(\ub9e4\uc785\ub300\ube44)</div><div class="sval '+pc(gPnlR)+'" style="font-size:14px">'+fmtPct(gPnlR)+'</div></div>',
+    '<div class="scard"><div class="slbl">\uc2e4\ub0a9\ub300\ube44 \ud3c9\uac00\uc190\uc775</div><div class="sval '+pc(gCur-gReal)+'" style="font-size:14px">'+(gCur-gReal>=0?'+':'')+fmt(gCur-gReal)+'\uc6d0</div></div>',
+    '<div class="scard"><div class="slbl">\uc218\uc775\ub960(\uc2e4\ub0a9\uc785\ub300\ube44)</div><div class="sval '+pc(gPnlRL)+'" style="font-size:14px">'+fmtPct(gPnlRL)+'</div></div>',
+    '<div class="scard scard-grn"><div class="slbl">\uc6d4 \ubd84\ubc30\uae08\ud569\uacc4</div><div class="sval" style="color:var(--grn)">'+fmt(gDist)+'\uc6d0</div>'+
+      '<div style="font-size:12px;font-weight:800;color:#6b7280;margin-top:3px">\uc5f0\uac04\ubd84\ubc30\uae08\ud569\uacc4 '+fmt(gAnnDist)+'\uc6d0</div></div>',
+    '<div class="scard"><div class="slbl">\ube44\uacfc\uc138\uc7ac\uc6d0</div><div class="ival pur">'+fmt(gExtraTax)+'\uc6d0</div></div>',
+    '<div class="scard"><div class="slbl">\uc774\uc5f0\ud1f4\uc9c1\uae08</div><div class="ival blu">'+fmt(gExtraRet)+'\uc6d0</div></div>',
+    '<div class="scard scard-grn"><div class="slbl">\ube44\uacfc\uc138/\uc774\uc5f0\ud1f4\uc9c1\uae08 \ud569\uacc4</div><div class="ival grn" style="font-weight:700">'+fmt(gExtra)+'\uc6d0</div></div>',
+    ,
+    '</div></div>',
+    compSection,
+    curSection,
+    '<div class="sec"><div class="sechdr"><span class="sectitle">\uacc4\uc88c\ubcc4 \ud604\ud669</span></div>',
+    '<div class="twrap"><table><thead><tr>',
+    '<th style="text-align:left;min-width:200px">\uacc4\uc88c\uba85</th>',
+    '<th>\ub0a9\uc785\uae08\uc561(\ub204\uc801)</th><th>\uc778\ucd9c\uae08\uc561(\ub204\uc801)</th><th>\uc2e4\ub0a9\uc785\uae08\uc561</th>',
+    '<th>\ub9e4\uc785\ucd1d\uc561</th><th>\ud604\uc7ac\ucd1d\uc561</th><th>\uc190\uc775\uae08\uc561</th>',
+    '<th>\uc218\uc775\ub960</th><th>\uc218\uc775\ub960(\uc2e4\ub0a9)</th>',
+    '<th>\uc5f0\uac04\ubd84\ubc30\uc728</th><th>\uc6d4\ubd84\ubc30\uae08</th>',
+    '</tr></thead><tbody>',rows.join(''),
+    '<tr class="trow"><td>\uc804\uccb4 \ud569\uacc4</td>',
+    '<td>'+fmt(gDep)+'</td><td>'+fmt(Math.abs(gWit))+'</td><td>'+fmt(gReal)+'</td>',
+    '<td>'+fmt(gCost)+'</td><td>'+fmt(gCur)+'</td>',
+    '<td class="'+pc(gPnl)+'">'+(gPnl>=0?'+':'')+fmt(gPnl)+'</td>',
+    '<td class="'+pc(gPnlR)+'">'+fmtPct(gPnlR)+'</td>',
+    '<td class="'+pc(gPnlRL)+'">'+fmtPct(gPnlRL)+'</td>',
+    '<td>-</td><td>'+fmt(gDist)+'</td>',
+    '</tr></tbody></table></div></div>'
+  ].join('');
+}
+
+
+/* ===== 자산변동 ===== */
+var _hChart=null,_hPeriod='daily';
+var PERIODS=[['daily','\uc77c\ubcc4'],['weekly','\uc8fc\ubcc4'],['monthly','\uc6d4\ubcc4'],['quarterly','\ubd84\uae30\ubcc4'],['semi','\ubc18\uae30\ubcc4'],['yearly','\uc5f0\ubcc4']];
+function wkNum(d){var dt=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));dt.setUTCDate(dt.getUTCDate()+4-(dt.getUTCDay()||7));var y=new Date(Date.UTC(dt.getUTCFullYear(),0,1));return Math.ceil(((dt-y)/86400000+1)/7);}
+function snapKey(ts,p){var d=new Date(ts);var Y=d.getFullYear(),M=String(d.getMonth()+1).padStart(2,'0'),D=String(d.getDate()).padStart(2,'0');if(p==='daily')return Y+'-'+M+'-'+D;if(p==='weekly')return Y+'-W'+String(wkNum(d)).padStart(2,'0');if(p==='monthly')return Y+'-'+M;if(p==='quarterly')return Y+'-Q'+Math.ceil((d.getMonth()+1)/3);if(p==='semi')return Y+(d.getMonth()<6?'-S1':'-S2');return String(Y);}
+function snapLbl(ts,p){var d=new Date(ts);var Y=d.getFullYear(),M=String(d.getMonth()+1).padStart(2,'0'),D=String(d.getDate()).padStart(2,'0');if(p==='daily')return Y+'.'+M+'/'+D;if(p==='weekly')return Y+'W'+wkNum(d);if(p==='monthly')return Y+'.'+M;if(p==='quarterly')return Y+'Q'+Math.ceil((d.getMonth()+1)/3);if(p==='semi')return Y+(d.getMonth()<6?'\uc0c1':'\ud558');return String(Y);}
+function aggSnaps(p){var snaps=loadSnaps();if(!snaps.length)return[];var map={};snaps.forEach(function(s){var k=snapKey(s.ts,p);map[k]={label:snapLbl(s.ts,p),cur:s.cur,cost:s.cost,pnl:s.pnl,ts:s.ts,note:s.note||''};});return Object.values(map).sort(function(a,b){return new Date(a.ts)-new Date(b.ts);});}
+function renderHistory(){
+  var ptabs=PERIODS.map(function(kl){return'<button class="ptab'+(kl[0]===_hPeriod?' on':'')+'" onclick="switchPeriod(\''+kl[0]+'\')">'+kl[1]+'</button>';}).join('');
+  document.getElementById('pg-history').innerHTML=[
+    '<div class="sec"><div class="sechdr">',
+    '<span class="sectitle">\ud83d\udcc8 \uc790\uc0b0 \ubcc0\ub3d9 \ud604\ud669</span>',
+    '<span class="secsub">\ud83d\udcbe \uc800\uc7a5 \ubc84\ud2bc\uc73c\ub85c \uae30\ub85d \u2014 \uc77c\ubcc4 \ucd5c\uc2e0 1\uac74 \uc720\uc9c0</span>',
+    '<button class="btn btn-add" style="margin-left:auto;padding:4px 11px;font-size:12px" onclick="snapNow()">\ud83d\udcf8 \uc9c0\uae08 \uae30\ub85d</button>',
+    '</div>',
+    '<div class="ptabs">'+ptabs+'</div>',
+    '<div class="chart-wrap"><canvas id="hchart"></canvas></div>',
+    '<div id="hist-tbl"></div>',
+    '</div>'
+  ].join('');
+  drawHChart();
+}
+function switchPeriod(p){_hPeriod=p;renderHistory();}
+function snapNow(){
+  var today=new Date().toLocaleDateString('ko-KR');
+  var now=new Date().toISOString();
+  var t=grandTotal();
+  var snaps=loadSnaps();
+  var idx=snaps.findIndex(function(s){return s.date===today;});
+  var snap={date:today,ts:now,cur:t.cur,cost:t.cost,pnl:t.pnl,note:''};
+  if(idx>=0)snaps[idx]=snap;else snaps.push(snap);
+  snaps.sort(function(a,b){return a.date<b.date?-1:1;});
+  sSet(SNAPKEY,JSON.stringify(snaps));
+  renderHistory();
+}
+var _idxCache={};
+async function fetchIdxData(sym,startTs,intv){
+  var p1=Math.floor(new Date(startTs).getTime()/1000);
+  var p2=Math.floor(Date.now()/1000);
+  var key=sym+'_'+intv+'_'+p1;
+  if(_idxCache[key]) return _idxCache[key];
+  try{
+    var url='https://query1.finance.yahoo.com/v8/finance/chart/'+sym+'?period1='+p1+'&period2='+p2+'&interval='+intv;
+    var r=await withTO(fetch(url),8000);
+    var j=await r.json();
+    var res=j.chart.result[0];
+    var ts=res.timestamp,close=res.indicators.quote[0].close;
+    var map={};
+    ts.forEach(function(t,ii){if(close[ii]!=null) map[t*1000]=close[ii];});
+    _idxCache[key]=map;
+    return map;
+  }catch(e){return null;}
+}
+function getIdxAt(prices,tsISO){
+  if(!prices) return null;
+  var target=new Date(tsISO).getTime();
+  var keys=Object.keys(prices).map(Number);
+  if(!keys.length) return null;
+  var best=keys[0],bestD=Math.abs(keys[0]-target);
+  keys.forEach(function(k){var d=Math.abs(k-target);if(d<bestD){bestD=d;best=k;}});
+  return prices[best]||null;
+}
+async function drawHChart(){
+  var data=aggSnaps(_hPeriod);
+  var canvas=document.getElementById('hchart');
+  if(!canvas) return;
+  if(_hChart){_hChart.destroy();_hChart=null;}
+  if(!data.length){
+    document.getElementById('hist-tbl').innerHTML='<div style="text-align:center;padding:30px;color:var(--tx3)">\ud83d\udceb \uc790\uc0b0 \uae30\ub85d\uc774 \uc5c6\uc2b5\ub2c8\ub2e4.<br>\ud83d\udcbe \uc800\uc7a5 \ub610\ub294 \ud83d\udcf8 \uc9c0\uae08 \uae30\ub85d \ubc84\ud2bc\uc744 \ub208\ub7ec \uccab \uae30\ub85d\uc744 \uc800\uc7a5\ud558\uc138\uc694.</div>';
+    return;
+  }
+  var intMap={daily:'1d',weekly:'1wk',monthly:'1mo',quarterly:'3mo',semi:'3mo',yearly:'3mo'};
+  var intv=intMap[_hPeriod]||'1mo';
+  var ndxP=null,spxP=null;
+  try{
+    var res=await Promise.all([fetchIdxData('QQQ',data[0].ts,intv),fetchIdxData('SPY',data[0].ts,intv)]);
+    ndxP=res[0]; spxP=res[1];
+  }catch(ex){}
+  var labels=data.map(function(d){return d.label;});
+  var curVals=data.map(function(d){return d.cur;});
+  var nPts=data.length;
+  var barColors=curVals.map(function(v,i){
+    if(i===0) return 'rgba(26,86,219,0.65)';
+    return v>=curVals[i-1]?'rgba(5,122,85,0.72)':'rgba(200,30,30,0.72)';
+  });
+  var myRates=data.map(function(d,i){
+    if(i===0) return null;
+    var prev=data[i-1].cur;
+    return prev>0?Math.round((d.cur-prev)/prev*10000)/100:null;
+  });
+  var ndxRates=ndxP?data.map(function(d,i){
+    if(i===0) return null;
+    var cp=getIdxAt(ndxP,d.ts),pp=getIdxAt(ndxP,data[i-1].ts);
+    return (cp&&pp)?Math.round((cp-pp)/pp*10000)/100:null;
+  }):null;
+  var spxRates=spxP?data.map(function(d,i){
+    if(i===0) return null;
+    var cp=getIdxAt(spxP,d.ts),pp=getIdxAt(spxP,data[i-1].ts);
+    return (cp&&pp)?Math.round((cp-pp)/pp*10000)/100:null;
+  }):null;
+  var datasets=[
+    {type:'bar',label:'\ud3c9\uac00\uc561',data:curVals,backgroundColor:barColors,
+     borderWidth:0,borderRadius:2,yAxisID:'y',order:10},
+    {type:'line',label:'\ub0b4 \ud3ec\ud2b8\ud3f4\ub9ac\uc624 \uc804\uae30\ub300\ube44',data:myRates,
+     borderColor:'#1a56db',backgroundColor:'rgba(0,0,0,0)',borderWidth:2.5,
+     pointRadius:nPts>60?0:3,pointHoverRadius:5,fill:false,tension:0.3,
+     spanGaps:false,yAxisID:'y_pct',order:1}
+  ];
+  if(ndxRates) datasets.push({type:'line',label:'\ub098\uc2a4\ub2e5100(QQQ) \uc804\uae30\ub300\ube44',
+    data:ndxRates,borderColor:'#e67e22',borderDash:[6,3],borderWidth:2,
+    pointRadius:0,pointHoverRadius:4,fill:false,tension:0.3,spanGaps:false,yAxisID:'y_pct',order:2});
+  if(spxRates) datasets.push({type:'line',label:'S&P500(SPY) \uc804\uae30\ub300\ube44',
+    data:spxRates,borderColor:'#e74c3c',borderDash:[2,5],borderWidth:2,
+    pointRadius:0,pointHoverRadius:4,fill:false,tension:0.3,spanGaps:false,yAxisID:'y_pct',order:3});
+  _hChart=new Chart(canvas,{data:{labels:labels,datasets:datasets},options:{
+    responsive:true,maintainAspectRatio:false,
+    interaction:{mode:'index',intersect:false},
+    plugins:{
+      legend:{position:'top',labels:{font:{size:11},padding:14,usePointStyle:true,pointStyleWidth:18}},
+      tooltip:{callbacks:{label:function(ctx){
+        if(ctx.parsed.y==null) return null;
+        if(ctx.datasetIndex===0){
+          var eok=Math.round(ctx.parsed.y/100000000*10)/10;
+          return ' \ud3c9\uac00\uc561: '+Math.round(ctx.parsed.y).toLocaleString('ko-KR')+'\uc6d0 ('+eok+'\uc5b5)';
+        }
+        return ' '+ctx.dataset.label+': '+(ctx.parsed.y>=0?'+':'')+ctx.parsed.y.toFixed(2)+'%';
+      }}}
+    },
+    scales:{
+      y:{position:'left',
+         ticks:{callback:function(v){return Math.round(v/100000000)+'\uc5b5';},font:{size:10}},
+         grid:{color:'rgba(0,0,0,0.05)'},
+         title:{display:true,text:'\ud3c9\uac00\uc561(\uc5b5\uc6d0)',font:{size:10},color:'#6b7280'}},
+      y_pct:{position:'right',
+             ticks:{callback:function(v){return(v>=0?'+':'')+v.toFixed(1)+'%';},font:{size:10}},
+             grid:{display:false},
+             title:{display:true,text:'\uc804\uae30\ub300\ube44 \uc218\uc775\ub960(%)',font:{size:10},color:'#6b7280'}},
+      x:{ticks:{maxRotation:45,font:{size:10}},grid:{display:false}}
+    }
+  }});
+  canvas.style.height='310px';
+
+  var first=data[0],last=data[data.length-1];
+  var chg=last.cur-first.cur,chgPct=first.cur>0?chg/first.cur*100:0;
+  var maxCur=Math.max.apply(null,curVals),minCur=Math.min.apply(null,curVals);
+  var revData=data.slice().reverse();
+  var tableRows=revData.map(function(d,idx){
+    var prevCur=idx<revData.length-1?revData[idx+1].cur:0;
+    var chgAmt=prevCur>0?d.cur-prevCur:0;
+    var chgRate=prevCur>0?(d.cur-prevCur)/prevCur*100:0;
+    var tsEsc=d.ts.replace(/'/g,"\\'");
+    var noteVal=(d.note||'');
+    var noteEsc=noteVal.replace(/'/g,"\\'").replace(/"/g,'&quot;');
+    return '<tr>'
+      +'<td style="white-space:nowrap;font-size:11px">'+d.label+'</td>'
+      +'<td style="white-space:nowrap">'+Math.round(d.cur).toLocaleString('ko-KR')+'\uc6d0</td>'
+      +'<td class="'+pc(chgAmt)+'" style="white-space:nowrap">'+(prevCur>0?(chgAmt>=0?'+':'')+Math.round(chgAmt).toLocaleString('ko-KR')+'\uc6d0':'-')+'</td>'
+      +'<td class="'+pc(chgRate)+'" style="white-space:nowrap">'+(prevCur>0?(chgRate>=0?'+':'')+chgRate.toFixed(2)+'%':'-')+'</td>'
+      +'<td style="width:100%"><input class="ed" style="width:100%;min-width:80px;font-size:11px;box-sizing:border-box;text-align:left" value="'+noteEsc+'"'
+        +' onchange="saveSnapNote(\''+tsEsc+'\',this.value)"'
+        +' onfocus="this.style.background=\'#fffbeb\'"'
+        +' onblur="this.style.background=\'\'"></td>'
+      +'</tr>';
+  }).join('');
+  document.getElementById('hist-tbl').innerHTML=[
+    '<div class="hist-grid">',
+    '<div class="hist-card"><div class="slbl">\uc2dc\uc791</div><div class="sval" style="font-size:13px">'+first.label+'</div><div class="ssub">'+fmt(first.cur)+'\uc6d0</div></div>',
+    '<div class="hist-card"><div class="slbl">\ucd5c\uadfc</div><div class="sval" style="font-size:13px">'+last.label+'</div><div class="ssub">'+fmt(last.cur)+'\uc6d0</div></div>',
+    '<div class="hist-card"><div class="slbl">\uae30\uac04 \ubcc0\ub3d9</div><div class="sval '+pc(chg)+'" style="font-size:14px">'+(chg>=0?'+':'')+fmt(chg)+'\uc6d0</div></div>',
+    '<div class="hist-card"><div class="slbl">\ubcc0\ub3d9\ub960(\uc804\uccb4)</div><div class="sval '+pc(chgPct)+'" style="font-size:15px">'+(chgPct>=0?'+':'')+chgPct.toFixed(2)+'%</div></div>',
+    '<div class="hist-card"><div class="slbl">\uae30\uac04 \ucd5c\uace0</div><div class="sval" style="font-size:13px;color:var(--grn)">'+fmt(maxCur)+'\uc6d0</div></div>',
+    '<div class="hist-card"><div class="slbl">\uae30\uac04 \ucd5c\uc800</div><div class="sval" style="font-size:13px;color:var(--red)">'+fmt(minCur)+'\uc6d0</div></div>',
+    '</div>',
+    '<div class="twrap" style="padding:0 13px 13px">',
+    '<table style="table-layout:fixed;width:100%">',
+    '<colgroup><col style="width:90px"><col style="width:120px"><col style="width:120px"><col style="width:85px"><col></colgroup>',
+    '<thead><tr>'
+      +'<th style="text-align:left">\uae30\uac04</th>'
+      +'<th>\ud3c9\uac00\uc561</th>'
+      +'<th>\ubcc0\ub3d9\uc561(\uc804\uae30\ub300\ube44)</th>'
+      +'<th>\ubcc0\ub3d9\ub960</th>'
+      +'<th style="text-align:left">\ube44\uace0</th>'
+    +'</tr></thead>',
+    '<tbody>'+tableRows+'</tbody></table></div>'
+  ].join('');
+
+}
+
+/* ===== 변경이력 ===== */
+function loadCL(){try{return JSON.parse(sGet(CLKEY)||'[]');}catch(e){return[];}}
+function addCL(today,t){
+  var list=loadCL();
+  var entry={id:Date.now(),date:today,ts:new Date().toISOString(),cur:t.cur,pnl:t.pnl};
+  var idx=list.findIndex(function(e){return e.date===today;});
+  if(idx>=0)list[idx]=entry;else list.unshift(entry);
+  sSet(CLKEY,JSON.stringify(list));
+}
+function saveSnapNote(ts,noteVal){
+  var stored;try{stored=JSON.parse(sGet(SNAPKEY)||'[]');}catch(e){stored=[];}
+  var idx=stored.findIndex(function(s){return s.ts===ts;});
+  if(idx>=0){stored[idx].note=noteVal;}
+  else{
+    var hist=HIST_SNAPS.find(function(h){return h.ts===ts;});
+    if(hist){var ns=JSON.parse(JSON.stringify(hist));ns.note=noteVal;stored.push(ns);}
+    else{stored.push({date:'',ts:ts,cur:0,cost:0,pnl:0,note:noteVal});}
+  }
+  stored.sort(function(a,b){return a.ts<b.ts?-1:1;});
+  sSet(SNAPKEY,JSON.stringify(stored));
+}
+function renderChangelog(){
+  var list=loadCL();
+  var rows=list.length===0
+    ?'<div style="text-align:center;padding:30px;color:var(--tx3)">\ud83d\udceb \uc800\uc7a5\uc774\ub825\uc774 \uc5c6\uc2b5\ub2c8\ub2e4.</div>'
+    :list.map(function(e){
+      return'<div class="cl-entry">'
+        +'<div class="cl-time">'+new Date(e.ts).toLocaleString('ko-KR')+'</div>'
+        +'<div style="background:var(--gbg);border-radius:5px;padding:5px 9px;margin-top:4px;font-size:11px">'
+        +'\ucd1d\ud3c9\uac00\uc561: <strong style="color:var(--blu)">'+fmt(e.cur)+'\uc6d0</strong>'
+        +' | \uc190\uc775: <strong class="'+(e.pnl>=0?'pos':'neg')+'">'+(e.pnl>=0?'+':'')+fmt(e.pnl)+'\uc6d0</strong>'
+        +'</div>'
+        +'<button class="btn-del" style="margin-top:5px" onclick="delCL('+e.id+')">\uc0ad\uc81c</button>'
+        +'</div>';
+    }).join('');
+  document.getElementById('pg-changelog').innerHTML=[
+    '<div class="sec"><div class="sechdr">',
+    '<span class="sectitle">\ud83d\udcdd \uc800\uc7a5\uc774\ub825</span>',
+    '<span class="secsub">\ucd1d '+list.length+'\uac74 (\uc77c\ubcc4 \ucd5c\uc2e0 1\uac74)</span>',
+    (list.length?'<button class="btn-del" style="margin-left:auto" onclick="clearCL()">\uc804\uccb4\uc0ad\uc81c</button>':''),
+    '</div><div style="padding:12px">'+rows+'</div></div>'
+  ].join('');
+}
+function delCL(id){if(!confirm('\uc0ad\uc81c\ud560\uae4c\uc694?'))return;var l=loadCL().filter(function(e){return e.id!==id;});sSet(CLKEY,JSON.stringify(l));renderChangelog();}
+function clearCL(){if(!confirm('\uc804\uccb4 \uc0ad\uc81c\ud560\uae4c\uc694?'))return;sSet(CLKEY,'[]');renderChangelog();}
+
+/* ===== 데이터 변경 ===== */
+function findAcc(id){return ACCOUNTS.find(function(a){return a.id===id;});}
+
+
+
+function delH(id,i){var a=findAcc(id);if(!a)return;if(!confirm('"'+a.holdings[i].n+'" \uc885\ubaa9\uc744 \uc0ad\uc81c\ud560\uae4c\uc694?'))return;a.holdings.splice(i,1);renderActive();}
+function openAddModal(id){
+  document.getElementById('add-accid').value=id;
+  ['add-name','add-tk','add-qty','add-cost','add-high','add-mi','add-mm'].forEach(function(eid){var el=document.getElementById(eid);if(el)el.value='';});
+  openModal('add-modal');
+}
+function doAddHolding(){
+  var id=document.getElementById('add-accid').value;
+  var a=findAcc(id);if(!a)return;
+  var n=(document.getElementById('add-name').value||'').trim();
+  if(!n){alert('\uc885\ubaa9\uba85\uc744 \uc785\ub825\ud558\uc138\uc694');return;}
+  var tk=document.getElementById('add-tk').value.trim()||null;
+  var enteredHigh=pf(document.getElementById('add-high').value)||null;
+  var syncHigh=enteredHigh;
+  if(tk&&!syncHigh){
+    ACCOUNTS.forEach(function(acc2){
+      acc2.holdings.forEach(function(hh){
+        if(hh.tk===tk&&hh.high&&!syncHigh) syncHigh=hh.high;
+      });
+    });
+  }
+  a.holdings.push({n:n,tk:tk,
+    qty:pf(document.getElementById('add-qty').value),
+    cost:pf(document.getElementById('add-cost').value),
+    high:syncHigh,
+    dpu:(document.getElementById('add-dpu')&&document.getElementById('add-dpu').value?pf(document.getElementById('add-dpu').value):null)});
+  closeModal('add-modal');
+  if(tk){
+    if(PRICES[tk]==null){
+      fetchKR(tk).then(function(p){if(p!=null){PRICES[tk]=p;}renderActive();});
+    } else {
+      ACCOUNTS.forEach(function(acc2){
+        acc2.holdings.forEach(function(hh,ii){if(hh.tk===tk)_recalcRow(acc2.id,ii);});
+      });
+      renderActive();
+    }
+  } else { renderActive(); }
+}
+function setCH(i,field,v){CMA.holdings[i][field]=pf(v);renderActive();renderOverview();}
+function delCH(i){if(!confirm('"'+CMA.holdings[i].n+'" \uc885\ubaa9\uc744 \uc0ad\uc81c\ud560\uae4c\uc694?'))return;CMA.holdings.splice(i,1);renderActive();renderOverview();}
+function doAddCMA(){
+  var n=(document.getElementById('cm-name').value||'').trim();
+  if(!n){alert('\uc885\ubaa9\uba85\uc744 \uc785\ub825\ud558\uc138\uc694');return;}
+  CMA.holdings.push({n:n,sub:document.getElementById('cm-sub').value.trim(),
+    cur:document.getElementById('cm-cur').value,
+    isRP:document.getElementById('cm-isrp').checked,
+    qty:pf(document.getElementById('cm-qty').value),
+    cost:pf(document.getElementById('cm-cost').value),
+    avgFX:pf(document.getElementById('cm-fx').value),
+    high:pf(document.getElementById('cm-high').value)||null,
+    distAnn:pf(document.getElementById('cm-dist').value)||null});
+  closeModal('cma-modal');renderActive();
+}
+function setCB(i,field,v){
+  var val=field==='qty'||field==='stk'||field==='cost'?parseFloat(v)||0:v;
+  CRYPTO.bithumb[i][field]=val;
+  renderCrypto(true);
+}
+function setCU(i,field,v){
+  var val=field==='qty'||field==='stk'||field==='cost'?parseFloat(v)||0:v;
+  CRYPTO.upbit[i][field]=val;
+  renderCrypto(true);
+}
+function delCrypto(ex,i){
+  var list=ex==='B'?CRYPTO.bithumb:CRYPTO.upbit;
+  if(!confirm('"'+list[i].n+'" 종목을 삭제할까요?'))return;
+  list.splice(i,1);
+  renderCrypto(true);
+}
+function doAddCrypto(){
+  var ex=document.getElementById('acr-ex').value;
+  var n=(document.getElementById('acr-name').value||'').trim();
+  var sym=(document.getElementById('acr-sym').value||'').trim().toUpperCase();
+  if(!n||!sym){alert('종목명과 심볼을 입력하세요.');return;}
+  var entry={n:n,sym:sym,sr:'',stk:0,
+    qty:parseFloat(document.getElementById('acr-qty').value)||0,
+    cost:parseFloat(document.getElementById('acr-cost').value)||0,
+    high:parseFloat(document.getElementById('acr-high').value)||0};
+  if(ex==='B') CRYPTO.bithumb.push(entry);
+  else CRYPTO.upbit.push(entry);
+  closeModal('add-crypto-modal');
+  renderCrypto(true);
+}
+
+
+/* ===== 모달/내비게이션 ===== */
+function openModal(id){var el=document.getElementById(id);if(el)el.classList.add('show');}
+function closeModal(id){var el=document.getElementById(id);if(el){el.classList.remove('show');el.querySelectorAll('input').forEach(function(e){e.value='';});}}
+var curPage='overview';
+function go(id,el){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on');});
+  document.querySelectorAll('.ntab').forEach(function(t){t.classList.remove('on');});
+  var pg=document.getElementById('pg-'+id);if(pg)pg.classList.add('on');
+  if(el)el.classList.add('on');
+  curPage=id;renderPage(id);
+}
+function renderActive(){
+  renderPage(curPage);
+  setTimeout(function(){ if(typeof applyCommaAll==='function') applyCommaAll(); }, 10);
+}
+function renderPage(id){
+  if(id==='overview')renderOverview();
+  else if(id==='holdings')renderHoldings();
+  else if(id==='cma')renderCMA();
+  else if(id==='crypto')renderCrypto();
+  else if(id==='history')renderHistory();
+  else if(id==='changelog')renderChangelog();
+  else{var a=findAcc(id);if(a)renderKR(a,'pg-'+id);}
+}
+
+/* ===== 비밀번호 시스템 ===== */
+var PW_STORE='fp_pw_v1', AUTH_STORE='fp_auth_v1';
+function pwHash(pw){var s='fungcha2025_'+pw+'_'+pw.length,a=0x9e3779b9|0,b=0x85ebca77|0;for(var i=0;i<s.length;i++){var x=s.charCodeAt(i);a=Math.imul(a^x,0x9e3779b9);a=(a<<13)|(a>>>19);b=Math.imul(b^x,0x85ebca77);b=(b<<7)|(b>>>25);}return((a>>>0).toString(16)+(b>>>0).toString(16));}
+function pwGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+function pwSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+function pwValid(){ return false; } // 매번 입력
+function pwGrant(){ /* 세션 없음 */ }
+function pwStored(){return !!pwGet(PW_STORE);}
+
+function initPW(){
+  var screen=document.getElementById('pw-screen');
+  var inp=document.getElementById('pw-inp');
+  var btn=document.getElementById('pw-btn');
+  if(!screen)return;
+  if(pwValid()){startApp();return;}
+  if(!pwStored()){
+    document.getElementById('pw-lbl').textContent='초기 비밀번호 설정 (4자 이상)';
+    inp.placeholder='사용할 비밀번호를 입력하세요';
+    document.getElementById('pw-sub').textContent='처음 사용하시는 경우 비밀번호를 설정해 주세요.';
+    btn.textContent='비밀번호 설정';
+  }
+  screen.style.display='flex';
+  setTimeout(function(){inp.focus();},100);
+  btn.onclick=function(){doLogin();};
+  inp.onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();doLogin();}};
+}
+function doLogin(){
+  var inp=document.getElementById('pw-inp');
+  var err=document.getElementById('pw-err');
+  var pw=inp?inp.value.trim():'';
+  if(!pw){if(inp)inp.focus();return;}
+  err.style.display='none';
+  var stored=pwGet(PW_STORE);
+  if(!stored){
+    if(pw.length<4){err.textContent='❌ 비밀번호는 4자 이상이어야 합니다.';err.style.display='block';return;}
+    pwSet(PW_STORE,pwHash(pw));pwGrant();
+    document.getElementById('pw-screen').style.display='none';startApp();
+  }else{
+    if(pwHash(pw)===stored){
+      pwGrant();document.getElementById('pw-screen').style.display='none';startApp();
+    }else{
+      err.textContent='❌ 비밀번호가 올바르지 않습니다.';err.style.display='block';
+      inp.value='';inp.focus();
+    }
+  }
+}
+function changePW(){
+  var oldV=prompt('현재 비밀번호:');if(!oldV)return;
+  var stored=pwGet(PW_STORE);
+  if(stored&&pwHash(oldV)!==stored){alert('현재 비밀번호가 틀렸습니다.');return;}
+  var newV=prompt('새 비밀번호 (4자 이상):');
+  if(!newV||newV.length<4){alert('4자 이상 입력해 주세요.');return;}
+  if(newV!==prompt('새 비밀번호 확인:')){alert('비밀번호가 일치하지 않습니다.');return;}
+  pwSet(PW_STORE,pwHash(newV));alert('✅ 비밀번호가 변경되었습니다.');
+}
+
+/* ===== 엑셀 내보내기 ===== */
+function exportToExcel(){
+  if(typeof XLSX==='undefined'){alert('SheetJS 라이브러리를 불러오는 중입니다. 잠시 후 다시 시도해 주세요.');return;}
+  var wb=XLSX.utils.book_new();
+  var today=new Date().toLocaleDateString('ko-KR');
+
+  // ── 스타일 헬퍼 ──
+  function hdr(v){return {v:v,t:'s',s:{font:{bold:true},fill:{fgColor:{rgb:'1A56DB'}},font:{bold:true,color:{rgb:'FFFFFF'}},alignment:{horizontal:'center'}}};}
+  function num(v){return {v:Math.round(v)||0,t:'n',z:'#,##0'};}
+  function pct(v){return {v:v||0,t:'n',z:'0.00%'};}
+  function str(v){return {v:(v==null?'':String(v)),t:'s'};}
+
+  // ── 1. 전체현황 ──
+  var ov1=[['풍차포트폴리오 전체현황','','','','','',today]];
+  ov1.push(['계좌명','납입(누적)','인출(누적)','실납입','매입총액','현재총액','평가손익','수익률','수익률(실납)','연간분배율','월분배금']);
+  ACCOUNTS.forEach(function(acc){
+    var cost=0,cur=0,dist=0;
+    acc.holdings.forEach(function(h){
+      if(h.isMMF)return;
+      cost+=h.cost*(h.qty||0); cur+=liveP(h)*(h.qty||0);
+      dist+=(h.dpu!=null?Math.round(h.dpu*(h.qty||0)):((h.mI||0)+(h.mM||0)));
+    });
+    var real=(acc.accDep||0)-(acc.accWit||0);
+    ov1.push([acc.name,acc.accDep||0,acc.accWit||0,real,Math.round(cost),Math.round(cur),Math.round(cur-cost),(cost>0?(cur-cost)/cost:0),(real>0?(cur-real)/real:0),(acc.annualDistRate||0),dist]);
+  });
+  var cmaCT=0,cmaCR=0;
+  CMA.holdings.forEach(function(h){cmaCT+=cmaCostKRW(h);cmaCR+=cmaCurKRW(h);});
+  var cmaReal=(CMA.accDep||0)-(CMA.accWit||0);
+  ov1.push([CMA.name,CMA.accDep||0,CMA.accWit||0,cmaReal,Math.round(cmaCT),Math.round(cmaCR),Math.round(cmaCR-cmaCT),(cmaCT>0?(cmaCR-cmaCT)/cmaCT:0),(cmaReal>0?(cmaCR-cmaReal)/cmaReal:0),0,0]);
+  var crC=0,crV=0;
+  [].concat(CRYPTO.bithumb,CRYPTO.upbit).forEach(function(h){var p=PRICES[h.sym]||h.cost;var tq=(h.stk||0)+(h.qty||0);crC+=h.cost*tq;crV+=p*tq;});
+  ov1.push(['가상화폐(빗썸+업비트)',0,0,Math.round(crC),Math.round(crC),Math.round(crV),Math.round(crV-crC),(crC>0?(crV-crC)/crC:0),0,0,0]);
+  var wsOv=XLSX.utils.aoa_to_sheet(ov1);
+  wsOv['!cols']=[{wch:30},{wch:14},{wch:14},{wch:14},{wch:14},{wch:14},{wch:14},{wch:10},{wch:10},{wch:10},{wch:12}];
+  XLSX.utils.book_append_sheet(wb,wsOv,'전체현황');
+
+  // ── 2. 종목총괄 ──
+  var h2=[['종목명','유형','계좌','매입총액','현재총액','평가손익','수익률','비중(%)','월분배금']];
+  var totalCur2=0;
+  var map2={};
+  ACCOUNTS.forEach(function(acc){
+    acc.holdings.forEach(function(h){
+      if(h.isMMF)return;
+      var qty=h.qty||0,price=liveP(h);
+      var cost=h.cost*qty,cur=price*qty;
+      var key=h.tk||('__'+h.n);
+      if(!map2[key]){map2[key]={n:h.n,type:'KR ETF',cost:0,cur:0,dpu:h.dpu!=null?h.dpu:null,qty:0,accs:[]};}
+      map2[key].cost+=cost;map2[key].cur+=cur;map2[key].qty+=qty;
+      map2[key].accs.push(acc.name);
+      if(h.dpu!=null)map2[key].dpu=h.dpu;
+      totalCur2+=cur;
+    });
+  });
+  CMA.holdings.forEach(function(h){
+    var costK=cmaCostKRW(h),curK=cmaCurKRW(h);
+    map2['__cma__'+h.n]={n:h.n,type:'해외/RP('+h.cur+')',cost:costK,cur:curK,qty:h.qty||1,dpu:null,accs:[CMA.name]};
+    totalCur2+=curK;
+  });
+  [].concat(CRYPTO.bithumb,CRYPTO.upbit).forEach(function(h){
+    var p=PRICES[h.sym]||h.cost,tq=(h.stk||0)+(h.qty||0);
+    var cost=h.cost*tq,cur=p*tq;
+    if(!map2['__cr_'+h.sym]){map2['__cr_'+h.sym]={n:h.n,type:'가상화폐',cost:0,cur:0,qty:tq,dpu:null,accs:['빗썸/업비트']};}
+    map2['__cr_'+h.sym].cost+=cost;map2['__cr_'+h.sym].cur+=cur;
+    totalCur2+=cur;
+  });
+  Object.values(map2).sort(function(a,b){return b.cur-a.cur;}).forEach(function(r){
+    var wt=totalCur2>0?r.cur/totalCur2*100:0;
+    var dist=r.dpu&&r.qty?Math.round(r.dpu*r.qty):0;
+    h2.push([r.n,r.type,r.accs.join(', '),Math.round(r.cost),Math.round(r.cur),Math.round(r.cur-r.cost),(r.cost>0?(r.cur-r.cost)/r.cost:0),Math.round(wt*10)/10,dist||0]);
+  });
+  var wsH=XLSX.utils.aoa_to_sheet(h2);
+  wsH['!cols']=[{wch:30},{wch:12},{wch:30},{wch:14},{wch:14},{wch:14},{wch:10},{wch:8},{wch:12}];
+  XLSX.utils.book_append_sheet(wb,wsH,'종목총괄');
+
+  // ── 3. 계좌별 상세 ──
+  ACCOUNTS.forEach(function(acc){
+    var rows=[['종목명','티커','수량','매입단가','현재가','전고점','매입총액','현재총액','수익률','전고점대비','월분배금']];
+    acc.holdings.forEach(function(h){
+      if(h.isMMF)return;
+      var qty=h.qty||0,price=liveP(h);
+      var cost=h.cost*qty,cur=price*qty;
+      var pnlR=cost>0?(cur-cost)/cost:0;
+      var highR=(h.high&&price>0)?(price-h.high)/h.high:0;
+      var dist=h.dpu!=null?Math.round(h.dpu*qty):((h.mI||0)+(h.mM||0));
+      rows.push([h.n,h.tk||'',qty,h.cost,price,h.high||0,Math.round(cost),Math.round(cur),pnlR,highR,dist]);
+    });
+    var ws=XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols']=[{wch:28},{wch:8},{wch:7},{wch:10},{wch:10},{wch:10},{wch:14},{wch:14},{wch:9},{wch:9},{wch:12}];
+    var shName=acc.name.replace(/[:\\/?\[\]*]/g,'').substring(0,31);
+    XLSX.utils.book_append_sheet(wb,ws,shName);
+  });
+
+  // ── 4. CMA 해외주식 ──
+  var cmR=[['종목명','통화','수량','매입단가(현지)','매입환율','현재가(현지)','현재환율','매입총액(원)','현재총액(원)','수익률','전고점대비']];
+  CMA.holdings.forEach(function(h){
+    var curFX=cmaFX(h),buyFX=h.avgFX||curFX;
+    var priceL=h.curPrice!=null?h.curPrice:h.cost;
+    var costK=cmaCostKRW(h),curK=cmaCurKRW(h);
+    var pnlR=costK>0?(curK-costK)/costK:0;
+    var highR=(h.high&&priceL>0)?(priceL-h.high)/h.high:null;
+    cmR.push([h.n,h.cur,h.qty||1,h.cost,buyFX,priceL,curFX,Math.round(costK),Math.round(curK),pnlR,highR!=null?highR:'']);
+  });
+  var wsCMA=XLSX.utils.aoa_to_sheet(cmR);
+  wsCMA['!cols']=[{wch:25},{wch:5},{wch:7},{wch:12},{wch:10},{wch:12},{wch:10},{wch:14},{wch:14},{wch:9},{wch:9}];
+  XLSX.utils.book_append_sheet(wb,wsCMA,'CMA 해외주식');
+
+  // ── 5. 가상화폐 ──
+  var crR=[['거래소','종목명','심볼','스테이킹','수량','합산수량','매입단가','현재가','매입총액','현재총액','수익률','전고점대비']];
+  var addCR=function(list,ex){
+    list.forEach(function(h){
+      var price=PRICES[h.sym]||h.cost,tq=(h.stk||0)+(h.qty||0);
+      var high52=HIGH52[h.sym]||h.high;
+      var cost=h.cost*tq,cur=price*tq;
+      var pnlR=cost>0?(cur-cost)/cost:0;
+      var highR=high52>0?(price-high52)/high52:0;
+      crR.push([ex,h.n,h.sym,h.stk||0,h.qty,tq,h.cost,price,Math.round(cost),Math.round(cur),pnlR,highR]);
+    });
+  };
+  addCR(CRYPTO.bithumb,'빗썸');addCR(CRYPTO.upbit,'업비트');
+  var wsCR=XLSX.utils.aoa_to_sheet(crR);
+  wsCR['!cols']=[{wch:7},{wch:14},{wch:6},{wch:14},{wch:14},{wch:12},{wch:14},{wch:14},{wch:14},{wch:14},{wch:9},{wch:9}];
+  XLSX.utils.book_append_sheet(wb,wsCR,'가상화폐');
+
+  // ── 6. 자산변동 ──
+  var snaps=loadSnaps();
+  var snapR=[['날짜','평가액(원)','변동액(전기대비)','변동률(전기대비)','비고']];
+  var rev=snaps.slice().reverse();
+  rev.forEach(function(d,idx){
+    var prev=idx<rev.length-1?rev[idx+1].cur:0;
+    var chgAmt=prev>0?d.cur-prev:0;
+    var chgRate=prev>0?(d.cur-prev)/prev:0;
+    snapR.push([d.date,d.cur,prev>0?chgAmt:'',prev>0?chgRate:'',d.note||'']);
+  });
+  var wsSnap=XLSX.utils.aoa_to_sheet(snapR);
+  wsSnap['!cols']=[{wch:14},{wch:16},{wch:16},{wch:12},{wch:40}];
+  XLSX.utils.book_append_sheet(wb,wsSnap,'자산변동');
+
+  // ── 다운로드 ──
+  var dateStr=new Date().toLocaleDateString('ko-KR').replace(/\. /g,'-').replace('.','');
+  XLSX.writeFile(wb,'풍차포트폴리오_'+dateStr+'.xlsx');
+}
+
+
+/* ===== 모바일 퀵메뉴 ===== */
+function mobSel(id){
+  document.querySelectorAll('.mob-btn').forEach(function(b){b.classList.remove('on');});
+  var el=document.getElementById(id);if(el)el.classList.add('on');
+}
+function mobShowAccMenu(){
+  var sheet=document.getElementById('mob-acc-sheet');
+  var overlay=document.getElementById('mob-acc-overlay');
+  var list=document.getElementById('mob-acc-list');
+  // 계좌 목록 동적 생성
+  var items=[
+    {id:'mf-ira',name:'퇴직연금(미래)'},
+    {id:'mf-pension',name:'개인연금(미래)'},
+    {id:'mf-isa',name:'ISA(미래)'},
+    {id:'ss-pension',name:'개인연금(삼성)'},
+    {id:'mf-irp2',name:'IRP(미래)'},
+    {id:'cma',name:'CMA 해외주식'},
+    {id:'changelog',name:'📝 변경이력'}
+  ];
+  list.innerHTML=items.map(function(it){
+    return '<button onclick="go(\''+it.id+'\',null);mobSel(\'mob-ac\');document.getElementById(\'mob-acc-sheet\').style.display=\'none\';document.getElementById(\'mob-acc-overlay\').style.display=\'none\'" '
+      +'style="display:block;width:100%;text-align:left;padding:13px 20px;border:none;background:none;font-size:14px;font-family:inherit;cursor:pointer;border-bottom:1px solid var(--brd2);color:var(--tx)">'
+      +it.name+'</button>';
+  }).join('');
+  overlay.style.display='block';
+  sheet.style.display='block';
+}
+
+
+/* ===== 앱 시작 ===== */
+function startApp(){
+  try{loadData();}catch(e){
+    ACCOUNTS=JSON.parse(JSON.stringify(DEF.accounts));
+    CMA=JSON.parse(JSON.stringify(DEF.cma));
+    CRYPTO=JSON.parse(JSON.stringify(DEF.crypto));
+  }
+  // iedit 입력란 천원단위 콤마 이벤트 위임
+  // 천원단위 콤마: iedit (납입금액 등 큰 숫자 전용)
+  function applyComma(el){
+    var n=parseFloat((el.value||'').replace(/,/g,''));
+    if(!isNaN(n)&&n>=1000) el.value=Math.round(n).toLocaleString('ko-KR');
+  }
+  function stripComma(el){
+    el.value=(el.value||'').replace(/,/g,'');
+  }
+  document.addEventListener('focus', function(e){
+    if(e.target&&e.target.classList.contains('iedit')) stripComma(e.target);
+  }, true);
+  document.addEventListener('blur', function(e){
+    if(e.target&&e.target.classList.contains('iedit')) applyComma(e.target);
+  }, true);
+  // 초기 렌더된 iedit에 콤마 적용
+  function applyCommaAll(){
+    document.querySelectorAll('.iedit').forEach(function(el){
+      if(!el.matches(':focus')) applyComma(el);
+    });
+  }
+  renderOverview();
+  setDot('fail');
+  setTimeout(function(){fetchAll();setInterval(fetchAll,60000);},100);
+  // 앱 닫을 때 자동 저장
+  window.addEventListener('beforeunload', function(){
+    try{
+      var today=new Date().toLocaleDateString('ko-KR');
+      var now=new Date().toISOString();
+      var t=grandTotal();
+      var snaps=loadSnaps();
+      var idx=snaps.findIndex(function(s){return s.date===today;});
+      var snap={date:today,ts:now,cur:t.cur,cost:t.cost,pnl:t.pnl,note:''};
+      if(idx>=0)snaps[idx]=snap;else snaps.push(snap);
+      snaps.sort(function(a,b){return a.date<b.date?-1:1;});
+      sSet(SNAPKEY,JSON.stringify(snaps));
+      sSet(SKEY,JSON.stringify({accounts:ACCOUNTS,cma:CMA,crypto:CRYPTO,fx:{usd:FX.USD,jpy:FX.JPY},prices:PRICES}));
+    }catch(e){}
+  });
+}
+window.addEventListener('DOMContentLoaded',function(){initPW();});
+
+</script>
+</body>
+</html>
