@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>풍차계획 포트폴리오</title>
+<title>풍차계획 포트폴리오 v2.8</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -294,7 +294,7 @@ tr:hover:not(.trow):not(.nrow):not(.xhdr) td{background:#f8fafc}
 </div>
 
 <div class="hdr">
-  <div><div class="hdr-title">🌸 수익은 길게, 손실은 짧게!!!</div><div class="hdr-sub">연금계좌 풍차계획 포트폴리오</div></div>
+  <div><div class="hdr-title">🌸 수익은 길게, 손실은 짧게!!!</div><div class="hdr-sub">v2.8 | 연금계좌 풍차계획 포트폴리오</div></div>
   <div class="hdr-sp"></div>
   <div class="upd" id="upd">종전가</div>
   <div class="dot" id="dot"></div>
@@ -451,17 +451,17 @@ function loadData(){
   try{
     var s=JSON.parse(sGet(SKEY)||'null');
     if(s&&s.accounts&&s.cma&&s.crypto){
-      ACCOUNTS=s.accounts;CMA=s.cma;CRYPTO=s.crypto;
-      if(s.fx){FX.USD=s.fx.usd||FX.USD;FX.JPY=s.fx.jpy||FX.JPY;}
-      if(s.prices){Object.assign(PRICES,s.prices);}
-      // DEF의 extraLabel/annualDistRate 강제 적용 (버전 업데이트 반영)
+      ACCOUNTS=s.accounts; CMA=s.cma; CRYPTO=s.crypto;
+      if(s.fx){FX.USD=s.fx.usd||FX.USD; FX.JPY=s.fx.jpy||FX.JPY;}
+      if(s.prices) Object.assign(PRICES,s.prices);
+      // DEF 값 강제 적용 (HTML 업데이트 반영)
       DEF.accounts.forEach(function(def){
         var acc=ACCOUNTS.find(function(a){return a.id===def.id;});
-        if(acc){
-          acc.extraLabel=def.extraLabel;
-          acc.annualDistRate=def.annualDistRate;
-          // extraVal은 사용자 입력값 유지
-        }
+        if(!acc) return;
+        acc.extraLabel=def.extraLabel;
+        acc.annualDistRate=def.annualDistRate;
+        // extraVal: 저장값 있으면 유지, 없으면 DEF 기본값
+        if(acc.extraVal===undefined||acc.extraVal===null) acc.extraVal=def.extraVal||0;
       });
       return;
     }
@@ -1010,6 +1010,8 @@ async function fetchAll(){
     setDot('fail');
   }
   renderActive();
+  // 가상화폐도 강제 갱신 (PRICES 업데이트 반영)
+  if(curPage==='crypto') renderCrypto(true);
 }
 
 function setDot(s,msg){
@@ -1357,8 +1359,8 @@ function renderCMA(){
     var priceL=cmaLiveP(h);
     var highR=(h.high&&priceL>0)?(priceL-h.high)/h.high:null;
     var fxStr=h.cur==='JPY'?'\uc5d4\xd7'+FX.JPY:h.cur==='USD'?'\ub2ec\ub7ec\xd7'+FX.USD:'\uc6d0\ud654';
-    var curFXlabel=h.cur==='KRW'?'-':(h.cur==='JPY'?Math.round(curFX)+'\uc5d4':Math.round(curFX).toLocaleString('ko-KR')+'\uc6d0');
-    var buyFXlabel=h.cur==='KRW'?'-':(h.cur==='JPY'?Math.round(buyFX)+'\uc5d4':Math.round(buyFX).toLocaleString('ko-KR')+'\uc6d0');
+    var curFXlabel=h.cur==='KRW'?'-':(h.cur==='JPY'?Math.round(curFX*100).toLocaleString('ko-KR')+'\uc6d0/100\uc5d4':Math.round(curFX).toLocaleString('ko-KR')+'\uc6d0');
+    var buyFXlabel=h.cur==='KRW'?'-':(h.cur==='JPY'?Math.round(buyFX*100).toLocaleString('ko-KR')+'\uc6d0/100\uc5d4':Math.round(buyFX).toLocaleString('ko-KR')+'\uc6d0');
     tCostK+=costK; tCurK+=curK;
     var delFn='delCH('+i+')';
     var avgFXinp=h.cur==='KRW'
@@ -1566,150 +1568,119 @@ function renderCrypto(force){
 
 /* ===== 종목총괄 렌더 ===== */
 function renderHoldings(){
-  var totalCur=0;
-  var map={};
+  var totalCur=0, map={};
 
-  // KR 계좌
   ACCOUNTS.forEach(function(acc){
     acc.holdings.forEach(function(h){
       if(h.isMMF) return;
       var price=liveP(h), qty=h.qty||0;
       var cost=h.cost*qty, cur=price*qty;
       var key=h.tk||('__'+h.n);
-      if(!map[key]){
-        map[key]={n:h.n,tk:h.tk||null,type:'KR ETF',
-          totalQty:0,totalCost:0,totalCur:0,price:price,
-          dpu:h.dpu!=null?h.dpu:null,accs:[]};
-      }
-      map[key].totalQty+=qty;
-      map[key].totalCost+=cost;
-      map[key].totalCur+=cur;
-      map[key].price=price;
-      map[key].accs.push(acc.name);
+      if(!map[key]) map[key]={n:h.n,totalQty:0,totalCost:0,totalCur:0,price:price,type:'KR ETF',dpu:null,accs:[]};
+      map[key].totalQty+=qty; map[key].totalCost+=cost; map[key].totalCur+=cur;
+      map[key].price=price; map[key].accs.push(acc.name);
       if(h.dpu!=null) map[key].dpu=h.dpu;
       totalCur+=cur;
     });
   });
 
-  // CMA
   CMA.holdings.forEach(function(h){
-    var costK=cmaCostKRW(h), curK=cmaCurKRW(h);
-    var qty=h.qty||1;
-    var key='__cma__'+h.n;
+    var costK=cmaCostKRW(h), curK=cmaCurKRW(h), qty=h.qty||1;
     var cur2=h.cur==='JPY'?'JPY':h.cur==='USD'?'USD':'KRW';
-    map[key]={n:h.n,tk:null,type:'\ud574\uc678/RP('+cur2+')',
-      totalQty:qty,totalCost:costK,totalCur:curK,
-      price:qty>0?Math.round(curK/qty):0,
-      dpu:null,accs:[CMA.name]};
+    map['__cma__'+h.n]={n:h.n,totalQty:qty,totalCost:costK,totalCur:curK,
+      price:qty>0?Math.round(curK/qty):0,type:'\ud574\uc678/RP('+cur2+')',dpu:null,accs:[CMA.name]};
     totalCur+=curK;
   });
 
-  // 가상화폐
-  var allCrypto=[].concat(CRYPTO.bithumb,CRYPTO.upbit);
   var cryptoMap={};
-  allCrypto.forEach(function(h){
+  [].concat(CRYPTO.bithumb,CRYPTO.upbit).forEach(function(h){
     var price=PRICES[h.sym]!=null?PRICES[h.sym]:h.cost;
     var tq=(h.stk||0)+(h.qty||0);
-    var cost=h.cost*tq, cur=price*tq;
-    if(!cryptoMap[h.sym]){cryptoMap[h.sym]={n:h.n,sym:h.sym,cost:0,cur:0,qty:0,price:price};}
-    cryptoMap[h.sym].cost+=cost;
-    cryptoMap[h.sym].cur+=cur;
-    cryptoMap[h.sym].qty+=tq;
-    cryptoMap[h.sym].price=price;
-    totalCur+=cur;
+    if(!cryptoMap[h.sym]) cryptoMap[h.sym]={n:h.n,cost:0,cur:0,qty:0,price:price};
+    cryptoMap[h.sym].cost+=h.cost*tq; cryptoMap[h.sym].cur+=price*tq;
+    cryptoMap[h.sym].qty+=tq; cryptoMap[h.sym].price=price; totalCur+=price*tq;
   });
   Object.keys(cryptoMap).forEach(function(sym){
     var c=cryptoMap[sym];
-    map['__crypto__'+sym]={n:c.n,tk:null,type:'\uac00\uc0c1\ud654\ud3d0',
-      totalQty:c.qty,totalCost:c.cost,totalCur:c.cur,price:c.price,
-      dpu:null,accs:['\ube57\uc378/\uc5c5\ube44\ud2b8']};
+    map['__cr_'+sym]={n:c.n,totalQty:c.qty,totalCost:c.cost,totalCur:c.cur,
+      price:c.price,type:'\uac00\uc0c1\ud654\ud3d0',dpu:null,accs:['\ube57\uc12c/\uc5c5\ube44\ud2b8']};
   });
 
   var rows=Object.values(map).sort(function(a,b){return b.totalCur-a.totalCur;});
 
-  var tableRows=rows.map(function(r,idx){
+  var gPnl=rows.reduce(function(s,r){return s+(r.totalCur-r.totalCost);},0);
+  var gCost=rows.reduce(function(s,r){return s+r.totalCost;},0);
+  var gPnlR=gCost>0?gPnl/gCost:0;
+  var gDist=rows.reduce(function(s,r){return s+(r.dpu&&r.totalQty?Math.round(r.dpu*r.totalQty):0);},0);
+
+  var tbody=rows.map(function(r,idx){
     var pnl=r.totalCur-r.totalCost;
     var pnlR=r.totalCost>0?pnl/r.totalCost:0;
     var wt=totalCur>0?r.totalCur/totalCur*100:0;
     var avgCost=r.totalQty>0?Math.round(r.totalCost/r.totalQty):0;
     var qtyStr=r.type==='\uac00\uc0c1\ud654\ud3d0'?r.totalQty.toFixed(4):fmt(Math.round(r.totalQty));
-    var wtBar='<div style="background:var(--gbg);border-radius:3px;height:5px;margin-top:3px">'
+    var bar='<div style="background:var(--gbg);border-radius:3px;height:5px;margin-top:3px">'
       +'<div style="background:var(--blu);width:'+Math.min(100,wt).toFixed(1)+'%;height:5px;border-radius:3px"></div></div>';
-    var monthDist=r.dpu&&r.totalQty?Math.round(r.dpu*r.totalQty):null;
-    // 종목명: 이름만 표시 (유형/계좌 제거)
+    var dist=r.dpu&&r.totalQty?Math.round(r.dpu*r.totalQty):null;
     return '<tr>'
       +'<td style="text-align:right;color:var(--tx3);font-size:10px;padding-right:4px">'+(idx+1)+'</td>'
-      +'<td style="text-align:left"><div style="font-weight:600;font-size:12px">'+r.n+'</div></td>'
+      +'<td style="text-align:left;font-weight:600;font-size:12px">'+r.n+'</td>'
       +'<td style="text-align:right">'+qtyStr+'</td>'
       +'<td style="text-align:right">'+fmt(avgCost)+'</td>'
       +'<td style="text-align:right;color:var(--blu)">'+fmt(Math.round(r.price))+'</td>'
-      +'<td style="text-align:right">'+fmt(Math.round(r.totalCost))+'</td>'
+      +'<td style="text-align:right;font-weight:700">'+fmt(Math.round(r.totalCost))+'</td>'
       +'<td style="text-align:right;font-weight:700">'+fmt(Math.round(r.totalCur))+'</td>'
       +'<td class="'+pc(pnl)+'" style="text-align:right">'+(pnl>=0?'+':'')+fmt(Math.round(pnl))+'</td>'
       +'<td class="'+pc(pnlR)+'" style="text-align:right">'+fmtPct(pnlR)+'</td>'
-      +'<td style="text-align:right"><div>'
-        +'<span style="font-weight:700;color:var(--blu)">'+wt.toFixed(1)+'%</span>'
-        +wtBar+'</div></td>'
-      +'<td style="text-align:right;color:var(--grn)">'+(monthDist?fmt(monthDist):'-')+'</td>'
+      +'<td style="text-align:right"><span style="font-weight:700;color:var(--blu)">'+wt.toFixed(1)+'%</span>'+bar+'</td>'
+      +'<td style="text-align:right;color:var(--grn)">'+(dist?fmt(dist):'-')+'</td>'
       +'</tr>';
   }).join('');
 
-  var gPnl=rows.reduce(function(s,r){return s+r.totalCur-r.totalCost;},0);
-  var gCost=rows.reduce(function(s,r){return s+r.totalCost;},0);
-  var gPnlR=gCost>0?gPnl/gCost:0;
-  var gDist=rows.reduce(function(s,r){return s+(r.dpu&&r.totalQty?Math.round(r.dpu*r.totalQty):0);},0);
-
-  document.getElementById('pg-holdings').innerHTML=[
-    '<div class="sec"><div class="sechdr">',
-    '<span class="sectitle">\ud83d\udccb \ud22c\uc790\uc885\ubaa9 \ucd1d\uad04\ud604\ud669</span>',
-    '<span class="secsub">\uc804\uccb4 '+rows.length+'\uac1c \uc885\ubaa9 \u30c6 \ub3d9\uc77c\uc885\ubaa9 \ud569\uc0b0</span></div>',
-    '<div class="sgrid" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))">',
-    '<div class="scard"><div class="slbl">\uc804\uccb4 \uc885\ubaa9\uc218</div><div class="sval">'+rows.length+'\uac1c</div></div>',
-    '<div class="scard"><div class="slbl">\uc804\uccb4 \ud3c9\uac00\uc561</div><div class="sval" style="color:var(--blu)">'+fmt(Math.round(totalCur))+'\uc6d0</div></div>',
-    '<div class="scard"><div class="slbl">\ud3c9\uac00\uc190\uc775</div><div class="sval '+pc(gPnl)+'">'+(gPnl>=0?'+':'')+fmt(Math.round(gPnl))+'\uc6d0</div></div>',
-    '<div class="scard"><div class="slbl">\uc218\uc775\ub960</div><div class="sval '+pc(gPnlR)+'">'+fmtPct(gPnlR)+'</div></div>',
-    '<div class="scard"><div class="slbl">\uc6d4 \ubd84\ubc30\uae08 \ud569\uacc4</div><div class="sval" style="color:var(--grn)">'+fmt(gDist)+'\uc6d0</div></div>',
-    '</div>',
-    '<div class="twrap" style="padding:0 13px 13px"><table style="table-layout:fixed;width:100%">',
-    '<colgroup>',
-    '<col style="width:24px">',
-    '<col>',
-    '<col style="width:68px">',
-    '<col style="width:82px">',
-    '<col style="width:82px">',
-    '<col style="width:88px">',
-    '<col style="width:88px">',
-    '<col style="width:82px">',
-    '<col style="width:58px">',
-    '<col style="width:66px">',
-    '<col style="width:68px">',
-    '</colgroup>',
-    '<thead><tr>',
-    '<th style="text-align:center">#</th>',
-    '<th style="text-align:left">\uc885\ubaa9\uba85</th>',
-    '<th style="text-align:right">\ud569\uacc4\uc218\ub7c9</th>',
-    '<th style="text-align:right">\ud3c9\uade0\ub9e4\uc785\ub2e8\uac00</th>',
-    '<th style="text-align:right">\ud604\uc7ac\uac00</th>',
-    '<th style="text-align:right">\ub9e4\uc785\ucd1d\uc561</th>',
-    '<th style="text-align:right">\ud604\uc7ac\ucd1d\uc561</th>',
-    '<th style="text-align:right">\ud3c9\uac00\uc190\uc775</th>',
-    '<th style="text-align:right">\uc218\uc775\ub960</th>',
-    '<th style="text-align:right">\ube44\uc911</th>',
-    '<th style="text-align:right">\uc6d4\ubd84\ubc30\uae08</th>',
-    '</tr></thead>',
-    '<tbody>'+tableRows+'</tbody>',
-    '<tr class="trow">',
-    '<td colspan="2">\uc804\uccb4 \ud569\uacc4</td>',
-    '<td colspan="3"></td>',
-    '<td style="text-align:right">'+fmt(Math.round(gCost))+'</td>',
-    '<td style="text-align:right;font-weight:700">'+fmt(Math.round(totalCur))+'</td>',
-    '<td class="'+pc(gPnl)+'" style="text-align:right">'+(gPnl>=0?'+':'')+fmt(Math.round(gPnl))+'</td>',
-    '<td class="'+pc(gPnlR)+'" style="text-align:right">'+fmtPct(gPnlR)+'</td>',
-    '<td style="text-align:right;font-weight:700;color:var(--blu)">100%</td>',
-    '<td style="text-align:right;color:var(--grn)">'+fmt(gDist)+'</td>',
-    '</tr>',
-    '</table></div></div>'
-  ].join('');
+  var pg=document.getElementById('pg-holdings');
+  if(!pg) return;
+  pg.innerHTML='<div class="sec"><div class="sechdr">'
+    +'<span class="sectitle">\ud83d\udccb \ud22c\uc790\uc885\ubaa9 \ucd1d\uad04\ud604\ud669</span>'
+    +'<span class="secsub">\uc804\uccb4 '+rows.length+'\uac1c \uc885\ubaa9 \u30fb \ub3d9\uc77c\uc885\ubaa9 \ud569\uc0b0</span></div>'
+    +'<div class="sgrid" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))">'
+    +'<div class="scard"><div class="slbl">\uc804\uccb4 \uc885\ubaa9\uc218</div><div class="sval">'+rows.length+'\uac1c</div></div>'
+    +'<div class="scard"><div class="slbl">\uc804\uccb4 \ud3c9\uac00\uc561</div><div class="sval" style="color:var(--blu)">'+fmt(Math.round(totalCur))+'\uc6d0</div></div>'
+    +'<div class="scard"><div class="slbl">\ud3c9\uac00\uc190\uc775</div><div class="sval '+pc(gPnl)+'">'+(gPnl>=0?'+':'')+fmt(Math.round(gPnl))+'\uc6d0</div></div>'
+    +'<div class="scard"><div class="slbl">\uc218\uc775\ub960</div><div class="sval '+pc(gPnlR)+'">'+fmtPct(gPnlR)+'</div></div>'
+    +'<div class="scard"><div class="slbl">\uc6d4 \ubd84\ubc30\uae08</div><div class="sval" style="color:var(--grn)">'+fmt(gDist)+'\uc6d0</div></div>'
+    +'</div>'
+    +'<div class="twrap" style="padding:0 13px 13px">'
+    +'<table style="table-layout:fixed;width:100%">'
+    +'<colgroup>'
+    +'<col style="width:24px"><col style="min-width:120px">'
+    +'<col style="width:68px"><col style="width:82px"><col style="width:82px">'
+    +'<col style="width:88px"><col style="width:88px"><col style="width:82px">'
+    +'<col style="width:58px"><col style="width:70px"><col style="width:68px">'
+    +'</colgroup>'
+    +'<thead><tr>'
+    +'<th style="text-align:center">#</th>'
+    +'<th style="text-align:left">\uc885\ubaa9\uba85</th>'
+    +'<th style="text-align:right">\ud569\uacc4\uc218\ub7c9</th>'
+    +'<th style="text-align:right">\ud3c9\uade0\ub9e4\uc785\ub2e8\uac00</th>'
+    +'<th style="text-align:right">\ud604\uc7ac\uac00</th>'
+    +'<th style="text-align:right">\ub9e4\uc785\ucd1d\uc561</th>'
+    +'<th style="text-align:right">\ud604\uc7ac\ucd1d\uc561</th>'
+    +'<th style="text-align:right">\ud3c9\uac00\uc190\uc775</th>'
+    +'<th style="text-align:right">\uc218\uc775\ub960</th>'
+    +'<th style="text-align:right">\ube44\uc911</th>'
+    +'<th style="text-align:right">\uc6d4\ubd84\ubc30\uae08</th>'
+    +'</tr></thead>'
+    +'<tbody>'+tbody+'</tbody>'
+    +'<tr class="trow">'
+    +'<td colspan="2">\uc804\uccb4 \ud569\uacc4</td><td colspan="3"></td>'
+    +'<td style="text-align:right;font-weight:700">'+fmt(Math.round(gCost))+'</td>'
+    +'<td style="text-align:right;font-weight:700">'+fmt(Math.round(totalCur))+'</td>'
+    +'<td class="'+pc(gPnl)+'" style="text-align:right;font-weight:700">'+(gPnl>=0?'+':'')+fmt(Math.round(gPnl))+'</td>'
+    +'<td class="'+pc(gPnlR)+'" style="text-align:right">'+fmtPct(gPnlR)+'</td>'
+    +'<td style="text-align:right;font-weight:700;color:var(--blu)">100%</td>'
+    +'<td style="text-align:right;color:var(--grn)">'+fmt(gDist)+'</td>'
+    +'</tr>'
+    +'</table></div></div>';
 }
 
 
@@ -2648,9 +2619,10 @@ async function ghPush(){
 async function ghPull(){
   try{
     var token=ghGetToken();
-    if(!token) return false;
     var apiBase='https://api.github.com/repos/'+GH_REPO+'/contents/'+GH_FILE;
-    var hdrs={'Accept':'application/vnd.github.v3+json','Authorization':'token '+token};
+    // public repo는 토큰 없어도 읽기 가능 → 모바일 토큰 미설정 시도 OK
+    var hdrs={'Accept':'application/vnd.github.v3+json'};
+    if(token) hdrs['Authorization']='token '+token;
     var r=await fetch(apiBase,{headers:hdrs,cache:'no-store'});
     if(!r.ok) return false;
     var j=await r.json();
