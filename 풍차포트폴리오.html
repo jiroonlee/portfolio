@@ -304,6 +304,7 @@ tr:hover:not(.trow):not(.nrow):not(.xhdr) td{background:#f8fafc}
 </div>
 <div class="nav">
   <div class="ntab on"  onclick="go('overview',this)">전체현황</div>
+  <div class="ntab" onclick="go('pension',this)">사적연금</div>
   <div class="ntab" onclick="go('holdings',this)">종목총괄</div>
   <div class="ntab" onclick="go('mf-ira',this)">퇴직연금(미래)</div>
   <div class="ntab" onclick="go('mf-pension',this)">개인연금(미래)</div>
@@ -344,6 +345,7 @@ tr:hover:not(.trow):not(.nrow):not(.xhdr) td{background:#f8fafc}
 </div>
 <div id="mob-acc-overlay" onclick="document.getElementById('mob-acc-sheet').style.display='none';document.getElementById('mob-acc-overlay').style.display='none'" style="display:none;position:fixed;inset:0;z-index:290;background:rgba(0,0,0,.4)"></div>
 <div class="page on" id="pg-overview"></div>
+<div class="page" id="pg-pension"></div>
 <div class="page" id="pg-holdings"></div>
 <div class="page" id="pg-mf-ira"></div>
 <div class="page" id="pg-mf-pension"></div>
@@ -358,7 +360,7 @@ tr:hover:not(.trow):not(.nrow):not(.xhdr) td{background:#f8fafc}
 
 const DEF = {
  accounts:[
-  {id:'mf-ira',name:'미래_퇴직개인연금(퇴직금)',openDate:'23.2.15',note:'*23.12.20.개시',
+  {id:'mf-ira',name:'미래_퇴직개인연금(퇴직금)',openDate:'23.2.15',note:'*23.12.20.개시',pensionYr:4,pensionStart:'23.12.20',
    accDep:186882881,depositsYr:0,accWit:100000,withdrawalsYr:0,extraLabel:'이연퇴직금',extraVal:0,annualDistRate:0.0738,
    holdings:[
     {n:'KODEX 미국배당커버드콜액티브',tk:'441640',qty:10000,cost:11646,high:13088,mI:null,mM:990000},
@@ -369,7 +371,7 @@ const DEF = {
     {n:'ACE 구글밸류체인액티브',tk:'483340',qty:1000,cost:16868,high:22000,mI:null,mM:null},
     {n:'SOL 국제금',tk:'0066W0',qty:500,cost:12322,high:16900,mI:null,mM:null}
    ]},
-  {id:'mf-pension',name:'미래_개인연금(비과세재원/ISA입금)',openDate:'20.3.20',note:'*25.3.20.요건 충족',
+  {id:'mf-pension',name:'미래_개인연금(비과세재원/ISA입금)',openDate:'20.3.20',note:'*25.3.20.요건 충족',pensionYr:2,pensionStart:'25.3.20',
    accDep:190614135,depositsYr:0,accWit:64698793,withdrawalsYr:0,extraLabel:'비과세원금',extraVal:99333476,annualDistRate:0.0767,
    holdings:[
     {n:'KODEX 미국배당커버드콜액티브',tk:'441640',qty:8000,cost:11508,high:13088,mI:null,mM:792000},
@@ -390,7 +392,7 @@ const DEF = {
     {n:'ACE 구글밸류체인액티브',tk:'483340',qty:500,cost:16855,high:22000,mI:null,mM:null},
     {n:'SOL 국제금',tk:'0066W0',qty:300,cost:14517,high:16900,mI:null,mM:null}
    ]},
-  {id:'ss-pension',name:'삼성_개인연금(과세/적립투자)',openDate:'20.3.24',note:'*25.3.24.요건 충족',
+  {id:'ss-pension',name:'삼성_개인연금(과세/적립투자)',openDate:'20.3.24',note:'*25.3.24.요건 충족',pensionYr:2,pensionStart:'25.3.24',
    accDep:58983298,depositsYr:0,accWit:0,withdrawalsYr:0,extraLabel:'비과세원금',extraVal:27983298,annualDistRate:0.0826,
    holdings:[
     {n:'KODEX 미국배당커버드콜액티브',tk:'441640',qty:2750,cost:11656,high:13088,mI:null,mM:272250},
@@ -400,7 +402,7 @@ const DEF = {
     {n:'ACE 테슬라밸류체인액티브',tk:'457480',qty:500,cost:21394,high:23435,mI:null,mM:null},
     {n:'ACE 구글밸류체인액티브',tk:'483340',qty:1,cost:20755,high:22000,mI:0,mM:0}
    ]},
-  {id:'mf-irp2',name:'미래에셋 IRP(적립투자)',openDate:'25.4.29',note:'*30.4.29.요건 충족',
+  {id:'mf-irp2',name:'미래에셋 IRP(적립투자)',openDate:'25.4.29',note:'*30.4.29.요건 충족',pensionYr:null,pensionStart:null,
    accDep:6000000,depositsYr:0,accWit:0,withdrawalsYr:0,extraLabel:'비과세원금',extraVal:0,annualDistRate:null,
    holdings:[
     {n:'KODEX 미국나스닥100',tk:'379810',qty:168,cost:25294,high:25930,mI:null,mM:null},
@@ -1636,6 +1638,324 @@ function renderHoldings(){
 }
 
 
+/* ===== 사적연금 통합관리 ===== */
+var PENSION_KEY='fp_pension_v1';
+var PENSION_STRATEGY_KEY='fp_pension_strategy';
+
+// 연금 저장값 로드/저장
+function pensionGet(){ try{return JSON.parse(sGet(PENSION_KEY)||'{}');}catch(e){return {};} }
+function pensionSet(obj){ sSet(PENSION_KEY,JSON.stringify(obj)); }
+function pensionStrategyGet(){ return sGet(PENSION_STRATEGY_KEY)||
+  '1. 퇴직연금의 이연퇴직금 인출이 완료되면, 과세재원을 사적연금 수령한도내로 연금수령\n'+
+  '2. 퇴직연금 인출이 끝나면, 개인연금(삼성)의 비과세재원 인출완료후 연금개시(사적연금수령한도)\n'+
+  '3. 개인연금(미래)는 비상금으로 미개시 상태로 운영하고, IRP(미래)은 계속 적립투자 예정'; }
+function pensionStrategySet(v){ sSet(PENSION_STRATEGY_KEY,v); }
+
+// 1월1일 또는 가장 가까운 스냅샷에서 계좌 현재총액 추출
+function getPensionBaseAmt(accId){
+  var saved=pensionGet();
+  if(saved['base_'+accId]!=null) return saved['base_'+accId]; // 수동 입력값 우선
+  var snaps=loadSnaps();
+  if(!snaps.length) return null;
+  var year=new Date().getFullYear();
+  var jan1=year+'. 1. 1.';
+  // 정확히 1월1일 스냅샷 찾기
+  var exact=snaps.find(function(s){return s.date===jan1;});
+  if(exact&&exact.accTotals&&exact.accTotals[accId]) return exact.accTotals[accId];
+  // 1월1일에 가장 가까운 스냅샷 찾기 (1월1일 이후 첫 번째)
+  var jan1Ts=new Date(year+'-01-01').getTime();
+  var sorted=snaps.slice().sort(function(a,b){return new Date(a.ts)-new Date(b.ts);});
+  var closest=null,minDiff=Infinity;
+  sorted.forEach(function(s){
+    var d=Math.abs(new Date(s.ts).getTime()-jan1Ts);
+    if(d<minDiff){minDiff=d;closest=s;}
+  });
+  if(closest&&closest.accTotals&&closest.accTotals[accId]) return closest.accTotals[accId];
+  return null;
+}
+
+// 계좌별 현재총액 계산 (liveP 기반)
+function getAccCurTotal(accId){
+  var acc=ACCOUNTS.find(function(a){return a.id===accId;});
+  if(!acc) return 0;
+  var cur=0;
+  acc.holdings.forEach(function(h){
+    if(h.isMMF) return;
+    cur+=liveP(h)*(h.qty||0);
+  });
+  return Math.round(cur);
+}
+
+function renderPension(){
+  var pg=document.getElementById('pg-pension');
+  if(!pg) return;
+  var saved=pensionGet();
+
+  // 4개 연금계좌 정의 (엑셀 순서)
+  var PACC=[
+    {id:'mf-ira',   label:'퇴직연금(미래)', openDate:'23.2.15', startDate:'23.12.20', yr:4,  started:true,  type:'퇴직'},
+    {id:'mf-pension',label:'개인연금(미래)', openDate:'20.3.20', startDate:'25.3.20',  yr:2,  started:false, type:'개인'},
+    {id:'ss-pension',label:'개인연금(삼성)', openDate:'20.3.24', startDate:'25.3.24',  yr:2,  started:false, type:'개인'},
+    {id:'mf-irp2',  label:'IRP(미래에셋)', openDate:'25.4.29', startDate:'30.4.29',   yr:null,started:false,type:'IRP'},
+  ];
+
+  // 각 계좌 데이터 계산
+  var cols=PACC.map(function(p){
+    var acc=ACCOUNTS.find(function(a){return a.id===p.id;});
+    var curTotal=getAccCurTotal(p.id);
+    var extraVal=acc?acc.extraVal||0:0;
+    var retireVal=(p.id==='mf-ira')?(acc?acc.extraVal||0:0):0;
+    var nontaxVal=(p.type==='개인')?extraVal:0;
+    var taxable=curTotal-extraVal-(p.id==='mf-ira'?retireVal:0);
+    if(taxable<0) taxable=0;
+
+    // 연금수령한도: 수동입력 or 자동계산
+    var baseAmt=saved['base_'+p.id]!=null?saved['base_'+p.id]:curTotal;
+    var limitAuto=(p.yr&&p.yr<11)?Math.round(baseAmt/(11-p.yr)*1.2):null;
+    var limitVal=saved['limit_'+p.id]!=null?saved['limit_'+p.id]:limitAuto;
+
+    // 사적연금수령한도포함금액 (수동 입력)
+    var inclLimit=saved['incl_'+p.id]!=null?saved['incl_'+p.id]:
+      (limitVal!=null?Math.min(limitVal,taxable):null);
+
+    return {
+      id:p.id, label:p.label, openDate:p.openDate, startDate:p.startDate,
+      yr:p.yr, started:p.started, type:p.type,
+      curTotal:curTotal, extraVal:extraVal, retireVal:retireVal,
+      nontaxVal:nontaxVal, taxable:taxable,
+      baseAmt:baseAmt, limitAuto:limitAuto, limitVal:limitVal,
+      inclLimit:inclLimit,
+      freeWithdraw:(p.id==='mf-ira')?retireVal:nontaxVal,
+    };
+  });
+
+  // 합계
+  var sumCur=cols.reduce(function(s,c){return s+c.curTotal;},0);
+  var sumNon=cols.reduce(function(s,c){return s+c.nontaxVal;},0);
+  var sumRet=cols.reduce(function(s,c){return s+c.retireVal;},0);
+  var sumTax=cols.reduce(function(s,c){return s+c.taxable;},0);
+  var sumFree=cols.reduce(function(s,c){return s+c.freeWithdraw;},0);
+  var sumIncl=cols.reduce(function(s,c){return s+(c.inclLimit||0);},0);
+
+  var cellSt='border:1px solid var(--brd);padding:7px 10px;text-align:right;font-size:12px;';
+  var lblSt='border:1px solid var(--brd);padding:7px 10px;font-size:12px;font-weight:600;background:var(--gbg);white-space:nowrap;';
+  var hdSt='border:1px solid var(--brd);padding:8px 10px;text-align:center;font-size:11px;font-weight:700;background:#1e3a5f;color:#fff;';
+
+  function numCell(v,style){
+    if(v==null||v===0) return '<td style="'+cellSt+(style||'')+'" class="auto">-</td>';
+    return '<td style="'+cellSt+(style||'')+'" class="auto">'+fmt(Math.round(v))+'</td>';
+  }
+  function editCell(key,val,id){
+    var v=val!=null?Math.round(val):'';
+    return '<td style="'+cellSt+'padding:3px 5px;">'
+      +'<input class="ed" style="width:100%;text-align:right;font-size:11px;color:var(--blu)"'
+      +' value="'+(v||'')+'" placeholder="직접입력"'
+      +' onchange="pensionEdit(\''+key+'\',\''+id+'\',this.value)">'
+      +'</td>';
+  }
+
+  var colLabels=cols.map(function(c){return '<th style="'+hdSt+'">'+c.label+'</th>';}).join('');
+  var sumHd='<th style="'+hdSt+'background:#0f2340;">합계</th>';
+
+  var rows=[
+    // 개설일자
+    function(){
+      return '<tr><td style="'+lblSt+'">개설일자</td>'
+        +cols.map(function(c){return '<td style="'+cellSt+'text-align:center">'+c.openDate+'</td>';}).join('')
+        +'<td style="'+cellSt+'"></td></tr>';
+    },
+    // 연금개시가능일
+    function(){
+      return '<tr><td style="'+lblSt+'">연금개시가능일</td>'
+        +cols.map(function(c){return '<td style="'+cellSt+'text-align:center">'+c.startDate+'</td>';}).join('')
+        +'<td style="'+cellSt+'"></td></tr>';
+    },
+    // 개시여부
+    function(){
+      return '<tr><td style="'+lblSt+'">개시여부</td>'
+        +cols.map(function(c){
+          return '<td style="'+cellSt+'text-align:center;color:'+(c.started?'var(--grn)':'var(--tx2)')+'">'
+            +(c.started?'개시':'미개시')+'</td>';
+        }).join('')+'<td style="'+cellSt+'"></td></tr>';
+    },
+    // 연금수령연차
+    function(){
+      return '<tr><td style="'+lblSt+'">연금수령연차</td>'
+        +cols.map(function(c){
+          return '<td style="'+cellSt+'text-align:center">'+(c.yr!=null?c.yr+'년차':'-')+'</td>';
+        }).join('')+'<td style="'+cellSt+'"></td></tr>';
+    },
+    // 구분선
+    function(){
+      return '<tr><td colspan="6" style="background:var(--gbg);height:6px;border:1px solid var(--brd)"></td></tr>';
+    },
+    // 평가잔액
+    function(){
+      return '<tr><td style="'+lblSt+'">평가잔액(현재총액)</td>'
+        +cols.map(function(c){return numCell(c.curTotal,'font-weight:700;');}).join('')
+        +numCell(sumCur,'font-weight:700;')+'</tr>';
+    },
+    // 비과세재원
+    function(){
+      return '<tr><td style="'+lblSt+'">비과세재원</td>'
+        +cols.map(function(c){return numCell(c.nontaxVal);}).join('')
+        +numCell(sumNon)+'</tr>';
+    },
+    // 이연퇴직금
+    function(){
+      return '<tr><td style="'+lblSt+'">이연퇴직금</td>'
+        +cols.map(function(c){return numCell(c.retireVal);}).join('')
+        +numCell(sumRet)+'</tr>';
+    },
+    // 과세재원
+    function(){
+      return '<tr><td style="'+lblSt+'">과세재원(운영수익 포함)</td>'
+        +cols.map(function(c){return numCell(c.taxable);}).join('')
+        +numCell(sumTax)+'</tr>';
+    },
+    // 구분선
+    function(){
+      return '<tr><td colspan="6" style="background:var(--gbg);height:6px;border:1px solid var(--brd)"></td></tr>';
+    },
+    // 연금수령한도 기준금액 (1월1일 or 수동)
+    function(){
+      return '<tr><td style="'+lblSt+'font-size:11px;">한도산정 기준금액<br><span style="font-weight:400;font-size:9px;color:var(--tx3)">1월1일 현재총액 (직접수정 가능)</span></td>'
+        +cols.map(function(c){
+          var v=saved['base_'+c.id]!=null?saved['base_'+c.id]:c.curTotal;
+          return '<td style="'+cellSt+'padding:3px 5px;">'
+            +'<input class="ed" style="width:100%;text-align:right;font-size:11px;color:var(--blu)"'
+            +' value="'+(v?Math.round(v):'')+'" placeholder="직접입력"'
+            +' onchange="pensionEdit(\'base\',\''+c.id+'\',this.value)">'
+            +'</td>';
+        }).join('')+'<td style="'+cellSt+'"></td></tr>';
+    },
+    // 연금수령한도(계좌별)
+    function(){
+      return '<tr><td style="'+lblSt+'font-size:11px;">연금수령한도(계좌별)<br><span style="font-weight:400;font-size:9px;color:var(--tx3)">과세재원÷(11-수령연차)×1.2 (직접수정 가능)</span></td>'
+        +cols.map(function(c){
+          if(!c.yr||c.yr>=11) return '<td style="'+cellSt+'text-align:center;color:var(--tx3)">-</td>';
+          var isCustom=saved['limit_'+c.id]!=null;
+          var v=c.limitVal!=null?Math.round(c.limitVal):'';
+          return '<td style="'+cellSt+'padding:3px 5px;">'
+            +'<input class="ed" style="width:100%;text-align:right;font-size:11px;color:'+(isCustom?'var(--red)':'var(--tx)')+'"'
+            +' value="'+v+'" placeholder="자동계산"'
+            +' title="'+(c.limitAuto!=null?'자동계산: '+fmt(Math.round(c.limitAuto)):'')+'"'
+            +' onchange="pensionEdit(\'limit\',\''+c.id+'\',this.value)"'
+            +' ondblclick="pensionResetAuto(\'limit\',\''+c.id+'\',this)">'
+            +'</td>';
+        }).join('')+'<td style="'+cellSt+'"></td></tr>';
+    },
+    // 구분선
+    function(){
+      return '<tr><td colspan="6" style="background:var(--gbg);height:6px;border:1px solid var(--brd)"></td></tr>';
+    },
+    // 사적연금수령한도 미포함 인출가능금액
+    function(){
+      return '<tr><td style="'+lblSt+'font-size:11px;">사적연금수령한도<br>미포함 인출가능금액</td>'
+        +cols.map(function(c){return numCell(c.freeWithdraw);}).join('')
+        +numCell(sumFree)+'</tr>';
+    },
+    // 비과세 수령가능액
+    function(){
+      return '<tr><td style="'+lblSt+'">비과세 수령가능액(자유인출)</td>'
+        +cols.map(function(c){return numCell(c.nontaxVal);}).join('')
+        +numCell(sumNon)+'</tr>';
+    },
+    // 퇴직소득세 감면(70%)
+    function(){
+      var c0=cols[0]; // mf-ira
+      var v70=c0.limitVal!=null?Math.round(c0.limitVal*0.7):null;
+      return '<tr><td style="'+lblSt+'font-size:11px;">퇴직소득세감면<br>수령가능액(70%)</td>'
+        +numCell(v70,'color:var(--grn);')
+        +'<td style="'+cellSt+'text-align:center;color:var(--tx3)">-</td>'
+        +'<td style="'+cellSt+'text-align:center;color:var(--tx3)">-</td>'
+        +'<td style="'+cellSt+'text-align:center;color:var(--tx3)">-</td>'
+        +numCell(v70,'color:var(--grn);')+'</tr>';
+    },
+    // 퇴직소득세 미감면(100%)
+    function(){
+      var c0=cols[0];
+      var v100=c0.limitVal!=null?Math.round(c0.limitVal*0.3):null;
+      var vTotal=c0.limitVal!=null?Math.round(c0.limitVal):null;
+      return '<tr><td style="'+lblSt+'font-size:11px;">퇴직소득세미감면<br>수령가능액(100%)</td>'
+        +numCell(v100,'color:var(--red);')
+        +'<td style="'+cellSt+'text-align:center;color:var(--tx3)">-</td>'
+        +'<td style="'+cellSt+'text-align:center;color:var(--tx3)">-</td>'
+        +'<td style="'+cellSt+'text-align:center;color:var(--tx3)">-</td>'
+        +numCell(vTotal,'color:var(--red);')+'</tr>';
+    },
+    // 구분선
+    function(){
+      return '<tr><td colspan="6" style="background:var(--gbg);height:6px;border:1px solid var(--brd)"></td></tr>';
+    },
+    // 사적연금수령한도포함금액 (직접 수정)
+    function(){
+      var LIMIT15M=15000000;
+      var warn=sumIncl>LIMIT15M;
+      return '<tr><td style="'+lblSt+'font-size:11px;background:#fff3cd;">사적연금수령한도<br>포함금액 <span style="font-size:9px;font-weight:400">(연금계좌 통합 1,500만원)</span></td>'
+        +cols.map(function(c){
+          var v=c.inclLimit!=null?Math.round(c.inclLimit):'';
+          return '<td style="border:1px solid var(--brd);padding:3px 5px;background:#fff3cd;">'
+            +'<input class="ed" style="width:100%;text-align:right;font-size:11px;font-weight:700;color:var(--blu)"'
+            +' value="'+v+'" placeholder="직접입력"'
+            +' onchange="pensionEdit(\'incl\',\''+c.id+'\',this.value)">'
+            +'</td>';
+        }).join('')
+        +'<td style="border:1px solid var(--brd);padding:7px 10px;text-align:right;font-size:12px;font-weight:700;background:#fff3cd;'
+        +(warn?'color:var(--red)':'color:var(--blu)')+'">'+fmt(sumIncl)
+        +(warn?'<br><span style="font-size:9px;font-weight:400">⚠ 한도초과</span>':'')
+        +'</td></tr>';
+    },
+  ];
+
+  var tableHTML='<div class="twrap"><table style="width:100%;border-collapse:collapse;min-width:700px;">'
+    +'<thead><tr><th style="'+hdSt+'min-width:120px;">구분</th>'
+    +colLabels+sumHd+'</tr></thead><tbody>'
+    +rows.map(function(fn){return fn();}).join('')
+    +'</tbody></table></div>';
+
+  // 전략 텍스트
+  var strategy=pensionStrategyGet();
+  var strategyHTML='<div class="sec" style="margin-top:12px">'
+    +'<div class="sechdr"><span class="sectitle">연금계좌 인출 및 운영전략</span>'
+    +'<button class="btn" style="font-size:11px;padding:3px 9px;margin-left:8px;" onclick="pensionSaveStrategy()">저장</button></div>'
+    +'<div style="padding:0 13px 13px">'
+    +'<textarea id="pension-strategy" style="width:100%;min-height:100px;border:1px solid var(--brd);border-radius:8px;padding:10px;font-size:12px;font-family:inherit;resize:vertical;box-sizing:border-box;line-height:1.6">'
+    +strategy+'</textarea></div></div>';
+
+  // 안내
+  var noteHTML='<div style="padding:4px 13px 8px;font-size:10px;color:var(--tx3)">'
+    +'* 한도산정 기준금액: 매년 1월1일 현재총액 기준 (데이터 없을 시 가장 가까운 날짜 사용, 직접 수정 가능)<br>'
+    +'* 연금수령한도: 더블클릭 시 자동계산값으로 초기화<br>'
+    +'* 사적연금 통합 연간 수령한도 1,500만원 초과 시 종합과세 대상'
+    +'</div>';
+
+  pg.innerHTML='<div class="sec"><div class="sechdr"><span class="sectitle">사적연금 통합관리</span>'
+    +'<span class="secsub">4개 계좌 · 데이터 자동 연동</span></div>'
+    +tableHTML+noteHTML+'</div>'+strategyHTML;
+}
+
+function pensionEdit(type,id,val){
+  var saved=pensionGet();
+  var v=val===''?null:(parseFloat(val.replace(/,/g,''))||0);
+  saved[type+'_'+id]=v;
+  pensionSet(saved);
+  renderPension();
+}
+
+function pensionResetAuto(type,id,input){
+  var saved=pensionGet();
+  delete saved[type+'_'+id];
+  pensionSet(saved);
+  renderPension();
+}
+
+function pensionSaveStrategy(){
+  var ta=document.getElementById('pension-strategy');
+  if(ta){ pensionStrategySet(ta.value); alert('\u2705 \uc6b4\uc601\uc804\ub7b5 \uc800\uc7a5 \uc644\ub8cc'); }
+}
+
+
 /* ===== 전체현황 렌더 ===== */
 function renderOverview(){
   var gDep=0,gWit=0,gCost=0,gCur=0,gDist=0,gExtra=0,gExtraTax=0,gExtraRet=0;
@@ -2244,6 +2564,7 @@ function renderActive(){
 function renderPage(id){
   if(id==='overview')renderOverview();
   else if(id==='holdings')renderHoldings();
+  else if(id==='pension')renderPension();
   else if(id==='cma')renderCMA();
   else if(id==='crypto')renderCrypto();
   else if(id==='history')renderHistory();
