@@ -322,7 +322,7 @@ tr:hover:not(.trow):not(.nrow):not(.xhdr) td{background:#f8fafc}
     <span class="mico">📊</span>전체현황
   </button>
   <button class="mob-btn" id="mob-hd" onclick="go('holdings',null);mobSel('mob-hd')">
-    <span class="mico"></span>종목총괄
+    <span class="mico">📋</span>종목총괄
   </button>
   <button class="mob-btn" id="mob-ac" onclick="mobShowAccMenu()">
     <span class="mico">🏦</span>계좌
@@ -1577,7 +1577,6 @@ function renderHoldings(){
       +'<td style="text-align:right"><div>'
         +'<span style="font-weight:700;color:var(--blu)">'+wt.toFixed(1)+'%</span>'
         +wtBar+'</div></td>'
-      +'<td style="text-align:right;color:var(--grn)">'+(monthDist?fmt(monthDist):'-')+'</td>'
       +'</tr>';
   }).join('');
 
@@ -1599,17 +1598,16 @@ function renderHoldings(){
     '</div>',
     '<div class="twrap" style="padding:0 13px 13px"><table style="table-layout:fixed;width:100%">',
     '<colgroup>',
-    '<col style="width:28px">',   // #
-    '<col>',                       // 종목명 (flex)
-    '<col style="width:72px">',   // 합계수량
-    '<col style="width:88px">',   // 평균매입단가
-    '<col style="width:88px">',   // 현재가
-    '<col style="width:95px">',   // 매입총액
-    '<col style="width:95px">',   // 현재총액
-    '<col style="width:88px">',   // 평가손익
-    '<col style="width:62px">',   // 수익률
-    '<col style="width:70px">',   // 비중
-    '<col style="width:72px">',   // 월분배금
+    '<col style="width:26px">',
+    '<col style="min-width:100px">',
+    '<col style="width:60px">',
+    '<col style="width:80px">',
+    '<col style="width:80px">',
+    '<col style="width:88px">',
+    '<col style="width:88px">',
+    '<col style="width:80px">',
+    '<col style="width:58px">',
+    '<col style="width:62px">',
     '</colgroup>',
     '<thead><tr>',
     '<th style="text-align:center">#</th>',
@@ -1622,7 +1620,6 @@ function renderHoldings(){
     '<th style="text-align:right">평가손익</th>',
     '<th style="text-align:right">수익률</th>',
     '<th style="text-align:right">비중</th>',
-    '<th style="text-align:right">월분배금</th>',
     '</tr></thead>',
     '<tbody>'+tableRows+'</tbody>',
     '<tr class="trow">',
@@ -1633,7 +1630,6 @@ function renderHoldings(){
     '<td class="'+pc(gPnl)+'" style="text-align:right">'+(gPnl>=0?'+':'')+fmt(Math.round(gPnl))+'</td>',
     '<td class="'+pc(gPnlR)+'" style="text-align:right">'+fmtPct(gPnlR)+'</td>',
     '<td style="text-align:right;font-weight:700;color:var(--blu)">100%</td>',
-    '<td style="text-align:right;color:var(--grn)">'+fmt(gDist)+'</td>',
     '</tr>',
     '</table></div></div>'
   ].join('');
