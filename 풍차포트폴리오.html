@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>풍차계획 포트폴리오 v3.0</title>
+<title>풍차계획 포트폴리오</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -17,7 +17,6 @@ body{font-family:'Malgun Gothic',-apple-system,sans-serif;font-size:12px;backgro
 .hbtn{border:1px solid rgba(255,255,255,.25);color:#fff;padding:5px 11px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;white-space:nowrap;background:rgba(255,255,255,.08)}
 .hbtn:hover{background:rgba(255,255,255,.18)}
 .hbtn-save{background:#057a55;border-color:#057a55}.hbtn-save:hover{background:#045f42}
-.hbtn-sync{background:#0969da;border-color:#0969da;color:#fff}.hbtn-sync:hover{background:#0757b8}.hbtn-sync.syncing{background:#f59e0b;border-color:#f59e0b}.hbtn-sync.error{background:#ef4444;border-color:#ef4444}
 .nav{background:var(--sur);border-bottom:1px solid var(--brd);display:flex;padding:0 10px;overflow-x:auto;position:sticky;top:var(--hdr);z-index:90;scrollbar-width:none}
 .nav::-webkit-scrollbar{display:none}
 .ntab{padding:8px 10px;font-size:11px;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;color:var(--tx2);font-weight:500;user-select:none}
@@ -279,33 +278,33 @@ tr:hover:not(.trow):not(.nrow):not(.xhdr) td{background:#f8fafc}
 <!-- GitHub 동기화 모달 -->
 <div class="moverlay" id="gh-modal">
   <div class="modal" style="max-width:460px">
-    <h3>☁️ GitHub 동기화 설정</h3>
-    <p style="font-size:12px;color:var(--tx2);margin-bottom:14px">토큰은 이 기기에만 저장되며 GitHub 외부로 전송되지 않습니다.</p>
-    <div class="mrow"><div class="mlbl">GitHub Token</div>
-      <input class="minp" id="gh-token-inp" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+    <h3>GitHub 동기화 설정</h3>
+    <p style="font-size:12px;color:var(--tx2);margin-bottom:14px">토큰은 이 기기에만 저장됩니다.<br>토큰 없어도 데이터 가져오기는 작동합니다 (public repo).</p>
+    <div class="mrow"><div class="mlbl">GitHub Token (저장용)</div>
+      <input class="minp" id="gh-token-inp" type="password" placeholder="ghp_xxxx (없으면 비워두세요)">
     </div>
-    <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">
-      <button class="mbtn" onclick="ghSaveToken()" style="background:var(--blu);color:#fff;border-color:var(--blu);font-weight:700">저장 후 동기화</button>
-      <button class="mbtn mbtn-cancel" onclick="closeModal('gh-modal')">취소</button>
+    <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+      <button class="mbtn" onclick="ghSaveAndSync()" style="background:var(--blu);color:#fff;border-color:var(--blu);font-weight:700">저장 후 업로드</button>
+      <button class="mbtn" onclick="ghForcePull()" style="background:var(--grn);color:#fff;border-color:var(--grn)">신실 가져오기</button>
+      <button class="mbtn mbtn-cancel" onclick="closeModal('gh-modal')">닫기</button>
     </div>
     <div id="gh-status" style="margin-top:10px;font-size:12px;color:var(--tx2)"></div>
   </div>
 </div>
 
 <div class="hdr">
-  <div><div class="hdr-title">🌸 수익은 길게, 손실은 짧게!!! <span style="font-size:10px;color:#9ca3af;font-weight:400">v3.0</span></div><div class="hdr-sub">연금계좌 풍차계획 포트폴리오</div></div>
+  <div><div class="hdr-title">🌸 수익은 길게, 손실은 짧게!!! <span style="font-size:10px;color:#9ca3af;font-weight:400">v5.0</span></div><div class="hdr-sub">연금계좌 풍차계획 포트폴리오</div></div>
   <div class="hdr-sp"></div>
   <div class="upd" id="upd">종전가</div>
   <div class="dot" id="dot"></div>
   <button class="hbtn hbtn-hide" onclick="exportToExcel()">📥 엑셀저장</button>
   <button class="hbtn hbtn-save" onclick="saveData()">💾 저장</button>
-  <button class="hbtn hbtn-sync" onclick="ghSync()" id="gh-btn" title="GitHub 동기화">☁️ 동기화</button>
-  <button class="hbtn hbtn-hide" onclick="changePW()">🔑 비밀번호</button>
+  <button class="hbtn hbtn-sync" onclick="ghSync()" id="gh-btn">☁️ 동기화</button>
   <button class="hbtn" onclick="fetchAll()">🔄 새로고침</button>
 </div>
 <div class="nav">
-  <div class="ntab on"  onclick="go('overview',this)">📊 전체현황</div>
-  <div class="ntab" onclick="go('holdings',this)">📋 종목총괄</div>
+  <div class="ntab on"  onclick="go('overview',this)">전체현황</div>
+  <div class="ntab" onclick="go('holdings',this)">종목총괄</div>
   <div class="ntab" onclick="go('mf-ira',this)">퇴직연금(미래)</div>
   <div class="ntab" onclick="go('mf-pension',this)">개인연금(미래)</div>
   <div class="ntab" onclick="go('mf-isa',this)">ISA(미래)</div>
@@ -313,8 +312,8 @@ tr:hover:not(.trow):not(.nrow):not(.xhdr) td{background:#f8fafc}
   <div class="ntab" onclick="go('mf-irp2',this)">IRP(미래)</div>
   <div class="ntab" onclick="go('cma',this)">CMA 해외주식</div>
   <div class="ntab" onclick="go('crypto',this)">가상화폐</div>
-  <div class="ntab" onclick="go('history',this)">📈 자산변동</div>
-  <div class="ntab" onclick="go('changelog',this)">📝 변경이력</div>
+  <div class="ntab" onclick="go('history',this)">자산변동</div>
+  <div class="ntab" onclick="go('changelog',this)">변경이력</div>
 </div>
 
 <!-- 모바일 하단 퀵 메뉴 -->
@@ -323,7 +322,7 @@ tr:hover:not(.trow):not(.nrow):not(.xhdr) td{background:#f8fafc}
     <span class="mico">📊</span>전체현황
   </button>
   <button class="mob-btn" id="mob-hd" onclick="go('holdings',null);mobSel('mob-hd')">
-    <span class="mico">📋</span>종목총괄
+    <span class="mico"></span>종목총괄
   </button>
   <button class="mob-btn" id="mob-ac" onclick="mobShowAccMenu()">
     <span class="mico">🏦</span>계좌
@@ -437,7 +436,7 @@ const DEF = {
 
 /* ===== 상태 ===== */
 var FX = {USD:1479, JPY:927.83};
-var PRICES = {}, HIGH52 = {}, FETCH_LOG = {};
+var PRICES = {}, HIGH52 = {};
 var SKEY='fp_data', SNAPKEY='fp_snaps', CLKEY='fp_cl';
 var ACCOUNTS, CMA, CRYPTO;
 
@@ -450,15 +449,17 @@ function loadData(){
   try{
     var s=JSON.parse(sGet(SKEY)||'null');
     if(s&&s.accounts&&s.cma&&s.crypto){
-      ACCOUNTS=s.accounts; CMA=s.cma; CRYPTO=s.crypto;
+      ACCOUNTS=s.accounts;CMA=s.cma;CRYPTO=s.crypto;
       if(s.fx){FX.USD=s.fx.usd||FX.USD;FX.JPY=s.fx.jpy||FX.JPY;}
-      if(s.prices) Object.assign(PRICES,s.prices);
+      if(s.prices){Object.assign(PRICES,s.prices);}
+      // DEF의 extraLabel/annualDistRate 강제 적용 (버전 업데이트 반영)
       DEF.accounts.forEach(function(def){
         var acc=ACCOUNTS.find(function(a){return a.id===def.id;});
-        if(!acc) return;
-        acc.extraLabel=def.extraLabel;
-        acc.annualDistRate=def.annualDistRate;
-        if(acc.extraVal===undefined||acc.extraVal===null) acc.extraVal=def.extraVal||0;
+        if(acc){
+          acc.extraLabel=def.extraLabel;
+          acc.annualDistRate=def.annualDistRate;
+          // extraVal은 사용자 입력값 유지
+        }
       });
       return;
     }
@@ -466,30 +467,6 @@ function loadData(){
   ACCOUNTS=JSON.parse(JSON.stringify(DEF.accounts));
   CMA=JSON.parse(JSON.stringify(DEF.cma));
   CRYPTO=JSON.parse(JSON.stringify(DEF.crypto));
-}
-
-/* ── DEF 기준 tk 코드 마이그레이션 (localStorage 구버전 자동 갱신) ── */
-function migrateTickers(){
-  // KR 계좌: 이름으로 매칭해서 tk 업데이트
-  DEF.accounts.forEach(function(defAcc){
-    var acc=ACCOUNTS.find(function(a){return a.id===defAcc.id;});
-    if(!acc) return;
-    defAcc.holdings.forEach(function(defH){
-      var h=acc.holdings.find(function(x){return x.n===defH.n;});
-      if(h&&defH.tk&&h.tk!==defH.tk){
-        console.log('tk 갱신:',h.n,h.tk,'→',defH.tk);
-        h.tk=defH.tk;
-      }
-    });
-  });
-  // CMA: 이름으로 매칭해서 tk 업데이트
-  DEF.cma.holdings.forEach(function(defH){
-    var h=CMA.holdings.find(function(x){return x.n===defH.n;});
-    if(h&&defH.tk&&h.tk!==defH.tk){
-      console.log('CMA tk 갱신:',h.n,(h.tk||'없음'),'→',defH.tk);
-      h.tk=defH.tk;
-    }
-  });
 }
 function saveData(){
   var today=new Date().toLocaleDateString('ko-KR');
@@ -502,14 +479,13 @@ function saveData(){
   snaps.sort(function(a,b){return a.date<b.date?-1:1;});
   sSet(SNAPKEY,JSON.stringify(snaps));
   sSet(SKEY,JSON.stringify({accounts:ACCOUNTS,cma:CMA,crypto:CRYPTO,fx:{usd:FX.USD,jpy:FX.JPY},prices:PRICES}));
-  sSet('fp_last_save',now);
   addCL(today,t);
-  // GitHub 토큰 있으면 자동 동기화
+  sSet('fp_last_save',now);
   if(ghGetToken()){
     ghPush();
-    alert('\u2705 저장 완료 ('+today+')\n총평가액: '+fmt(t.cur)+'원\n\n☁️ GitHub 동기화 중...');
+    alert('\u2705 저장 완료 ('+today+')\n총평가액: '+fmt(t.cur)+'원\n\n\u2601\ufe0f GitHub \uc5c5\ub85c\ub4dc \uc911...');
   } else {
-    alert('\u2705 저장 완료 ('+today+')\n총평가액: '+fmt(t.cur)+'원\n\n☁️ 동기화 버튼으로 GitHub에 백업하면\n모든 기기에서 같은 데이터를 볼 수 있습니다.');
+    alert('\u2705 저장 완료 ('+today+')\n총평가액: '+fmt(t.cur)+'원');
   }
 }
 var HIST_SNAPS=[
@@ -777,8 +753,10 @@ function grandTotal(){
 
 /* ===== 시세 ===== */
 function withTO(p,ms){
-  return Promise.race([p,new Promise(function(_,r){setTimeout(function(){r(new Error('to'));},ms);})]);
+  return Promise.race([p,new Promise(function(_,r){setTimeout(function(){r(new Error('timeout'));},ms);})]);
 }
+
+/* 병렬 실행 - 첫 번째 유효값 반환 */
 function fetchFirst(promises){
   return new Promise(function(resolve){
     var done=false,settled=0,total=promises.length;
@@ -786,34 +764,32 @@ function fetchFirst(promises){
     promises.forEach(function(p){
       Promise.resolve(p).then(function(v){
         settled++;
-        if(!done&&v!=null&&v>0){done=true;resolve(v);}
+        // 숫자(>0) 또는 객체(가상화폐 결과) 모두 유효값으로 처리
+        var valid=(typeof v==='number'&&v>0)||(v!=null&&typeof v==='object'&&v._v);
+        if(!done&&valid){done=true;resolve(v);}
         else if(settled===total&&!done) resolve(null);
-      }).catch(function(){settled++;if(settled===total&&!done) resolve(null);});
+      }).catch(function(){
+        settled++;
+        if(settled===total&&!done) resolve(null);
+      });
     });
   });
 }
+
+/* Yahoo Finance v8 */
 async function _yahoo(sym,base){
   try{
-    var r=await withTO(fetch((base||'https://query1.finance.yahoo.com')+'/v8/finance/chart/'+encodeURIComponent(sym)+'?interval=1d&range=5d',{cache:'no-store'}),6000);
+    var r=await withTO(fetch((base||'https://query1.finance.yahoo.com')
+      +'/v8/finance/chart/'+encodeURIComponent(sym)+'?interval=1d&range=5d',
+      {cache:'no-store'}),6000);
     if(!r.ok) return null;
     var j=await r.json();
     var m=j&&j.chart&&j.chart.result&&j.chart.result[0]&&j.chart.result[0].meta;
     return(m&&m.regularMarketPrice>0)?m.regularMarketPrice:null;
   }catch(e){return null;}
 }
-async function _yahooQ(sym){
-  var bases=['https://query1.finance.yahoo.com','https://query2.finance.yahoo.com'];
-  for(var i=0;i<bases.length;i++){
-    try{
-      var r=await withTO(fetch(bases[i]+'/v7/finance/quote?symbols='+encodeURIComponent(sym),{cache:'no-store'}),6000);
-      if(!r.ok) continue;
-      var j=await r.json();
-      var q=j&&j.quoteResponse&&j.quoteResponse.result&&j.quoteResponse.result[0];
-      if(q&&q.regularMarketPrice>0) return q.regularMarketPrice;
-    }catch(e){}
-  }
-  return null;
-}
+
+/* Stooq (일본 ETF 대체) */
 async function _stooq(sym){
   try{
     var r=await withTO(fetch('https://stooq.com/q/l/?s='+sym.toLowerCase()+'&f=c&e=csv'),5000);
@@ -824,9 +800,11 @@ async function _stooq(sym){
   }catch(e){}
   return null;
 }
+
+/* CORS 프록시 + Yahoo */
 async function _proxy(sym){
-  var yUrl='https://query1.finance.yahoo.com/v8/finance/chart/'+encodeURIComponent(sym)+'?interval=1d&range=5d';
-  var proxies=['https://corsproxy.io/?'+encodeURIComponent(yUrl),'https://api.allorigins.win/raw?url='+encodeURIComponent(yUrl)];
+  var url='https://query1.finance.yahoo.com/v8/finance/chart/'+encodeURIComponent(sym)+'?interval=1d&range=5d';
+  var proxies=['https://corsproxy.io/?'+encodeURIComponent(url),'https://api.allorigins.win/raw?url='+encodeURIComponent(url)];
   for(var i=0;i<proxies.length;i++){
     try{
       var r=await withTO(fetch(proxies[i]),8000);
@@ -838,6 +816,8 @@ async function _proxy(sym){
   }
   return null;
 }
+
+/* 네이버 CORS 프록시 (한국 ETF) */
 async function _naver(tk){
   var url='https://polling.finance.naver.com/api/realtime?query=SERVICE_ITEM:'+tk;
   var proxies=['https://corsproxy.io/?'+encodeURIComponent(url),'https://api.allorigins.win/raw?url='+encodeURIComponent(url)];
@@ -856,57 +836,113 @@ async function _naver(tk){
   }
   return null;
 }
+
 async function fetchKR(tk){
   var p;
+  /* 한국 6자리 */
   if(/^[0-9][0-9A-Za-z]{5}$/.test(tk)){
-    p=await fetchFirst([_yahoo(tk+'.KS','https://query1.finance.yahoo.com'),_yahoo(tk+'.KS','https://query2.finance.yahoo.com'),_yahooQ(tk+'.KS'),_naver(tk),_proxy(tk+'.KS')]);
+    p=await fetchFirst([
+      _yahoo(tk+'.KS','https://query1.finance.yahoo.com'),
+      _yahoo(tk+'.KS','https://query2.finance.yahoo.com'),
+      _naver(tk),
+      _proxy(tk+'.KS')
+    ]);
     return p?Math.round(p):null;
   }
+  /* 일본 4자리 */
   if(/^\d{4}$/.test(tk)){
-    p=await fetchFirst([_yahoo(tk+'.T','https://query1.finance.yahoo.com'),_yahoo(tk+'.T','https://query2.finance.yahoo.com'),_yahooQ(tk+'.T'),_stooq(tk+'.jp'),_stooq(tk+'.t'),_proxy(tk+'.T')]);
+    p=await fetchFirst([
+      _yahoo(tk+'.T','https://query1.finance.yahoo.com'),
+      _yahoo(tk+'.T','https://query2.finance.yahoo.com'),
+      _stooq(tk+'.jp'),
+      _proxy(tk+'.T')
+    ]);
     return p?Math.round(p):null;
   }
-  p=await fetchFirst([_yahoo(tk,'https://query1.finance.yahoo.com'),_yahoo(tk,'https://query2.finance.yahoo.com'),_yahooQ(tk),_proxy(tk)]);
+  /* 미국 영문 */
+  p=await fetchFirst([
+    _yahoo(tk,'https://query1.finance.yahoo.com'),
+    _yahoo(tk,'https://query2.finance.yahoo.com'),
+    _proxy(tk)
+  ]);
   return p?(Math.round(p*100)/100):null;
 }
+
 async function fetchCrypto(sym){
   var obj=await fetchFirst([
-    (async function(){try{var r=await withTO(fetch('https://api.upbit.com/v1/ticker?markets=KRW-'+sym),5000);var j=await r.json();return(j&&j[0])?{price:j[0].trade_price,high52:j[0].highest_52_week_price,_v:1}:null;}catch(e){return null;}})(),
-    (async function(){try{var r=await withTO(fetch('https://api.bithumb.com/public/ticker/'+sym+'_KRW'),5000);var j=await r.json();return(j&&j.data&&j.data.closing_price)?{price:parseFloat(j.data.closing_price),high52:parseFloat(j.data.max_price||0),_v:1}:null;}catch(e){return null;}})()
+    (async function(){
+      try{
+        var r=await withTO(fetch('https://api.upbit.com/v1/ticker?markets=KRW-'+sym),5000);
+        var j=await r.json();
+        return(j&&j[0])?{price:j[0].trade_price,high52:j[0].highest_52_week_price,_v:1}:null;
+      }catch(e){return null;}
+    })(),
+    (async function(){
+      try{
+        var r=await withTO(fetch('https://api.bithumb.com/public/ticker/'+sym+'_KRW'),5000);
+        var j=await r.json();
+        return(j&&j.data&&j.data.closing_price)?
+          {price:parseFloat(j.data.closing_price),high52:parseFloat(j.data.max_price||0),_v:1}:null;
+      }catch(e){return null;}
+    })()
   ]);
   return obj||null;
 }
+
 async function fetchFXApi(){
   var fx=await fetchFirst([
-    (async function(){try{var r=await withTO(fetch('https://open.er-api.com/v6/latest/USD'),5000);var j=await r.json();return(j.rates&&j.rates.KRW)?{usd:Math.round(j.rates.KRW),jpy:j.rates.JPY?Math.round(j.rates.KRW/j.rates.JPY*100)/100:null,_v:1}:null;}catch(e){return null;}})(),
-    (async function(){try{var r=await withTO(fetch('https://api.frankfurter.app/latest?from=USD&to=KRW,JPY'),5000);var j=await r.json();return(j.rates&&j.rates.KRW)?{usd:Math.round(j.rates.KRW),jpy:j.rates.JPY?Math.round(j.rates.KRW/j.rates.JPY*100)/100:null,_v:1}:null;}catch(e){return null;}})()
+    (async function(){
+      try{
+        var r=await withTO(fetch('https://open.er-api.com/v6/latest/USD'),5000);
+        var j=await r.json();
+        return(j.rates&&j.rates.KRW)?{usd:Math.round(j.rates.KRW),jpy:j.rates.JPY?Math.round(j.rates.KRW/j.rates.JPY*100)/100:null,_v:1}:null;
+      }catch(e){return null;}
+    })(),
+    (async function(){
+      try{
+        var r=await withTO(fetch('https://api.frankfurter.app/latest?from=USD&to=KRW,JPY'),5000);
+        var j=await r.json();
+        return(j.rates&&j.rates.KRW)?{usd:Math.round(j.rates.KRW),jpy:j.rates.JPY?Math.round(j.rates.KRW/j.rates.JPY*100)/100:null,_v:1}:null;
+      }catch(e){return null;}
+    })()
   ]);
   if(fx&&fx.usd){FX.USD=fx.usd;if(fx.jpy)FX.JPY=fx.jpy;}
 }
+
 async function fetchAll(){
   setDot('loading');
-  var ok=false,fail=[];
+  var ok=false;
   try{
     var seen={},tks=[];
-    ACCOUNTS.forEach(function(a){a.holdings.forEach(function(h){if(h.tk&&!seen[h.tk]){seen[h.tk]=1;tks.push(h.tk);}});});
-    CMA.holdings.forEach(function(h){if(h.tk&&!seen[h.tk]){seen[h.tk]=1;tks.push(h.tk);}});
+    ACCOUNTS.forEach(function(a){
+      a.holdings.forEach(function(h){if(h.tk&&!seen[h.tk]){seen[h.tk]=1;tks.push(h.tk);}});
+    });
+    CMA.holdings.forEach(function(h){
+      if(h.tk&&!seen[h.tk]){seen[h.tk]=1;tks.push(h.tk);}
+    });
     await Promise.all([
       fetchFXApi(),
-      ...tks.map(async function(tk){var p=await fetchKR(tk);if(p!=null){PRICES[tk]=p;ok=true;}else fail.push(tk);}),
-      ...['BTC','ETH','SOL','LINK'].map(async function(sym){var d=await fetchCrypto(sym);if(d){PRICES[sym]=d.price;HIGH52[sym]=d.high52;ok=true;}})
+      ...tks.map(async function(tk){
+        var p=await fetchKR(tk);
+        if(p!=null){PRICES[tk]=p;ok=true;}
+      }),
+      ...['BTC','ETH','SOL','LINK'].map(async function(sym){
+        var d=await fetchCrypto(sym);
+        if(d){PRICES[sym]=d.price;HIGH52[sym]=d.high52;ok=true;}
+      })
     ]);
   }catch(e){}
-  if(ok){var msg='\uc2dc\uc138:'+new Date().toLocaleTimeString('ko-KR');setDot('ok',msg);}
-  else setDot('fail');
+  setDot(ok?'ok':'fail');
   renderActive();
-  if(curPage==='crypto') renderCrypto(true);
+  if(typeof curPage!=='undefined'&&curPage==='crypto') renderCrypto(true);
 }
+
 function setDot(s,msg){
   var dot=document.getElementById('dot'),upd=document.getElementById('upd');
   if(!dot) return;
-  if(s==='loading'){dot.style.background='#f59e0b';upd.textContent='\uac31\uc2e0 \uc911...';}
-  else if(s==='fail'){dot.style.background='#9ca3af';upd.textContent='\u26a0 \uc2dc\uc138\uc870\ud68c \uc2e4\ud328';}
-  else{dot.style.background='#10b981';upd.textContent=msg||('\uc2dc\uc138:'+new Date().toLocaleTimeString('ko-KR'));}
+  if(s==='loading'){dot.style.background='#f59e0b';upd.textContent='갱신 중...';}
+  else if(s==='fail'){dot.style.background='#9ca3af';upd.textContent='⚠ 실패';}
+  else{dot.style.background='#10b981';upd.textContent=msg||'시세:'+new Date().toLocaleTimeString('ko-KR');}
 }
 
 /* ===== KR 계좌 렌더 ===== */
@@ -1246,8 +1282,8 @@ function renderCMA(){
     var priceL=cmaLiveP(h);
     var highR=(h.high&&priceL>0)?(priceL-h.high)/h.high:null;
     var fxStr=h.cur==='JPY'?'\uc5d4\xd7'+FX.JPY:h.cur==='USD'?'\ub2ec\ub7ec\xd7'+FX.USD:'\uc6d0\ud654';
-    var curFXlabel=h.cur==='KRW'?'-':(h.cur==='JPY'?Math.round(curFX*100).toLocaleString('ko-KR')+'\uc6d0/100\uc5d4':Math.round(curFX).toLocaleString('ko-KR')+'\uc6d0');
-    var buyFXlabel=h.cur==='KRW'?'-':(h.cur==='JPY'?Math.round(buyFX*100).toLocaleString('ko-KR')+'\uc6d0/100\uc5d4':Math.round(buyFX).toLocaleString('ko-KR')+'\uc6d0');
+    var curFXlabel=h.cur==='KRW'?'-':(h.cur==='JPY'?Math.round(curFX*100).toLocaleString('ko-KR')+'원/100엔':Math.round(curFX).toLocaleString('ko-KR')+'원');
+    var buyFXlabel=h.cur==='KRW'?'-':(h.cur==='JPY'?Math.round(buyFX*100).toLocaleString('ko-KR')+'원/100엔':Math.round(buyFX).toLocaleString('ko-KR')+'원');
     tCostK+=costK; tCurK+=curK;
     var delFn='delCH('+i+')';
     var avgFXinp=h.cur==='KRW'
@@ -1260,8 +1296,8 @@ function renderCMA(){
         +'<td><input class="ed" style="width:86px" value="'+h.cost+'" onchange="setCH('+i+',\'cost\',this.value)"> '+h.cur+'</td>'
         +'<td>'+avgFXinp+'</td>'
         +'<td>-</td>'
-        +'<td>'+badge(h.tk&&PRICES[h.tk]!=null)+'<input class="ed" style="width:72px;color:var(--blu)" value="'+priceL+'" onchange="onCHPrice(this,'+i+')"> '+h.cur+'</td>'
-        +'<td class="auto" style="font-weight:700" title="\ub9e4\uc785\ud658\uc728 '+buyFXlabel+' \uc801\uc6a9">'+fmt(costK)+'</td>'
+        +'<td><input class="ed" style="width:86px" value="'+priceL+'" onchange="setCH('+i+',\'curPrice\',this.value)"> '+h.cur+'</td>'
+        +'<td class="auto" title="\ub9e4\uc785\ud658\uc728 '+buyFXlabel+' \uc801\uc6a9">'+fmt(costK)+'</td>'
         +'<td class="auto" style="font-weight:600" title="\ud604\uc7ac\ud658\uc728 '+curFXlabel+' \uc801\uc6a9">'+fmt(curK)+'</td>'
         +'<td class="'+pc(pnlR)+'">'+fmtPct(pnlR)+'</td>'
         +'<td>-</td>'
@@ -1276,7 +1312,7 @@ function renderCMA(){
       +'<td><input class="ed" style="width:64px" value="'+(h.high||'')+'" onchange="setCH('+i+',\'high\',this.value)"></td>'
       +'<td>'+badge(h.tk&&PRICES[h.tk]!=null)+'<input class="ed" style="width:72px;color:var(--blu)" value="'+priceL+'" onchange="onCHPrice(this,'+i+')"> '+h.cur+'</td>'
       +'<td class="auto" style="font-weight:700" title="\ub9e4\uc785\ud658\uc728 '+buyFXlabel+' \uc801\uc6a9">'+fmt(costK)+'</td>'
-      +'<td class="auto" style="font-weight:600" title="\ud604\uc7ac\ud658\uc728 '+curFXlabel+' \uc801\uc6a9">'+fmt(curK)+'</td>'
+      +'<td class="auto" style="font-weight:600;color:var(--blu)" title="\ud604\uc7ac\ud658\uc728 '+curFXlabel+' \uc801\uc6a9">'+fmt(curK)+'</td>'
       +'<td class="'+pc(pnlR)+'">'+fmtPct(pnlR)+'</td>'
       +'<td class="'+(highR!=null?pc(highR):'')+'">'+( highR!=null?fmtPct(highR):'-')+'</td>'
       +'<td><button class="btn-del" onclick="'+delFn+'">\u2715</button></td>'
@@ -1419,7 +1455,7 @@ function renderCrypto(force){
   var bith=exRows(CRYPTO.bithumb,'B'), ubit=exRows(CRYPTO.upbit,'U');
 
   document.getElementById('pg-crypto').innerHTML=[
-    '<div class="sec"><div class="sechdr"><span class="sectitle">\ud83d\udcb0 \uac00\uc0c1\ud654\ud3d0 \ucd1d\uad04</span>',
+    '<div class="sec"><div class="sechdr"><span class="sectitle">\uac00\uc0c1\ud654\ud3d0 \ucd1d\uad04</span>',
     '<span class="secsub">\ube57\uc12c+\uc5c5\ube44\ud2b8 \ud569\uc0b0 | \uc5c5\ube44\ud2b8 API \uc790\ub3d9\ubc18\uc601</span></div>',
     '<div class="sgrid" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr))">',
     '<div class="scard"><div class="slbl">\ub9e4\uc785\ucd1d\uc561</div><div class="sval">'+fmt(gC)+'\uc6d0</div></div>',
@@ -1442,8 +1478,8 @@ function renderCrypto(force){
     '<th>\ud604\uc7ac\ucd1d\uc561</th>',
     '<th>\uc218\uc775\ub960</th><th>\uc804\uace0\uc810\ub300\ube44</th><th>\ud3c9\uac00\uc190\uc775</th><th></th>',
     '</tr></thead><tbody>',
-    '<tr class="xhdr"><td colspan="11">\ud83d\udd38 \ube57\uc12c (Bithumb)</td></tr>',bith.html,
-    '<tr class="xhdr"><td colspan="11">\ud83d\udd39 \uc5c5\ube44\ud2b8 (Upbit)</td></tr>',ubit.html,
+    '<tr class="xhdr"><td colspan="11">\ube57\uc12c (Bithumb)</td></tr>',bith.html,
+    '<tr class="xhdr"><td colspan="11">\uc5c5\ube44\ud2b8 (Upbit)</td></tr>',ubit.html,
     '<tr class="trow"><td>\uc804\uccb4 \ud569\uacc4</td><td colspan="4"></td>',
     '<td class="auto">'+fmt(gC)+'</td><td class="auto">'+fmt(gV)+'</td>',
     '<td class="'+pc(gPnlR)+'">'+fmtPct(gPnlR)+'</td><td></td>',
@@ -1455,87 +1491,152 @@ function renderCrypto(force){
 
 /* ===== 종목총괄 렌더 ===== */
 function renderHoldings(){
-  var totalCur=0,map={};
+  var totalCur=0;
+  var map={};
+
+  // KR 계좌
   ACCOUNTS.forEach(function(acc){
     acc.holdings.forEach(function(h){
       if(h.isMMF) return;
-      var price=liveP(h),qty=h.qty||0,cost=h.cost*qty,cur=price*qty;
+      var price=liveP(h), qty=h.qty||0;
+      var cost=h.cost*qty, cur=price*qty;
       var key=h.tk||('__'+h.n);
-      if(!map[key]) map[key]={n:h.n,totalQty:0,totalCost:0,totalCur:0,price:price,type:'KR ETF',dpu:null,accs:[]};
-      map[key].totalQty+=qty;map[key].totalCost+=cost;map[key].totalCur+=cur;
-      map[key].price=price;map[key].accs.push(acc.name);
+      if(!map[key]){
+        map[key]={n:h.n,tk:h.tk||null,type:'KR ETF',
+          totalQty:0,totalCost:0,totalCur:0,price:price,
+          dpu:h.dpu!=null?h.dpu:null,accs:[]};
+      }
+      map[key].totalQty+=qty;
+      map[key].totalCost+=cost;
+      map[key].totalCur+=cur;
+      map[key].price=price; // 마지막 계좌 현재가 (동일 티커)
+      map[key].accs.push(acc.name);
       if(h.dpu!=null) map[key].dpu=h.dpu;
       totalCur+=cur;
     });
   });
+
+  // CMA (원화 환산 기준)
   CMA.holdings.forEach(function(h){
-    var costK=cmaCostKRW(h),curK=cmaCurKRW(h),qty=h.qty||1;
+    var costK=cmaCostKRW(h), curK=cmaCurKRW(h);
+    var qty=h.qty||1;
+    var key='__cma__'+h.n;
     var cur2=h.cur==='JPY'?'JPY':h.cur==='USD'?'USD':'KRW';
-    map['__cma__'+h.n]={n:h.n,totalQty:qty,totalCost:costK,totalCur:curK,
-      price:qty>0?Math.round(curK/qty):0,type:'\ud574\uc678/RP('+cur2+')',dpu:null,accs:[CMA.name]};
+    // 현재가(원환산): curK / qty
+    map[key]={n:h.n,tk:null,type:'해외/RP('+cur2+')',
+      totalQty:qty,totalCost:costK,totalCur:curK,
+      price:qty>0?Math.round(curK/qty):0,
+      dpu:h.distAnn?Math.round(h.distAnn*(FX[h.cur]||1)):null,
+      accs:[CMA.name]};
     totalCur+=curK;
   });
+
+  // 가상화폐
+  var allCrypto=[].concat(CRYPTO.bithumb,CRYPTO.upbit);
   var cryptoMap={};
-  [].concat(CRYPTO.bithumb,CRYPTO.upbit).forEach(function(h){
+  allCrypto.forEach(function(h){
     var price=PRICES[h.sym]!=null?PRICES[h.sym]:h.cost;
-    var tq=(h.stk||0)+(h.qty||0),cost=h.cost*tq,cur=price*tq;
-    if(!cryptoMap[h.sym]) cryptoMap[h.sym]={n:h.n,cost:0,cur:0,qty:0,price:price};
-    cryptoMap[h.sym].cost+=cost;cryptoMap[h.sym].cur+=cur;cryptoMap[h.sym].qty+=tq;
-    cryptoMap[h.sym].price=price;totalCur+=cur;
+    var tq=(h.stk||0)+(h.qty||0);
+    var cost=h.cost*tq, cur=price*tq;
+    if(!cryptoMap[h.sym]){cryptoMap[h.sym]={n:h.n,sym:h.sym,cost:0,cur:0,qty:0,price:price};}
+    cryptoMap[h.sym].cost+=cost;
+    cryptoMap[h.sym].cur+=cur;
+    cryptoMap[h.sym].qty+=tq;
+    cryptoMap[h.sym].price=price;
+    totalCur+=cur;
   });
   Object.keys(cryptoMap).forEach(function(sym){
     var c=cryptoMap[sym];
-    map['__cr_'+sym]={n:c.n,totalQty:c.qty,totalCost:c.cost,totalCur:c.cur,
-      price:c.price,type:'\uac00\uc0c1\ud654\ud3d0',dpu:null,accs:['\ube57\uc12c/\uc5c5\ube44\ud2b8']};
+    map['__crypto__'+sym]={n:c.n,tk:null,type:'가상화폐',
+      totalQty:c.qty,totalCost:c.cost,totalCur:c.cur,price:c.price,
+      dpu:null,accs:['빗썸/업비트']};
   });
+
   var rows=Object.values(map).sort(function(a,b){return b.totalCur-a.totalCur;});
-  var gPnl=rows.reduce(function(s,r){return s+(r.totalCur-r.totalCost);},0);
-  var gCost=rows.reduce(function(s,r){return s+r.totalCost;},0);
-  var gPnlR=gCost>0?gPnl/gCost:0;
-  var gDist=rows.reduce(function(s,r){return s+(r.dpu&&r.totalQty?Math.round(r.dpu*r.totalQty):0);},0);
-  var tbody=rows.map(function(r,idx){
-    var pnl=r.totalCur-r.totalCost,pnlR=r.totalCost>0?pnl/r.totalCost:0;
+
+  var tableRows=rows.map(function(r,idx){
+    var pnl=r.totalCur-r.totalCost;
+    var pnlR=r.totalCost>0?pnl/r.totalCost:0;
     var wt=totalCur>0?r.totalCur/totalCur*100:0;
     var avgCost=r.totalQty>0?Math.round(r.totalCost/r.totalQty):0;
-    var qtyStr=r.type==='\uac00\uc0c1\ud654\ud3d0'?r.totalQty.toFixed(4):fmt(Math.round(r.totalQty));
-    var bar='<div style="background:var(--gbg);border-radius:3px;height:5px;margin-top:3px"><div style="background:var(--blu);width:'+Math.min(100,wt).toFixed(1)+'%;height:5px;border-radius:3px"></div></div>';
-    var dist=r.dpu&&r.totalQty?Math.round(r.dpu*r.totalQty):null;
+    // 수량 표시: 코인은 소수점, ETF는 정수
+    var qtyStr=r.type==='가상화폐'?r.totalQty.toFixed(4):fmt(Math.round(r.totalQty));
+    var wtBar='<div style="background:var(--gbg);border-radius:3px;height:5px;margin-top:3px">'
+      +'<div style="background:var(--blu);width:'+Math.min(100,wt).toFixed(1)+'%;height:5px;border-radius:3px"></div></div>';
+    var monthDist=r.dpu&&r.totalQty?Math.round(r.dpu*r.totalQty):null;
     return '<tr>'
-      +'<td style="text-align:right;color:var(--tx3);font-size:10px">'+(idx+1)+'</td>'
+      +'<td style="text-align:right;color:var(--tx3);font-size:10px;padding-right:4px">'+(idx+1)+'</td>'
       +'<td style="text-align:left;font-weight:600;font-size:12px">'+r.n+'</td>'
       +'<td style="text-align:right">'+qtyStr+'</td>'
       +'<td style="text-align:right">'+fmt(avgCost)+'</td>'
       +'<td style="text-align:right;color:var(--blu)">'+fmt(Math.round(r.price))+'</td>'
-      +'<td style="text-align:right;font-weight:700">'+fmt(Math.round(r.totalCost))+'</td>'
+      +'<td style="text-align:right">'+fmt(Math.round(r.totalCost))+'</td>'
       +'<td style="text-align:right;font-weight:700">'+fmt(Math.round(r.totalCur))+'</td>'
       +'<td class="'+pc(pnl)+'" style="text-align:right">'+(pnl>=0?'+':'')+fmt(Math.round(pnl))+'</td>'
       +'<td class="'+pc(pnlR)+'" style="text-align:right">'+fmtPct(pnlR)+'</td>'
-      +'<td style="text-align:right"><span style="font-weight:700;color:var(--blu)">'+wt.toFixed(1)+'%</span>'+bar+'</td>'
-      +'<td style="text-align:right;color:var(--grn)">'+(dist?fmt(dist):'-')+'</td>'
+      +'<td style="text-align:right"><div>'
+        +'<span style="font-weight:700;color:var(--blu)">'+wt.toFixed(1)+'%</span>'
+        +wtBar+'</div></td>'
+      +'<td style="text-align:right;color:var(--grn)">'+(monthDist?fmt(monthDist):'-')+'</td>'
       +'</tr>';
   }).join('');
-  var pg=document.getElementById('pg-holdings');
-  if(!pg) return;
-  pg.innerHTML='<div class="sec"><div class="sechdr"><span class="sectitle">\ud83d\udccb \ud22c\uc790\uc885\ubaa9 \ucd1d\uad04\ud604\ud669</span><span class="secsub">\uc804\uccb4 '+rows.length+'\uac1c \u30fb \ub3d9\uc77c\uc885\ubaa9 \ud569\uc0b0</span></div>'
-    +'<div class="sgrid" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))">'
-    +'<div class="scard"><div class="slbl">\uc885\ubaa9\uc218</div><div class="sval">'+rows.length+'\uac1c</div></div>'
-    +'<div class="scard"><div class="slbl">\ud3c9\uac00\uc561</div><div class="sval" style="color:var(--blu)">'+fmt(Math.round(totalCur))+'\uc6d0</div></div>'
-    +'<div class="scard"><div class="slbl">\ud3c9\uac00\uc190\uc775</div><div class="sval '+pc(gPnl)+'">'+(gPnl>=0?'+':'')+fmt(Math.round(gPnl))+'\uc6d0</div></div>'
-    +'<div class="scard"><div class="slbl">\uc218\uc775\ub960</div><div class="sval '+pc(gPnlR)+'">'+fmtPct(gPnlR)+'</div></div>'
-    +'<div class="scard"><div class="slbl">\uc6d4\ubd84\ubc30\uae08</div><div class="sval" style="color:var(--grn)">'+fmt(gDist)+'\uc6d0</div></div>'
-    +'</div>'
-    +'<div class="twrap" style="padding:0 13px 13px"><table style="table-layout:fixed;width:100%">'
-    +'<colgroup><col style="width:24px"><col style="min-width:120px"><col style="width:68px"><col style="width:82px"><col style="width:82px"><col style="width:88px"><col style="width:88px"><col style="width:82px"><col style="width:58px"><col style="width:70px"><col style="width:68px"></colgroup>'
-    +'<thead><tr><th style="text-align:center">#</th><th style="text-align:left">\uc885\ubaa9\uba85</th><th style="text-align:right">\ud569\uacc4\uc218\ub7c9</th><th style="text-align:right">\ud3c9\uade0\ub9e4\uc785\ub2e8\uac00</th><th style="text-align:right">\ud604\uc7ac\uac00</th><th style="text-align:right">\ub9e4\uc785\ucd1d\uc561</th><th style="text-align:right">\ud604\uc7ac\ucd1d\uc561</th><th style="text-align:right">\ud3c9\uac00\uc190\uc775</th><th style="text-align:right">\uc218\uc775\ub960</th><th style="text-align:right">\ube44\uc911</th><th style="text-align:right">\uc6d4\ubd84\ubc30\uae08</th></tr></thead>'
-    +'<tbody>'+tbody+'</tbody>'
-    +'<tr class="trow"><td colspan="2">\uc804\uccb4 \ud569\uacc4</td><td colspan="3"></td>'
-    +'<td style="text-align:right;font-weight:700">'+fmt(Math.round(gCost))+'</td>'
-    +'<td style="text-align:right;font-weight:700">'+fmt(Math.round(totalCur))+'</td>'
-    +'<td class="'+pc(gPnl)+'" style="text-align:right;font-weight:700">'+(gPnl>=0?'+':'')+fmt(Math.round(gPnl))+'</td>'
-    +'<td class="'+pc(gPnlR)+'" style="text-align:right">'+fmtPct(gPnlR)+'</td>'
-    +'<td style="text-align:right;font-weight:700;color:var(--blu)">100%</td>'
-    +'<td style="text-align:right;color:var(--grn)">'+fmt(gDist)+'</td>'
-    +'</tr></table></div></div>';
+
+  var gPnl=rows.reduce(function(s,r){return s+r.totalCur-r.totalCost;},0);
+  var gCost=rows.reduce(function(s,r){return s+r.totalCost;},0);
+  var gPnlR=gCost>0?gPnl/gCost:0;
+  var gDist=rows.reduce(function(s,r){return s+(r.dpu&&r.totalQty?Math.round(r.dpu*r.totalQty):0);},0);
+
+  document.getElementById('pg-holdings').innerHTML=[
+    '<div class="sec"><div class="sechdr">',
+    '<span class="sectitle">투자종목 총괄</span>',
+    '<span class="secsub">전체 '+rows.length+'개 종목 ㆍ 동일종목 합산</span></div>',
+    '<div class="sgrid" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))">',
+    '<div class="scard"><div class="slbl">전체 종목수</div><div class="sval">'+rows.length+'개</div></div>',
+    '<div class="scard"><div class="slbl">전체 평가액</div><div class="sval" style="color:var(--blu)">'+fmt(Math.round(totalCur))+'원</div></div>',
+    '<div class="scard"><div class="slbl">평가손익</div><div class="sval '+pc(gPnl)+'">'+(gPnl>=0?'+':'')+fmt(Math.round(gPnl))+'원</div></div>',
+    '<div class="scard"><div class="slbl">수익률</div><div class="sval '+pc(gPnlR)+'">'+fmtPct(gPnlR)+'</div></div>',
+    '<div class="scard"><div class="slbl">월 분배금 합계</div><div class="sval" style="color:var(--grn)">'+fmt(gDist)+'원</div></div>',
+    '</div>',
+    '<div class="twrap" style="padding:0 13px 13px"><table style="table-layout:fixed;width:100%">',
+    '<colgroup>',
+    '<col style="width:28px">',   // #
+    '<col>',                       // 종목명 (flex)
+    '<col style="width:72px">',   // 합계수량
+    '<col style="width:88px">',   // 평균매입단가
+    '<col style="width:88px">',   // 현재가
+    '<col style="width:95px">',   // 매입총액
+    '<col style="width:95px">',   // 현재총액
+    '<col style="width:88px">',   // 평가손익
+    '<col style="width:62px">',   // 수익률
+    '<col style="width:70px">',   // 비중
+    '<col style="width:72px">',   // 월분배금
+    '</colgroup>',
+    '<thead><tr>',
+    '<th style="text-align:center">#</th>',
+    '<th style="text-align:left">종목명</th>',
+    '<th style="text-align:right">합계수량</th>',
+    '<th style="text-align:right">평균매입단가</th>',
+    '<th style="text-align:right">현재가</th>',
+    '<th style="text-align:right">매입총액</th>',
+    '<th style="text-align:right">현재총액</th>',
+    '<th style="text-align:right">평가손익</th>',
+    '<th style="text-align:right">수익률</th>',
+    '<th style="text-align:right">비중</th>',
+    '<th style="text-align:right">월분배금</th>',
+    '</tr></thead>',
+    '<tbody>'+tableRows+'</tbody>',
+    '<tr class="trow">',
+    '<td colspan="2">전체 합계</td>',
+    '<td colspan="3"></td>',
+    '<td style="text-align:right">'+fmt(Math.round(gCost))+'</td>',
+    '<td style="text-align:right;font-weight:700">'+fmt(Math.round(totalCur))+'</td>',
+    '<td class="'+pc(gPnl)+'" style="text-align:right">'+(gPnl>=0?'+':'')+fmt(Math.round(gPnl))+'</td>',
+    '<td class="'+pc(gPnlR)+'" style="text-align:right">'+fmtPct(gPnlR)+'</td>',
+    '<td style="text-align:right;font-weight:700;color:var(--blu)">100%</td>',
+    '<td style="text-align:right;color:var(--grn)">'+fmt(gDist)+'</td>',
+    '</tr>',
+    '</table></div></div>'
+  ].join('');
 }
 
 
@@ -1668,7 +1769,7 @@ function renderOverview(){
 
   var compSection=[
     '<div class="sec"><div class="sechdr">',
-    '<span class="sectitle">\ud83c\udf67 \uc790\uc0b0\uad6c\uc131 \ud604\ud669</span>',
+    '<span class="sectitle">\uc790\uc0b0\uad6c\uc131 \ud604\ud669</span>',
     '<span class="secsub">\ud604\uc7ac\ud3c9\uac00\uc561 \uae30\uc900</span></div>',
     /* 스택 바 */
     '<div style="padding:10px 12px 4px">',
@@ -1731,7 +1832,7 @@ function renderOverview(){
   }
   var curSection=[
     '<div class="sec"><div class="sechdr">',
-    '<span class="sectitle">\ud83c\udf10 \ud1b5\ud654\ubcc4 \uc790\uc0b0\ud604\ud669</span>',
+    '<span class="sectitle">\ud1b5\ud654\ubcc4 \uc790\uc0b0\ud604\ud669</span>',
     '<span class="secsub">\ud604\uc7ac\ud3c9\uac00\uc561 \uae30\uc900(\uc6d0\ud654\ud658\uc0b0)</span></div>',
     '<div style="padding:10px 12px 4px">',
     '<div style="display:flex;height:22px;border-radius:6px;overflow:hidden;gap:1px">',
@@ -1753,9 +1854,9 @@ function renderOverview(){
     '<div class="fxitem">\uc6d0/\ub2ec\ub7ec: <input class="fxinp" value="'+FX.USD+'" onchange="FX.USD=+this.value;renderActive()"></div>',
     '<div class="fxitem">\uc6d0/\uc5d4: <input class="fxinp" value="'+FX.JPY+'" onchange="FX.JPY=+this.value;renderActive()"></div>',
     '<span class="abadge">\uc790\ub3d9\uac31\uc2e0</span>',
-    '<span style="font-size:11px;color:var(--tx3)">\ud83d\udcbe \uc800\uc7a5 \ubc84\ud2bc\uc73c\ub85c \uc77c\ubcc4 \uc790\uc0b0\uae30\ub85d \uc800\uc7a5</span></div>',
+    '<span style="font-size:11px;color:var(--tx3)">\uc800\uc7a5 \ubc84\ud2bc\uc73c\ub85c \uc77c\ubcc4 \uc790\uc0b0\uae30\ub85d \uc800\uc7a5</span></div>',
     '<div class="sec"><div class="sechdr">',
-    '<span class="sectitle">\ud83d\udcc8 \uc804\uccb4 \ud3ec\ud2b8\ud3f4\ub9ac\uc624 \ucd1d\uad04</span>',
+    '<span class="sectitle">\uc804\uccb4 \ud3ec\ud2b8\ud3f4\ub9ac\uc624 \ucd1d\uad04</span>',
     '<span class="secsub">'+new Date().toLocaleDateString('ko-KR')+' \uae30\uc900</span></div>',
     '<div class="sgrid">',
     '<div class="scard"><div class="slbl">\ucd1d \ub0a9\uc785\uae08\uc561</div><div class="sval">'+fmt(gDep)+'\uc6d0</div></div>',
@@ -1807,9 +1908,9 @@ function renderHistory(){
   var ptabs=PERIODS.map(function(kl){return'<button class="ptab'+(kl[0]===_hPeriod?' on':'')+'" onclick="switchPeriod(\''+kl[0]+'\')">'+kl[1]+'</button>';}).join('');
   document.getElementById('pg-history').innerHTML=[
     '<div class="sec"><div class="sechdr">',
-    '<span class="sectitle">\ud83d\udcc8 \uc790\uc0b0 \ubcc0\ub3d9 \ud604\ud669</span>',
-    '<span class="secsub">\ud83d\udcbe \uc800\uc7a5 \ubc84\ud2bc\uc73c\ub85c \uae30\ub85d \u2014 \uc77c\ubcc4 \ucd5c\uc2e0 1\uac74 \uc720\uc9c0</span>',
-    '<button class="btn btn-add" style="margin-left:auto;padding:4px 11px;font-size:12px" onclick="snapNow()">\ud83d\udcf8 \uc9c0\uae08 \uae30\ub85d</button>',
+    '<span class="sectitle">\uc790\uc0b0 \ubcc0\ub3d9 \ud604\ud669</span>',
+    '<span class="secsub">\uc800\uc7a5 \ubc84\ud2bc\uc73c\ub85c \uae30\ub85d \u2014 \uc77c\ubcc4 \ucd5c\uc2e0 1\uac74 \uc720\uc9c0</span>',
+    '<button class="btn btn-add" style="margin-left:auto;padding:4px 11px;font-size:12px" onclick="snapNow()">\uc9c0\uae08 \uae30\ub85d</button>',
     '</div>',
     '<div class="ptabs">'+ptabs+'</div>',
     '<div class="chart-wrap"><canvas id="hchart"></canvas></div>',
@@ -1864,7 +1965,7 @@ async function drawHChart(){
   if(!canvas) return;
   if(_hChart){_hChart.destroy();_hChart=null;}
   if(!data.length){
-    document.getElementById('hist-tbl').innerHTML='<div style="text-align:center;padding:30px;color:var(--tx3)">\ud83d\udceb \uc790\uc0b0 \uae30\ub85d\uc774 \uc5c6\uc2b5\ub2c8\ub2e4.<br>\ud83d\udcbe \uc800\uc7a5 \ub610\ub294 \ud83d\udcf8 \uc9c0\uae08 \uae30\ub85d \ubc84\ud2bc\uc744 \ub208\ub7ec \uccab \uae30\ub85d\uc744 \uc800\uc7a5\ud558\uc138\uc694.</div>';
+    document.getElementById('hist-tbl').innerHTML='<div style="text-align:center;padding:30px;color:var(--tx3)">\uc790\uc0b0 \uae30\ub85d\uc774 \uc5c6\uc2b5\ub2c8\ub2e4.<br>\uc800\uc7a5 \ub610\ub294 \uc9c0\uae08 \uae30\ub85d \ubc84\ud2bc\uc744 \ub208\ub7ec \uccab \uae30\ub85d\uc744 \uc800\uc7a5\ud558\uc138\uc694.</div>';
     return;
   }
   var intMap={daily:'1d',weekly:'1wk',monthly:'1mo',quarterly:'3mo',semi:'3mo',yearly:'3mo'};
@@ -2008,7 +2109,7 @@ function saveSnapNote(ts,noteVal){
 function renderChangelog(){
   var list=loadCL();
   var rows=list.length===0
-    ?'<div style="text-align:center;padding:30px;color:var(--tx3)">\ud83d\udceb \uc800\uc7a5\uc774\ub825\uc774 \uc5c6\uc2b5\ub2c8\ub2e4.</div>'
+    ?'<div style="text-align:center;padding:30px;color:var(--tx3)">\uc800\uc7a5\uc774\ub825\uc774 \uc5c6\uc2b5\ub2c8\ub2e4.</div>'
     :list.map(function(e){
       return'<div class="cl-entry">'
         +'<div class="cl-time">'+new Date(e.ts).toLocaleString('ko-KR')+'</div>'
@@ -2021,7 +2122,7 @@ function renderChangelog(){
     }).join('');
   document.getElementById('pg-changelog').innerHTML=[
     '<div class="sec"><div class="sechdr">',
-    '<span class="sectitle">\ud83d\udcdd \uc800\uc7a5\uc774\ub825</span>',
+    '<span class="sectitle">\uc800\uc7a5\uc774\ub825</span>',
     '<span class="secsub">\ucd1d '+list.length+'\uac74 (\uc77c\ubcc4 \ucd5c\uc2e0 1\uac74)</span>',
     (list.length?'<button class="btn-del" style="margin-left:auto" onclick="clearCL()">\uc804\uccb4\uc0ad\uc81c</button>':''),
     '</div><div style="padding:12px">'+rows+'</div></div>'
@@ -2077,8 +2178,8 @@ function setCH(i,field,v){CMA.holdings[i][field]=pf(v);renderActive();renderOver
 function onCHPrice(el,i){
   var val=pf(el.value);
   var h=CMA.holdings[i];
-  if(h.tk){PRICES[h.tk]=val;}  // 실시간 캐시에도 반영
-  h.curPrice=val;               // 수동입력값 저장
+  if(h.tk) PRICES[h.tk]=val;
+  h.curPrice=val;
   renderCMA();renderOverview();
 }
 function delCH(i){if(!confirm('"'+CMA.holdings[i].n+'" \uc885\ubaa9\uc744 \uc0ad\uc81c\ud560\uae4c\uc694?'))return;CMA.holdings.splice(i,1);renderActive();renderOverview();}
@@ -2370,7 +2471,7 @@ function mobShowAccMenu(){
     {id:'ss-pension',name:'개인연금(삼성)'},
     {id:'mf-irp2',name:'IRP(미래)'},
     {id:'cma',name:'CMA 해외주식'},
-    {id:'changelog',name:'📝 변경이력'}
+    {id:'changelog',name:'변경이력'}
   ];
   list.innerHTML=items.map(function(it){
     return '<button onclick="go(\''+it.id+'\',null);mobSel(\'mob-ac\');document.getElementById(\'mob-acc-sheet\').style.display=\'none\';document.getElementById(\'mob-acc-overlay\').style.display=\'none\'" '
@@ -2386,171 +2487,138 @@ function mobShowAccMenu(){
 var GH_REPO='jiroonlee/portfolio';
 var GH_FILE='data.json';
 var GH_TOKEN_KEY='fp_gh_token';
-
 function ghGetToken(){return sGet(GH_TOKEN_KEY)||'';}
 function ghSetToken(t){sSet(GH_TOKEN_KEY,t);}
 
 function ghSync(){
-  var token=ghGetToken();
-  if(!token){
-    // 토큰 미설정 → 설정 모달 열기
-    document.getElementById('gh-token-inp').value='';
-    document.getElementById('gh-status').textContent='';
-    openModal('gh-modal');
-    return;
-  }
-  // 토큰 있으면 바로 올리기
-  ghPush();
+  openModal('gh-modal');
+  document.getElementById('gh-token-inp').value=ghGetToken();
+  document.getElementById('gh-status').textContent='';
 }
-
-function ghSaveToken(){
+function ghSaveAndSync(){
   var t=(document.getElementById('gh-token-inp').value||'').trim();
-  if(!t){alert('토큰을 입력하세요.');return;}
-  ghSetToken(t);
-  closeModal('gh-modal');
-  ghPush();
+  ghSetToken(t);closeModal('gh-modal');ghPush();
 }
-
-// GitHub에 데이터 업로드
+function ghForcePull(){
+  closeModal('gh-modal');sSet('fp_last_save','0');
+  var btn=document.getElementById('gh-btn');
+  if(btn){btn.textContent='\ub85c\ub529...';btn.className='hbtn hbtn-sync syncing';}
+  ghPull(true).then(function(ok){
+    if(btn){btn.textContent='\u2601\ufe0f \ub3d9\uae30\ud654';btn.className='hbtn hbtn-sync';}
+    if(ok){try{loadData();}catch(e){}try{migrateTickers();}catch(e){}renderActive();alert('\uc131\uacf5!');}
+    else alert('\uc2e4\ud328\nPC\uc5d0\uc11c \uba3c\uc800 \uc800\uc7a5 \ud6c4 \uc2dc\ub3c4\ud558\uc138\uc694.');
+  });
+}
 async function ghPush(){
   var btn=document.getElementById('gh-btn');
-  if(btn){btn.textContent='\u2601\ufe0f \uc800\uc7a5\uc911...';btn.className='hbtn hbtn-sync syncing';}
-  var snaps=loadSnaps();
-  var cl=[];try{cl=JSON.parse(sGet('fp_cl')||'[]');}catch(e){}
-  var payload={v:5,saved:new Date().toISOString(),
-    data:{accounts:ACCOUNTS,cma:CMA,crypto:CRYPTO,fx:{usd:FX.USD,jpy:FX.JPY},prices:PRICES},
-    snaps:snaps,changelog:cl};
+  var token=ghGetToken();
+  if(!token){alert('\ud1a0\ud070\uc744 \uba3c\uc800 \uc785\ub825\ud558\uc138\uc694.');return;}
+  if(btn){btn.textContent='\uc5c5\ub85c\ub4dc...';btn.className='hbtn hbtn-sync syncing';}
   try{
-    var token=ghGetToken();
-    if(!token){alert('\u2601\ufe0f GitHub \ud1a0\ud070\uc744 \uba3c\uc800 \uc785\ub825\ud558\uc138\uc694.');if(btn){btn.textContent='\u2601\ufe0f \ub3d9\uae30\ud654';btn.className='hbtn hbtn-sync';}return;}
+    var snaps=loadSnaps();
+    var cl=[];try{cl=JSON.parse(sGet('fp_cl')||'[]');}catch(e){}
+    var payload={v:5,saved:new Date().toISOString(),
+      data:{accounts:ACCOUNTS,cma:CMA,crypto:CRYPTO,fx:{usd:FX.USD,jpy:FX.JPY},prices:PRICES},
+      snaps:snaps,changelog:cl};
     var apiBase='https://api.github.com/repos/'+GH_REPO+'/contents/'+GH_FILE;
     var hdrs={'Authorization':'token '+token,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'};
     var sha=null;
     try{var r0=await fetch(apiBase,{headers:hdrs,cache:'no-store'});if(r0.ok){var j0=await r0.json();sha=j0.sha;}}catch(e){}
-    var body={message:'\ud3ec\ud2b8\ud3f4\ub9ac\uc624 '+new Date().toLocaleDateString('ko-KR'),
-      content:btoa(unescape(encodeURIComponent(JSON.stringify(payload))))};
+    var content=btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+    var body={message:'\ud3ec\ud2b8\ud3f4\ub9ac\uc624 '+new Date().toLocaleDateString('ko-KR'),content:content};
     if(sha) body.sha=sha;
     var r=await fetch(apiBase,{method:'PUT',headers:hdrs,body:JSON.stringify(body)});
     if(!r.ok){var err=await r.json();throw new Error(err.message||r.status);}
     sSet('fp_last_save',payload.saved);
-    if(btn){btn.textContent='\u2601\ufe0f \ub3d9\uae30\ud654 \u2713';btn.className='hbtn hbtn-sync';
-      btn.style.background='#10b981';btn.style.borderColor='#10b981';
+    if(btn){btn.textContent='\u2601\ufe0f \uc644\ub8cc';btn.style.background='#10b981';btn.style.borderColor='#10b981';
       setTimeout(function(){btn.textContent='\u2601\ufe0f \ub3d9\uae30\ud654';btn.style.background='';btn.style.borderColor='';btn.className='hbtn hbtn-sync';},3000);}
   }catch(e){
-    if(btn){btn.textContent='\u2601\ufe0f \uc2e4\ud328';btn.className='hbtn hbtn-sync error';
-      setTimeout(function(){btn.textContent='\u2601\ufe0f \ub3d9\uae30\ud654';btn.className='hbtn hbtn-sync';},3000);}
-    if(e.message&&e.message.includes('401')){
-      if(confirm('\ud1a0\ud070 \ub9cc\ub8cc \ub610\ub294 \uc624\ub958\n\uc0c8 \ud1a0\ud070 \uc785\ub825?')){ghSetToken('');document.getElementById('gh-token-inp').value='';openModal('gh-modal');}
-    } else alert('\ub3d9\uae30\ud654 \uc2e4\ud328: '+e.message);
+    if(btn){btn.textContent='\u2601\ufe0f \ub3d9\uae30\ud654';btn.className='hbtn hbtn-sync';}
+    alert('\uc5c5\ub85c\ub4dc \uc2e4\ud328: '+e.message);
   }
 }
-
-async function ghPull(){
+async function ghPull(force){
   try{
     var apiBase='https://api.github.com/repos/'+GH_REPO+'/contents/'+GH_FILE;
     var token=ghGetToken();
-    // public repo = 토큰 없이도 읽기 가능 (모바일 자동 동기화)
     var hdrs={'Accept':'application/vnd.github.v3+json'};
     if(token) hdrs['Authorization']='token '+token;
     var r=await fetch(apiBase,{headers:hdrs,cache:'no-store'});
     if(!r.ok) return false;
     var j=await r.json();
     if(!j.content) return false;
-    var decoded=decodeURIComponent(escape(atob(j.content.replace(/\n/g,''))));
+    var raw=j.content.replace(/\n/g,'');
+    var decoded;
+    try{var bytes=atob(raw);var arr=new Uint8Array(bytes.length);
+      for(var bi=0;bi<bytes.length;bi++) arr[bi]=bytes.charCodeAt(bi);
+      decoded=new TextDecoder('utf-8').decode(arr);
+    }catch(de){decoded=decodeURIComponent(escape(atob(raw)));}
     var obj=JSON.parse(decoded);
     if(!obj||!obj.data||!obj.data.accounts) return false;
-
     var localSaved=sGet('fp_last_save')||'0';
-    if(obj.saved&&obj.saved<=localSaved){
-      console.log('[ghPull] \ub85c\ucec8\uc774 \ucd5c\uc2e0');
-      return false;
-    }
-
-    // 전체 데이터 복원
-    ACCOUNTS=obj.data.accounts;
-    CMA=obj.data.cma;
-    CRYPTO=obj.data.crypto;
+    if(!force&&obj.saved&&obj.saved<=localSaved) return false;
+    ACCOUNTS=obj.data.accounts;CMA=obj.data.cma;CRYPTO=obj.data.crypto;
     if(obj.data.fx){FX.USD=obj.data.fx.usd||FX.USD;FX.JPY=obj.data.fx.jpy||FX.JPY;}
     if(obj.data.prices) Object.assign(PRICES,obj.data.prices);
-
-    // 스냅샷: GitHub 우선
     if(obj.snaps&&obj.snaps.length){
-      var map={};
-      loadSnaps().forEach(function(s){map[s.date]=s;});
-      obj.snaps.forEach(function(s){map[s.date]=s;}); // GitHub가 덮어씀
+      var map={};loadSnaps().forEach(function(s){map[s.date]=s;});
+      obj.snaps.forEach(function(s){map[s.date]=s;});
       sSet(SNAPKEY,JSON.stringify(Object.values(map).sort(function(a,b){return a.date<b.date?-1:1;})));
     }
     if(obj.changelog&&obj.changelog.length) sSet('fp_cl',JSON.stringify(obj.changelog));
-
-    // localStorage 저장
     sSet(SKEY,JSON.stringify({accounts:ACCOUNTS,cma:CMA,crypto:CRYPTO,fx:{usd:FX.USD,jpy:FX.JPY},prices:PRICES}));
     sSet('fp_last_save',obj.saved||new Date().toISOString());
-    console.log('[ghPull] \ub370\uc774\ud130 \uc801\uc6a9\uc644\ub8cc v'+obj.v+' saved='+obj.saved);
     return true;
-  }catch(e){
-    console.warn('[ghPull] \uc2e4\ud328:',e.message);
-    return false;
-  }
+  }catch(e){return false;}
 }
-
+function migrateTickers(){
+  DEF.accounts.forEach(function(defAcc){
+    var acc=ACCOUNTS.find(function(a){return a.id===defAcc.id;});
+    if(!acc) return;
+    defAcc.holdings.forEach(function(defH){
+      var h=acc.holdings.find(function(x){return x.n===defH.n;});
+      if(h&&defH.tk&&h.tk!==defH.tk) h.tk=defH.tk;
+    });
+  });
+  DEF.cma.holdings.forEach(function(defH){
+    var h=CMA.holdings.find(function(x){return x.n===defH.n;});
+    if(h&&defH.tk&&!h.tk) h.tk=defH.tk;
+  });
+}
 
 /* ===== 앱 시작 ===== */
 function startApp(){
-  try{loadData();}catch(err){
+  try{loadData();}catch(e){
     ACCOUNTS=JSON.parse(JSON.stringify(DEF.accounts));
     CMA=JSON.parse(JSON.stringify(DEF.cma));
     CRYPTO=JSON.parse(JSON.stringify(DEF.crypto));
   }
-  try{migrateTickers();}catch(err){}
-  // 마이그레이션 결과 즉시 저장 (다음 로드에서도 유지)
-  try{sSet(SKEY,JSON.stringify({accounts:ACCOUNTS,cma:CMA,crypto:CRYPTO,fx:{usd:FX.USD,jpy:FX.JPY},prices:PRICES}));}catch(err){}
-  function applyComma(el){
-    var n=parseFloat((el.value||'').replace(/,/g,''));
-    if(!isNaN(n)&&n>=1000) el.value=Math.round(n).toLocaleString('ko-KR');
-  }
-  function stripComma(el){el.value=(el.value||'').replace(/,/g,'');}
-  document.addEventListener('focus',function(e){
-    if(e.target&&e.target.classList.contains('iedit')) stripComma(e.target);
-  },true);
-  document.addEventListener('blur',function(e){
-    if(e.target&&e.target.classList.contains('iedit')) applyComma(e.target);
-  },true);
-  window.applyCommaAll=function(){
-    document.querySelectorAll('.iedit').forEach(function(el){
-      if(!el.matches(':focus')) applyComma(el);
-    });
-  };
+  try{migrateTickers();}catch(e){}
+
   window.addEventListener('beforeunload',function(){
     try{
-      var today=new Date().toLocaleDateString('ko-KR');
-      var now=new Date().toISOString();
-      var t=grandTotal();
-      var snaps=loadSnaps();
-      var idx=snaps.findIndex(function(s){return s.date===today;});
-      var snap={date:today,ts:now,cur:t.cur,cost:t.cost,pnl:t.pnl,note:''};
-      if(idx>=0)snaps[idx]=snap;else snaps.push(snap);
-      snaps.sort(function(a,b){return a.date<b.date?-1:1;});
-      sSet(SNAPKEY,JSON.stringify(snaps));
       sSet(SKEY,JSON.stringify({accounts:ACCOUNTS,cma:CMA,crypto:CRYPTO,fx:{usd:FX.USD,jpy:FX.JPY},prices:PRICES}));
-    }catch(err){}
+    }catch(e){}
   });
+
   function _boot(){
     setDot('fail');
-    setTimeout(function(){fetchAll();setInterval(fetchAll,60000);},200);
+    setTimeout(function(){fetchAll();setInterval(fetchAll,60000);},300);
   }
-  if(ghGetToken&&ghGetToken()){
+
+  ghPull(false).then(function(ok){
     var btn=document.getElementById('gh-btn');
-    if(btn){btn.textContent='☁️ 불러오는중...';btn.className='hbtn hbtn-sync syncing';}
-    ghPull().then(function(updated){
-      if(updated){try{loadData();}catch(err){}try{migrateTickers();}catch(err){}}
-      if(btn){btn.textContent='☁️ 동기화';btn.className='hbtn hbtn-sync';}
-      renderOverview();
-      _boot();
-    }).catch(function(){renderOverview();_boot();});
-  } else {
+    if(ok){
+      try{loadData();}catch(e){}
+      try{migrateTickers();}catch(e){}
+    }
+    if(btn) btn.textContent='\u2601\ufe0f \ub3d9\uae30\ud654';
     renderOverview();
     _boot();
-  }
+  }).catch(function(){
+    renderOverview();
+    _boot();
+  });
 }
 window.addEventListener('DOMContentLoaded',function(){initPW();});
 
