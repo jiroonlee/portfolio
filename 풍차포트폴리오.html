@@ -323,7 +323,7 @@ tr:hover:not(.trow):not(.nrow):not(.xhdr) td{background:#f8fafc}
     <span class="mico">📊</span>전체현황
   </button>
   <button class="mob-btn" id="mob-hd" onclick="go('holdings',null);mobSel('mob-hd')">
-    <span class="mico">📋</span>종목총괄
+    <span class="mico">\ud83d\udccb</span>종목총괄
   </button>
   <button class="mob-btn" id="mob-ac" onclick="mobShowAccMenu()">
     <span class="mico">🏦</span>계좌
@@ -333,6 +333,9 @@ tr:hover:not(.trow):not(.nrow):not(.xhdr) td{background:#f8fafc}
   </button>
   <button class="mob-btn" id="mob-hi" onclick="go('history',null);mobSel('mob-hi')">
     <span class="mico">📈</span>자산변동
+  </button>
+  <button class="mob-btn" id="mob-ps" onclick="go('pension',null);mobSel('mob-ps')">
+    <span class="mico">🏛</span>사적연금
   </button>
 </div>
 
@@ -947,6 +950,395 @@ function setDot(s,msg){
   else{dot.style.background='#10b981';upd.textContent=msg||'시세:'+new Date().toLocaleTimeString('ko-KR');}
 }
 
+/* ===== 월별 배당금 대시보드 ===== */
+var DIST_KEY='fp_dist_v2';
+
+function distGet(){
+  try{return JSON.parse(sGet(DIST_KEY)||'{}');}catch(e){return {};}
+}
+function distSet(obj){sSet(DIST_KEY,JSON.stringify(obj));}
+
+/* 현재 월 gDist 값 반환 */
+function getCurGDist(){
+  /* renderOverview의 gDist와 동일하게 계산 */
+  var tot=0;
+  ACCOUNTS.forEach(function(acc){
+    acc.holdings.forEach(function(h){
+      if(h.isMMF) return;
+      var qty=h.qty||0, dpu=h.dpu;
+      if(dpu!=null) tot+=Math.round(dpu*qty);
+      else tot+=((h.mI||0)+(h.mM||0));
+    });
+  });
+  return tot;
+}
+
+/* 연도 데이터 로드
+   - 현재월: gDist 자동
+   - 현재월 이후: 현재월 값과 동일 (임시)
+   - 현재월 이전: 저장값 or 0 */
+function distGetYear(y){
+  var saved=distGet();
+  var key='y'+y;
+  var stored=saved[key]||{};
+  var now=new Date(), curY=now.getFullYear(), curM=now.getMonth()+1;
+  var curDist=getCurGDist();
+  var arr=[];
+  for(var m=1;m<=12;m++){
+    if(y===curY){
+      if(m<curM){
+        // 이전달: 저장값(독립) or 0
+        arr.push({v:stored['m'+m]!=null?stored['m'+m]:0, type:'past'});
+      } else if(m===curM){
+        // 현재달: gDist 자동
+        arr.push({v:curDist, type:'current'});
+      } else {
+        // 이후달: 현재달과 동일 임시
+        arr.push({v:curDist, type:'future'});
+      }
+    } else if(y<curY){
+      // 과거 연도: 저장값
+      arr.push({v:stored['m'+m]!=null?stored['m'+m]:0, type:'past'});
+    } else {
+      // 미래 연도: 현재달 기준 임시
+      arr.push({v:curDist, type:'future'});
+    }
+  }
+  return arr;
+}
+
+/* 이전달 저장 (현재달/이후달은 저장 불필요) */
+function distSaveMonth(y,m,v){
+  var saved=distGet();
+  var key='y'+y;
+  if(!saved[key]) saved[key]={};
+  var val=parseFloat((v+'').replace(/,/g,''))||0;
+  saved[key]['m'+m]=val;
+  distSet(saved);
+  renderDistDashboard();
+}
+
+function distSelectYear(y){
+  var el=document.getElementById('dist-dashboard');
+  if(el){el.dataset.year=String(y);}
+  var sel=document.getElementById('dist-year-sel');
+  if(sel) sel.value=String(y);
+  renderDistDashboard();
+}
+
+function renderDistDashboard(){
+  var el=document.getElementById('dist-dashboard');
+  if(!el) return;
+  var now=new Date();
+  var curY=now.getFullYear(), curM=now.getMonth()+1;
+  var selY=parseInt(el.dataset.year||curY);
+  var arr=distGetYear(selY);
+  var total=arr.reduce(function(s,d){return s+d.v;},0);
+  var MN=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+
+  /* 헤더 행 */
+  var thCells=MN.map(function(n,i){
+    var m=i+1;
+    var isCur=(selY===curY&&m===curM);
+    return '<th style="text-align:center;padding:3px 2px;font-size:10px;font-weight:'+(isCur?'700':'400')+';'
+      +'color:'+(isCur?'var(--blu)':'var(--tx3)')+'">'+n+'</th>';
+  }).join('')+'<th style="text-align:right;padding:3px 4px;font-size:10px;font-weight:700;color:var(--tx2)">합계</th>';
+
+  /* 데이터 행 */
+  var tdCells=arr.map(function(d,i){
+    var m=i+1;
+    var isCur=(selY===curY&&m===curM);
+    var isPast=d.type==='past';
+    var isFuture=d.type==='future';
+    var bg=isCur?'background:#e8f4fd;':'';
+    var border=isCur?'border:1px solid var(--blu);':'border:1px solid var(--brd);';
+    var color=isPast?'color:#111;':(isFuture?'color:var(--tx3);':'color:var(--blu);font-weight:700;');
+    var readonly=!isPast&&!(selY<curY);/* 이전달/과거연도만 수정 */
+
+    if(readonly){
+      /* 현재달/미래달: 읽기전용 표시 */
+      return '<td style="padding:2px;'+border+bg+'"><div style="width:100%;text-align:right;font-size:10px;'+color+'padding:2px 3px">'+fmt(Math.round(d.v))+'</div></td>';
+    } else {
+      /* 이전달/과거연도: input 수정 가능 */
+      return '<td style="padding:2px;'+border+'"><input style="width:100%;border:none;background:transparent;text-align:right;font-size:10px;color:#111;" value="'+fmt(Math.round(d.v))+'" onchange="distSaveMonth('+selY+','+m+',this.value)"></td>';
+    }
+  }).join('');
+
+  /* 합계 셀 */
+  var sumCell='<td style="padding:2px 4px;text-align:right;font-size:11px;font-weight:700;color:var(--blu);border:1px solid var(--brd)">'+fmt(Math.round(total))+'</td>';
+
+  el.innerHTML='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">'
+    +'<table style="width:100%;border-collapse:collapse;table-layout:fixed;min-width:480px">'
+    +'<thead><tr>'+thCells+'</tr></thead>'
+    +'<tbody><tr>'+tdCells+sumCell+'</tr></tbody>'
+    +'</table></div>'
+    +'<div style="margin-top:3px;font-size:9px;color:var(--tx3)">'
+    +'연간합계 <strong>'+fmt(Math.round(total))+'원</strong>'
+    +' · 월평균 <strong>'+fmt(Math.round(total/12))+'원</strong>'
+    +' · 파란색=현재달(자동) · 흐린색=미래(임시) · 검정=수정가능'
+    +'</div>';
+}
+
+
+/* ===== 사적연금 통합관리 ===== */
+var PENSION_KEY='fp_pension_v1';
+var PENSION_STRATEGY_KEY='fp_pension_strategy';
+
+function pensionGet(){try{return JSON.parse(sGet(PENSION_KEY)||'{}');}catch(e){return {};}}
+function pensionSet(obj){sSet(PENSION_KEY,JSON.stringify(obj));}
+function pensionStrategyGet(){return sGet(PENSION_STRATEGY_KEY)||
+  '1. 퇴직연금의 이연퇴직금 인출이 완료되면, 과세재원을 사적연금 수령한도내로 연금수령\n'+
+  '2. 퇴직연금 인출이 끝나면, 개인연금(삼성)의 비과세재원 인출완료후 연금개시(사적연금수령한도)\n'+
+  '3. 개인연금(미래)는 비상금으로 미개시 상태로 운영하고, IRP(미래)은 계속 적립투자 예정';}
+function pensionStrategySet(v){sSet(PENSION_STRATEGY_KEY,v);}
+
+function getAccCurTotal(accId){
+  var acc=ACCOUNTS.find(function(a){return a.id===accId;});
+  if(!acc) return 0;
+  var cur=0;
+  acc.holdings.forEach(function(h){if(!h.isMMF) cur+=liveP(h)*(h.qty||0);});
+  return Math.round(cur);
+}
+
+function renderPension(){
+  var pg=document.getElementById('pg-pension');
+  if(!pg) return;
+  var saved=pensionGet();
+
+  var PACC=[
+    {id:'mf-ira',    col:'B', label:'퇴직연금(미래)',  openDate:'23.2.15', startDate:'23.12.20', defaultYr:4,  defaultStarted:true},
+    {id:'mf-pension',col:'C', label:'개인연금(미래)',   openDate:'20.3.20', startDate:'25.3.20',  defaultYr:2,  defaultStarted:false},
+    {id:'ss-pension', col:'D', label:'개인연금(삼성)',   openDate:'20.3.24', startDate:'25.3.24',  defaultYr:2,  defaultStarted:false},
+    {id:'mf-irp2',   col:'E', label:'IRP(미래에셋)',    openDate:'25.4.29', startDate:'30.4.29',  defaultYr:null,defaultStarted:false},
+  ];
+
+  var cols=PACC.map(function(p){
+    var acc=ACCOUNTS.find(function(a){return a.id===p.id;});
+    var curTotal=getAccCurTotal(p.id);
+    var extraVal=acc?acc.extraVal||0:0;
+
+    // 이연퇴직금: mf-ira만
+    var retireVal=(p.id==='mf-ira')?extraVal:0;
+    // 비과세재원: 개인연금만
+    var nontaxVal=(p.id==='mf-pension'||p.id==='ss-pension')?extraVal:0;
+
+    // 개시여부 (수동 수정 가능)
+    var started=saved['started_'+p.id]!=null?saved['started_'+p.id]:p.defaultStarted;
+    // 연금수령연차 (수동 수정 가능)
+    var yr=saved['yr_'+p.id]!=null?saved['yr_'+p.id]:p.defaultYr;
+
+    // 과세재원: 퇴직연금=평가잔액-이연퇴직금, 개인연금=평가잔액-비과세재원, IRP=평가잔액
+    var taxable=0;
+    if(p.id==='mf-ira') taxable=Math.max(0, curTotal-retireVal);
+    else if(p.id==='mf-pension'||p.id==='ss-pension') taxable=Math.max(0, curTotal-nontaxVal);
+    else taxable=curTotal;
+
+    // 한도산정 기준금액 (수동 or 현재총액)
+    var baseAmt=saved['base_'+p.id]!=null?saved['base_'+p.id]:curTotal;
+
+    // 연금수령한도: 11년 초과시 평가잔액, 미개시시 null
+    var limitAuto=null;
+    if(yr!=null){
+      if(yr>=11) limitAuto=curTotal; // 11년 이상 → 평가잔액
+      else limitAuto=Math.round(baseAmt/(11-yr)*1.2);
+    }
+    var limitVal=saved['limit_'+p.id]!=null?saved['limit_'+p.id]:limitAuto;
+
+    // 퇴직소득세 감면(70%): 이연퇴직금 범위내 연금수령한도
+    // 미감면(100%): 이연퇴직금 중 연금수령한도 초과분
+    var tax70=null, tax100=null;
+    if(p.id==='mf-ira'&&retireVal>0&&limitVal!=null){
+      tax70=Math.min(limitVal, retireVal);       // 한도내 이연퇴직금
+      tax100=Math.max(0, retireVal-limitVal);    // 한도 초과 이연퇴직금
+    }
+
+    // 사적연금수령한도포함금액 (수동)
+    var inclLimit=saved['incl_'+p.id]!=null?saved['incl_'+p.id]:
+      (limitVal!=null?limitVal:null);
+
+    // 사적연금수령한도미포함 인출가능금액: 이연퇴직금+비과세재원
+    var freeWithdraw=retireVal+nontaxVal;
+
+    return {p:p, curTotal:curTotal, extraVal:extraVal, retireVal:retireVal, nontaxVal:nontaxVal,
+      started:started, yr:yr, taxable:taxable, baseAmt:baseAmt,
+      limitAuto:limitAuto, limitVal:limitVal, tax70:tax70, tax100:tax100,
+      inclLimit:inclLimit, freeWithdraw:freeWithdraw};
+  });
+
+  // 합계
+  var sumCur=cols.reduce(function(s,c){return s+c.curTotal;},0);
+  var sumNon=cols.reduce(function(s,c){return s+c.nontaxVal;},0);
+  var sumRet=cols.reduce(function(s,c){return s+c.retireVal;},0);
+  var sumTax=cols.reduce(function(s,c){return s+c.taxable;},0);
+  var sumFree=cols.reduce(function(s,c){return s+c.freeWithdraw;},0);
+  var sumIncl=cols.reduce(function(s,c){return s+(c.inclLimit||0);},0);
+  var sumTax70=cols.reduce(function(s,c){return s+(c.tax70||0);},0);
+  var sumTax100=cols.reduce(function(s,c){return s+(c.tax100||0);},0);
+
+  var LIMIT15M=15000000;
+
+  // 스타일 헬퍼
+  var brd='border:1px solid var(--brd);';
+  var lblBase=brd+'padding:6px 9px;font-size:12px;font-weight:600;background:var(--gbg);';
+  var lblSub=brd+'padding:6px 9px 6px 20px;font-size:11px;font-weight:400;background:var(--gbg);';
+  var cellN=brd+'padding:6px 9px;text-align:right;font-size:12px;color:#111;';
+  var cellC=brd+'padding:6px 9px;text-align:center;font-size:12px;color:#111;';
+  var hdSt=brd+'padding:8px 9px;text-align:center;font-size:11px;font-weight:700;background:#1e3a5f;color:#fff;';
+  var sumSt=brd+'padding:6px 9px;text-align:right;font-size:12px;font-weight:700;color:var(--blu);';
+
+  function n(v,extra){
+    if(v==null||v===0) return '<td style="'+cellN+(extra||'')+'">' + '-</td>';
+    return '<td style="'+cellN+(extra||'')+'">'+fmt(Math.round(v))+'</td>';
+  }
+  function nSum(v){
+    if(v==null||v===0) return '<td style="'+sumSt+'">-</td>';
+    return '<td style="'+sumSt+'">'+fmt(Math.round(v))+'</td>';
+  }
+  function editableCell(key,id,val,bold){
+    var v=val!=null?Math.round(val):'';
+    return '<td style="'+brd+'padding:3px 6px;">'
+      +'<input class="ed" style="width:100%;text-align:right;font-size:12px;'+(bold?'font-weight:700;':'')+'color:var(--blu)"'
+      +' value="'+v+'" placeholder="-"'
+      +' onchange="pensionEdit(\''+key+'\',\''+id+'\',this.value)"></td>';
+  }
+  function limitCell(c){
+    if(c.yr==null) return '<td style="'+cellC+'color:var(--tx3)">미개시</td>';
+    var isCustom=saved['limit_'+c.p.id]!=null;
+    var v=c.limitVal!=null?Math.round(c.limitVal):'';
+    return '<td style="'+brd+'padding:3px 6px;">'
+      +'<input class="ed" style="width:100%;text-align:right;font-size:12px;font-weight:700;color:'+(isCustom?'var(--red)':'#111')+'"'
+      +' value="'+v+'" placeholder="자동계산"'
+      +' title="'+(c.limitAuto!=null?'자동: '+fmt(Math.round(c.limitAuto)):'')+'"'
+      +' onchange="pensionEdit(\'limit\',\''+c.p.id+'\',this.value)"'
+      +'>'
+      +'</td>';
+  }
+  function startedCell(c){
+    var started=c.started;
+    return '<td style="'+cellC+'">'
+      +'<select class="ed" style="font-size:11px;border:none;background:transparent;color:'+(started?'var(--grn)':'var(--tx2)')+';"'
+      +' onchange="pensionEditBool(\'started\',\''+c.p.id+'\',this.value)">'
+      +'<option value="true"'+(started?' selected':'')+'>개시</option>'
+      +'<option value="false"'+(!started?' selected':'')+'>미개시</option>'
+      +'</select></td>';
+  }
+  function yrCell(c){
+    var yr=c.yr;
+    return '<td style="'+cellC+'">'
+      +'<input class="ed" style="width:40px;text-align:center;font-size:11px" value="'+(yr!=null?yr:'')+'" placeholder="-"'
+      +' onchange="pensionEditYr(\''+c.p.id+'\',this.value)">'
+      +'<span style="font-size:11px;color:var(--tx2)">'+(yr!=null?' 년차':'')+'</span></td>';
+  }
+
+  var hdRow='<thead><tr>'
+    +'<th style="'+hdSt+'min-width:130px;">구분</th>'
+    +cols.map(function(c){return '<th style="'+hdSt+'">'+c.p.label+'</th>';}).join('')
+    +'<th style="'+hdSt+'background:#0f2340;">합계</th>'
+    +'</tr></thead>';
+
+  function sep(){return '<tr><td colspan="6" style="height:5px;background:var(--gbg);'+brd+'"></td></tr>';}
+
+  var tbody='<tbody>'
+    // ── 기본 정보 ──
+    +'<tr><td style="'+lblBase+'">개설일자</td>'
+      +cols.map(function(c){return '<td style="'+cellC+'">'+c.p.openDate+'</td>';}).join('')+'<td style="'+cellC+'"></td></tr>'
+    +'<tr><td style="'+lblBase+'">연금개시가능일</td>'
+      +cols.map(function(c){return '<td style="'+cellC+'">'+c.p.startDate+'</td>';}).join('')+'<td style="'+cellC+'"></td></tr>'
+    +'<tr><td style="'+lblBase+'">개시여부</td>'
+      +cols.map(function(c){return startedCell(c);}).join('')+'<td style="'+cellC+'"></td></tr>'
+    +'<tr><td style="'+lblBase+'">연금수령연차</td>'
+      +cols.map(function(c){return yrCell(c);}).join('')+'<td style="'+cellC+'"></td></tr>'
+    +sep()
+    // ── 잔액 ──
+    +'<tr><td style="'+lblBase+'">평가잔액(현재총액)</td>'
+      +cols.map(function(c){return '<td style="'+cellN+'font-weight:700;">'+fmt(c.curTotal)+'</td>';}).join('')
+      +'<td style="'+sumSt+'">'+fmt(sumCur)+'</td></tr>'
+    +'<tr><td style="'+lblSub+'">ㄴ 비과세재원</td>'
+      +cols.map(function(c){return n(c.nontaxVal);}).join('')+nSum(sumNon)+'</tr>'
+    +'<tr><td style="'+lblSub+'">ㄴ 이연퇴직금</td>'
+      +cols.map(function(c){return n(c.retireVal);}).join('')+nSum(sumRet)+'</tr>'
+    +'<tr><td style="'+lblSub+'">ㄴ 과세재원(운영수익 포함)</td>'
+      +cols.map(function(c){return n(c.taxable);}).join('')+nSum(sumTax)+'</tr>'
+    +sep()
+    // ── 한도산정 ──
+    +'<tr><td style="'+lblBase+'font-size:11px;">한도산정 기준금액<br><span style="font-size:9px;font-weight:400;color:var(--tx3)">1월1일 현재총액</span></td>'
+      +cols.map(function(c){return editableCell('base',c.p.id,c.baseAmt,false);}).join('')
+      +'<td style="'+cellN+'"></td></tr>'
+    +'<tr><td style="'+lblBase+'font-size:11px;">연금수령한도(계좌별)<br><span style="font-size:9px;font-weight:400;color:var(--tx3)">기준금액÷(11-수령연차)×1.2</span></td>'
+      +cols.map(function(c){return limitCell(c);}).join('')
+      +'<td style="'+cellN+'text-align:center;color:var(--tx3)">-</td></tr>'
+    +sep()
+    // ── 인출가능금액 ──
+    +'<tr><td style="'+lblBase+'font-weight:700;">사적연금수령한도<br>미포함 인출가능금액</td>'
+      +cols.map(function(c){return '<td style="'+cellN+'font-weight:700;">'+fmt(c.freeWithdraw)+'</td>';}).join('')
+      +'<td style="'+sumSt+'">'+fmt(sumFree)+'</td></tr>'
+    // 하위항목 3개 - 들여쓰기 + 보통 글씨
+    +'<tr><td style="'+lblSub+'">ㄴ 비과세 수령가능액(자유인출)</td>'
+      +cols.map(function(c){return n(c.nontaxVal);}).join('')+nSum(sumNon)+'</tr>'
+    +'<tr><td style="'+lblSub+'">ㄴ 퇴직소득세감면 수령가능액(70%)</td>'
+      +cols.map(function(c){return n(c.tax70);}).join('')+nSum(sumTax70)+'</tr>'
+    +'<tr><td style="'+lblSub+'">ㄴ 퇴직소득세미감면 수령가능액(100%)</td>'
+      +cols.map(function(c){return n(c.tax100);}).join('')+nSum(sumTax100)+'</tr>'
+    +sep()
+    // ── 한도포함금액 ──
+    +'<tr><td style="'+lblBase+'font-size:11px;background:#fff3cd;">사적연금수령한도<br>포함금액 <span style="font-size:9px;font-weight:400">(통합 1,500만원)</span></td>'
+      +cols.map(function(c){return editableCell('incl',c.p.id,c.inclLimit,true);}).join('')
+      +'<td style="'+brd+'padding:6px 9px;text-align:right;font-size:12px;font-weight:700;background:#fff3cd;'+(sumIncl>LIMIT15M?'color:var(--red)':'color:var(--blu)')+';">'
+        +fmt(sumIncl)+(sumIncl>LIMIT15M?'<br><span style="font-size:9px;font-weight:400">⚠ 한도초과</span>':'')
+      +'</td></tr>'
+    +'</tbody>';
+
+  var noteHTML='<div style="padding:4px 13px 8px;font-size:10px;color:var(--tx3)">'
+    +'* 한도산정 기준금액: 매년 1월1일 현재총액 기준 (없으면 가장 가까운 스냅샷 사용)<br>'
+    +'* 연금수령한도: 11년차 이상은 평가잔액이 한도 / 더블클릭 시 자동계산값으로 초기화<br>'
+    +'* 퇴직소득세 감면(70%) = 이연퇴직금 범위내 연금수령한도 / 미감면(100%) = 초과분<br>'
+    +'* 사적연금 통합 연간 수령한도 1,500만원 초과 시 종합과세 대상'
+    +'</div>';
+
+  var strategyHTML='<div class="sec" style="margin-top:12px">'
+    +'<div class="sechdr"><span class="sectitle">연금계좌 인출 및 운영전략</span>'
+    +'<button class="btn" style="font-size:11px;padding:3px 9px;margin-left:8px;" onclick="pensionSaveStrategy()">저장</button></div>'
+    +'<div style="padding:0 13px 13px">'
+    +'<textarea id="pension-strategy" style="width:100%;min-height:90px;border:1px solid var(--brd);border-radius:8px;padding:10px;font-size:12px;font-family:inherit;resize:vertical;box-sizing:border-box;line-height:1.6">'
+    +pensionStrategyGet()+'</textarea></div></div>';
+
+  pg.innerHTML='<div class="sec"><div class="sechdr"><span class="sectitle">사적연금 통합관리</span>'
+    +'<span class="secsub">4개 계좌 · 데이터 자동 연동</span></div>'
+    +'<div class="twrap" style="padding:0 13px 6px"><table style="width:100%;border-collapse:collapse;min-width:680px;">'
+    +hdRow+tbody+'</table></div>'+noteHTML+'</div>'+strategyHTML;
+}
+
+function pensionEdit(type,id,val){
+  var saved=pensionGet();
+  var v=val===''?null:(parseFloat(val.replace(/,/g,''))||0);
+  if(v===null) delete saved[type+'_'+id]; else saved[type+'_'+id]=v;
+  pensionSet(saved);
+  renderPension();
+}
+function pensionEditBool(type,id,val){
+  var saved=pensionGet();
+  saved[type+'_'+id]=(val==='true');
+  pensionSet(saved);
+  renderPension();
+}
+function pensionEditYr(id,val){
+  var saved=pensionGet();
+  var v=val===''?null:(parseInt(val)||null);
+  if(v===null) delete saved['yr_'+id]; else saved['yr_'+id]=v;
+  pensionSet(saved);
+  renderPension();
+}
+function pensionResetAuto(id,input){
+  var saved=pensionGet();
+  delete saved['limit_'+id];
+  pensionSet(saved);
+  renderPension();
+}
+function pensionSaveStrategy(){
+  var ta=document.getElementById('pension-strategy');
+  if(ta){pensionStrategySet(ta.value);alert('\u2705 \uc800\uc7a5 \uc644\ub8cc');}
+}
+
 /* ===== KR 계좌 렌더 ===== */
 function renderKR(acc, cid) {
   var id = acc.id;
@@ -1000,8 +1392,6 @@ function renderKR(acc, cid) {
     row += '</tr>';
     return row;
   }).join('');
-
-  var annDist  = tDist * 12;
   var pnlR     = tCost > 0 ? (tCur - tCost) / tCost : 0;
   var accDep   = acc.accDep   || 0;
   var accWit   = acc.accWit   || 0;
@@ -1033,7 +1423,6 @@ function renderKR(acc, cid) {
   html += mkIV('\uc2e4\ub0a9\ub300\ube44 \ud3c9\uac00\uc190\uc775', (tCur-real>=0?'+':'')+fmt(tCur-real)+'\uc6d0', pc(tCur-real), cid+'_pnlreal_abs');
   html += mkIV('\uc218\uc775\ub960(\uc2e4\ub0a9)', fmtPct(pnlReal), pc(pnlReal), cid+'_pnlreal');
   html += mkIVg('\uc6d4\ubd84\ubc30\uae08', fmt(tDist)+'\uc6d0', cid+'_dist');
-  html += mkIVg('\uc5f0\uac04\ubd84\ubc30\uae08', fmt(annDist)+'\uc6d0', cid+'_adist');
   // extraLabel (이연퇴직금, 비과세원금 등)
   if (acc.extraLabel) html += mkIE(acc.extraLabel+'(\uc6d0)', acc.extraVal||0, id, 'extraVal');
   html += '</div></div>';
@@ -1060,8 +1449,6 @@ function renderKR(acc, cid) {
   html += '<div class="tbbar"><button class="btn btn-add" onclick="openAddModal(\'' + id + '\')">+ \uc885\ubaa9 \ucd94\uac00</button></div>';
   html += '<div class="drow">';
   html += '<span>\uc6d4 \ubd84\ubc30\uae08: <strong style="color:var(--grn)" id="' + cid + '_drow_dist">' + fmt(tDist) + '\uc6d0</strong></span> ';
-  html += '<span>\uc5f0\uac04\ubd84\ubc30\uae08\ud569\uacc4 <strong style="color:#6b7280" id="' + cid + '_drow_adist">' + fmt(annDist) + '\uc6d0</strong></span>';
-  if (acc.annualDistRate) html += ' <span>\ubd84\ubc30\uc728: <strong>' + (acc.annualDistRate*100).toFixed(2) + '%</strong></span>';
   html += '</div></div>';
 
   document.getElementById(cid).innerHTML = html;
@@ -1160,7 +1547,6 @@ function _recalcTotals(id, cid) {
     var dpu=h.dpu!=null?h.dpu:null;
     tDist+=(dpu!=null?Math.round(dpu*(h.qty||0)):((h.mI||0)+(h.mM||0)));
   });
-  var annDist=tDist*12;
   var pnlR=tCost>0?(tCur-tCost)/tCost:0;
   var real=(a.accDep||0)-(a.accWit||0);
   var pnl=tCur-tCost;
@@ -1173,13 +1559,11 @@ function _recalcTotals(id, cid) {
   var _pnlRA=tCur-real; _setCell(cid+'_pnlreal_abs', (_pnlRA>=0?'+':'')+fmt(_pnlRA)+'\uc6d0', pc(_pnlRA));
   _setCell(cid+'_pnlreal', fmtPct(pnlReal), pc(pnlReal));
   _setText(cid+'_dist',  fmt(tDist)+'원');
-  _setText(cid+'_adist', fmt(annDist)+'원');
   _setText(cid+'_tot_cost', fmt(tCost));
   _setText(cid+'_tot_cur',  fmt(tCur));
   _setCell(cid+'_tot_pnlr', fmtPct(pnlR), pc(pnlR));
   _setText(cid+'_tot_dist', fmt(tDist));
   _setText(cid+'_drow_dist',  fmt(tDist)+'원');
-  _setText(cid+'_drow_adist', fmt(annDist)+'원');
 }
 
 // ── 당해연도 납입/인출 핸들러 ──
@@ -1457,7 +1841,7 @@ function renderCrypto(force){
   var bith=exRows(CRYPTO.bithumb,'B'), ubit=exRows(CRYPTO.upbit,'U');
 
   document.getElementById('pg-crypto').innerHTML=[
-    '<div class="sec"><div class="sechdr"><span class="sectitle">\uac00\uc0c1\ud654\ud3d0 \ucd1d\uad04</span>',
+    '<div class="sec"><div class="sechdr"><span class="sectitle">\ud83d\udcb0 \uac00\uc0c1\ud654\ud3d0 \ucd1d\uad04</span>',
     '<span class="secsub">\ube57\uc12c+\uc5c5\ube44\ud2b8 \ud569\uc0b0 | \uc5c5\ube44\ud2b8 API \uc790\ub3d9\ubc18\uc601</span></div>',
     '<div class="sgrid" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr))">',
     '<div class="scard"><div class="slbl">\ub9e4\uc785\ucd1d\uc561</div><div class="sval">'+fmt(gC)+'\uc6d0</div></div>',
@@ -1480,8 +1864,8 @@ function renderCrypto(force){
     '<th>\ud604\uc7ac\ucd1d\uc561</th>',
     '<th>\uc218\uc775\ub960</th><th>\uc804\uace0\uc810\ub300\ube44</th><th>\ud3c9\uac00\uc190\uc775</th><th></th>',
     '</tr></thead><tbody>',
-    '<tr class="xhdr"><td colspan="11">\ube57\uc12c (Bithumb)</td></tr>',bith.html,
-    '<tr class="xhdr"><td colspan="11">\uc5c5\ube44\ud2b8 (Upbit)</td></tr>',ubit.html,
+    '<tr class="xhdr"><td colspan="11">\ud83d\udd38 \ube57\uc12c (Bithumb)</td></tr>',bith.html,
+    '<tr class="xhdr"><td colspan="11">\ud83d\udd39 \uc5c5\ube44\ud2b8 (Upbit)</td></tr>',ubit.html,
     '<tr class="trow"><td>\uc804\uccb4 \ud569\uacc4</td><td colspan="4"></td>',
     '<td class="auto">'+fmt(gC)+'</td><td class="auto">'+fmt(gV)+'</td>',
     '<td class="'+pc(gPnlR)+'">'+fmtPct(gPnlR)+'</td><td></td>',
@@ -1568,7 +1952,9 @@ function renderHoldings(){
     var monthDist=r.dpu&&r.totalQty?Math.round(r.dpu*r.totalQty):null;
     return '<tr>'
       +'<td style="text-align:right;color:var(--tx3);font-size:10px;padding-right:4px">'+(idx+1)+'</td>'
-      +'<td style="text-align:left;font-size:11px;word-break:keep-all;white-space:normal;line-height:1.3">'+r.n+'</td>'
+      +'<td style="text-align:left"><div style="font-weight:600;font-size:12px">'+r.n+'</div>'
+        +'<div style="font-size:9px;color:var(--tx3)">'+r.type
+        +(r.accs.length?'ㆍ'+(r.accs.length>2?r.accs[0]+' 외 '+(r.accs.length-1)+'개':r.accs.join(', ')):'')+'</div></td>'
       +'<td style="text-align:right">'+qtyStr+'</td>'
       +'<td style="text-align:right">'+fmt(avgCost)+'</td>'
       +'<td style="text-align:right;color:var(--blu)">'+fmt(Math.round(r.price))+'</td>'
@@ -1579,6 +1965,7 @@ function renderHoldings(){
       +'<td style="text-align:right"><div>'
         +'<span style="font-weight:700;color:var(--blu)">'+wt.toFixed(1)+'%</span>'
         +wtBar+'</div></td>'
+      
       +'</tr>';
   }).join('');
 
@@ -1589,7 +1976,7 @@ function renderHoldings(){
 
   document.getElementById('pg-holdings').innerHTML=[
     '<div class="sec"><div class="sechdr">',
-    '<span class="sectitle">투자종목 총괄</span>',
+    '<span class="sectitle">\ud83d\udccb 투자종목 총괄현황</span>',
     '<span class="secsub">전체 '+rows.length+'개 종목 ㆍ 동일종목 합산</span></div>',
     '<div class="sgrid" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))">',
     '<div class="scard"><div class="slbl">전체 종목수</div><div class="sval">'+rows.length+'개</div></div>',
@@ -1600,16 +1987,17 @@ function renderHoldings(){
     '</div>',
     '<div class="twrap" style="padding:0 13px 13px"><table style="table-layout:fixed;width:100%">',
     '<colgroup>',
-    '<col style="width:24px">',
-    '<col style="width:110px">',
-    '<col style="width:58px">',
-    '<col style="width:72px">',
-    '<col style="width:72px">',
-    '<col style="width:80px">',
-    '<col style="width:80px">',
-    '<col style="width:72px">',
-    '<col style="width:52px">',
-    '<col style="width:56px">',
+    '<col style="width:28px">',   // #
+    '<col>',                       // 종목명 (flex)
+    '<col style="width:72px">',   // 합계수량
+    '<col style="width:88px">',   // 평균매입단가
+    '<col style="width:88px">',   // 현재가
+    '<col style="width:95px">',   // 매입총액
+    '<col style="width:95px">',   // 현재총액
+    '<col style="width:88px">',   // 평가손익
+    '<col style="width:62px">',   // 수익률
+    '<col style="width:70px">',   // 비중
+    '<col style="width:72px">',   // 월분배금
     '</colgroup>',
     '<thead><tr>',
     '<th style="text-align:center">#</th>',
@@ -1622,6 +2010,7 @@ function renderHoldings(){
     '<th style="text-align:right">평가손익</th>',
     '<th style="text-align:right">수익률</th>',
     '<th style="text-align:right">비중</th>',
+    ,
     '</tr></thead>',
     '<tbody>'+tableRows+'</tbody>',
     '<tr class="trow">',
@@ -1638,322 +2027,586 @@ function renderHoldings(){
 }
 
 
-/* ===== 사적연금 통합관리 ===== */
-var PENSION_KEY='fp_pension_v1';
-var PENSION_STRATEGY_KEY='fp_pension_strategy';
 
-// 연금 저장값 로드/저장
-function pensionGet(){ try{return JSON.parse(sGet(PENSION_KEY)||'{}');}catch(e){return {};} }
-function pensionSet(obj){ sSet(PENSION_KEY,JSON.stringify(obj)); }
-function pensionStrategyGet(){ return sGet(PENSION_STRATEGY_KEY)||
-  '1. 퇴직연금의 이연퇴직금 인출이 완료되면, 과세재원을 사적연금 수령한도내로 연금수령\n'+
-  '2. 퇴직연금 인출이 끝나면, 개인연금(삼성)의 비과세재원 인출완료후 연금개시(사적연금수령한도)\n'+
-  '3. 개인연금(미래)는 비상금으로 미개시 상태로 운영하고, IRP(미래)은 계속 적립투자 예정'; }
-function pensionStrategySet(v){ sSet(PENSION_STRATEGY_KEY,v); }
 
-// 1월1일 또는 가장 가까운 스냅샷에서 계좌 현재총액 추출
-function getPensionBaseAmt(accId){
-  var saved=pensionGet();
-  if(saved['base_'+accId]!=null) return saved['base_'+accId]; // 수동 입력값 우선
+/* ===== 자산변동 ===== */
+var _hChart=null,_hPeriod='daily';
+var PERIODS=[['daily','\uc77c\ubcc4'],['weekly','\uc8fc\ubcc4'],['monthly','\uc6d4\ubcc4'],['quarterly','\ubd84\uae30\ubcc4'],['semi','\ubc18\uae30\ubcc4'],['yearly','\uc5f0\ubcc4']];
+function wkNum(d){var dt=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));dt.setUTCDate(dt.getUTCDate()+4-(dt.getUTCDay()||7));var y=new Date(Date.UTC(dt.getUTCFullYear(),0,1));return Math.ceil(((dt-y)/86400000+1)/7);}
+function snapKey(ts,p){var d=new Date(ts);var Y=d.getFullYear(),M=String(d.getMonth()+1).padStart(2,'0'),D=String(d.getDate()).padStart(2,'0');if(p==='daily')return Y+'-'+M+'-'+D;if(p==='weekly')return Y+'-W'+String(wkNum(d)).padStart(2,'0');if(p==='monthly')return Y+'-'+M;if(p==='quarterly')return Y+'-Q'+Math.ceil((d.getMonth()+1)/3);if(p==='semi')return Y+(d.getMonth()<6?'-S1':'-S2');return String(Y);}
+function snapLbl(ts,p){var d=new Date(ts);var Y=d.getFullYear(),M=String(d.getMonth()+1).padStart(2,'0'),D=String(d.getDate()).padStart(2,'0');if(p==='daily')return Y+'.'+M+'/'+D;if(p==='weekly')return Y+'W'+wkNum(d);if(p==='monthly')return Y+'.'+M;if(p==='quarterly')return Y+'Q'+Math.ceil((d.getMonth()+1)/3);if(p==='semi')return Y+(d.getMonth()<6?'\uc0c1':'\ud558');return String(Y);}
+function aggSnaps(p){var snaps=loadSnaps();if(!snaps.length)return[];var map={};snaps.forEach(function(s){var k=snapKey(s.ts,p);map[k]={label:snapLbl(s.ts,p),cur:s.cur,cost:s.cost,pnl:s.pnl,ts:s.ts,note:s.note||''};});return Object.values(map).sort(function(a,b){return new Date(a.ts)-new Date(b.ts);});}
+function renderHistory(){
+  var ptabs=PERIODS.map(function(kl){return'<button class="ptab'+(kl[0]===_hPeriod?' on':'')+'" onclick="switchPeriod(\''+kl[0]+'\')">'+kl[1]+'</button>';}).join('');
+  document.getElementById('pg-history').innerHTML=[
+    '<div class="sec"><div class="sechdr">',
+    '<span class="sectitle">\ud83d\udcc8 \uc790\uc0b0 \ubcc0\ub3d9 \ud604\ud669</span>',
+    '<span class="secsub">\ud83d\udcbe \uc800\uc7a5 \ubc84\ud2bc\uc73c\ub85c \uae30\ub85d \u2014 \uc77c\ubcc4 \ucd5c\uc2e0 1\uac74 \uc720\uc9c0</span>',
+    '<button class="btn btn-add" style="margin-left:auto;padding:4px 11px;font-size:12px" onclick="snapNow()">\ud83d\udcf8 \uc9c0\uae08 \uae30\ub85d</button>',
+    '</div>',
+    '<div class="ptabs">'+ptabs+'</div>',
+    '<div class="chart-wrap"><canvas id="hchart"></canvas></div>',
+    '<div id="hist-tbl"></div>',
+    '</div>'
+  ].join('');
+  drawHChart();
+}
+function switchPeriod(p){_hPeriod=p;renderHistory();}
+function snapNow(){
+  var today=new Date().toLocaleDateString('ko-KR');
+  var now=new Date().toISOString();
+  var t=grandTotal();
   var snaps=loadSnaps();
-  if(!snaps.length) return null;
-  var year=new Date().getFullYear();
-  var jan1=year+'. 1. 1.';
-  // 정확히 1월1일 스냅샷 찾기
-  var exact=snaps.find(function(s){return s.date===jan1;});
-  if(exact&&exact.accTotals&&exact.accTotals[accId]) return exact.accTotals[accId];
-  // 1월1일에 가장 가까운 스냅샷 찾기 (1월1일 이후 첫 번째)
-  var jan1Ts=new Date(year+'-01-01').getTime();
-  var sorted=snaps.slice().sort(function(a,b){return new Date(a.ts)-new Date(b.ts);});
-  var closest=null,minDiff=Infinity;
-  sorted.forEach(function(s){
-    var d=Math.abs(new Date(s.ts).getTime()-jan1Ts);
-    if(d<minDiff){minDiff=d;closest=s;}
-  });
-  if(closest&&closest.accTotals&&closest.accTotals[accId]) return closest.accTotals[accId];
-  return null;
+  var idx=snaps.findIndex(function(s){return s.date===today;});
+  var snap={date:today,ts:now,cur:t.cur,cost:t.cost,pnl:t.pnl,note:''};
+  if(idx>=0)snaps[idx]=snap;else snaps.push(snap);
+  snaps.sort(function(a,b){return a.date<b.date?-1:1;});
+  sSet(SNAPKEY,JSON.stringify(snaps));
+  renderHistory();
 }
-
-// 계좌별 현재총액 계산 (liveP 기반)
-function getAccCurTotal(accId){
-  var acc=ACCOUNTS.find(function(a){return a.id===accId;});
-  if(!acc) return 0;
-  var cur=0;
-  acc.holdings.forEach(function(h){
-    if(h.isMMF) return;
-    cur+=liveP(h)*(h.qty||0);
-  });
-  return Math.round(cur);
+var _idxCache={};
+async function fetchIdxData(sym,startTs,intv){
+  var p1=Math.floor(new Date(startTs).getTime()/1000);
+  var p2=Math.floor(Date.now()/1000);
+  var key=sym+'_'+intv+'_'+p1;
+  if(_idxCache[key]) return _idxCache[key];
+  try{
+    var url='https://query1.finance.yahoo.com/v8/finance/chart/'+sym+'?period1='+p1+'&period2='+p2+'&interval='+intv;
+    var r=await withTO(fetch(url),8000);
+    var j=await r.json();
+    var res=j.chart.result[0];
+    var ts=res.timestamp,close=res.indicators.quote[0].close;
+    var map={};
+    ts.forEach(function(t,ii){if(close[ii]!=null) map[t*1000]=close[ii];});
+    _idxCache[key]=map;
+    return map;
+  }catch(e){return null;}
 }
-
-function renderPension(){
-  var pg=document.getElementById('pg-pension');
-  if(!pg) return;
-  var saved=pensionGet();
-
-  // 4개 연금계좌 정의 (엑셀 순서)
-  var PACC=[
-    {id:'mf-ira',   label:'퇴직연금(미래)', openDate:'23.2.15', startDate:'23.12.20', yr:4,  started:true,  type:'퇴직'},
-    {id:'mf-pension',label:'개인연금(미래)', openDate:'20.3.20', startDate:'25.3.20',  yr:2,  started:false, type:'개인'},
-    {id:'ss-pension',label:'개인연금(삼성)', openDate:'20.3.24', startDate:'25.3.24',  yr:2,  started:false, type:'개인'},
-    {id:'mf-irp2',  label:'IRP(미래에셋)', openDate:'25.4.29', startDate:'30.4.29',   yr:null,started:false,type:'IRP'},
-  ];
-
-  // 각 계좌 데이터 계산
-  var cols=PACC.map(function(p){
-    var acc=ACCOUNTS.find(function(a){return a.id===p.id;});
-    var curTotal=getAccCurTotal(p.id);
-    var extraVal=acc?acc.extraVal||0:0;
-    var retireVal=(p.id==='mf-ira')?(acc?acc.extraVal||0:0):0;
-    var nontaxVal=(p.type==='개인')?extraVal:0;
-    var taxable=curTotal-extraVal-(p.id==='mf-ira'?retireVal:0);
-    if(taxable<0) taxable=0;
-
-    // 연금수령한도: 수동입력 or 자동계산
-    var baseAmt=saved['base_'+p.id]!=null?saved['base_'+p.id]:curTotal;
-    var limitAuto=(p.yr&&p.yr<11)?Math.round(baseAmt/(11-p.yr)*1.2):null;
-    var limitVal=saved['limit_'+p.id]!=null?saved['limit_'+p.id]:limitAuto;
-
-    // 사적연금수령한도포함금액 (수동 입력)
-    var inclLimit=saved['incl_'+p.id]!=null?saved['incl_'+p.id]:
-      (limitVal!=null?Math.min(limitVal,taxable):null);
-
-    return {
-      id:p.id, label:p.label, openDate:p.openDate, startDate:p.startDate,
-      yr:p.yr, started:p.started, type:p.type,
-      curTotal:curTotal, extraVal:extraVal, retireVal:retireVal,
-      nontaxVal:nontaxVal, taxable:taxable,
-      baseAmt:baseAmt, limitAuto:limitAuto, limitVal:limitVal,
-      inclLimit:inclLimit,
-      freeWithdraw:(p.id==='mf-ira')?retireVal:nontaxVal,
-    };
-  });
-
-  // 합계
-  var sumCur=cols.reduce(function(s,c){return s+c.curTotal;},0);
-  var sumNon=cols.reduce(function(s,c){return s+c.nontaxVal;},0);
-  var sumRet=cols.reduce(function(s,c){return s+c.retireVal;},0);
-  var sumTax=cols.reduce(function(s,c){return s+c.taxable;},0);
-  var sumFree=cols.reduce(function(s,c){return s+c.freeWithdraw;},0);
-  var sumIncl=cols.reduce(function(s,c){return s+(c.inclLimit||0);},0);
-
-  var cellSt='border:1px solid var(--brd);padding:7px 10px;text-align:right;font-size:12px;';
-  var lblSt='border:1px solid var(--brd);padding:7px 10px;font-size:12px;font-weight:600;background:var(--gbg);white-space:nowrap;';
-  var hdSt='border:1px solid var(--brd);padding:8px 10px;text-align:center;font-size:11px;font-weight:700;background:#1e3a5f;color:#fff;';
-
-  function numCell(v,style){
-    if(v==null||v===0) return '<td style="'+cellSt+(style||'')+'" class="auto">-</td>';
-    return '<td style="'+cellSt+(style||'')+'" class="auto">'+fmt(Math.round(v))+'</td>';
+function getIdxAt(prices,tsISO){
+  if(!prices) return null;
+  var target=new Date(tsISO).getTime();
+  var keys=Object.keys(prices).map(Number);
+  if(!keys.length) return null;
+  var best=keys[0],bestD=Math.abs(keys[0]-target);
+  keys.forEach(function(k){var d=Math.abs(k-target);if(d<bestD){bestD=d;best=k;}});
+  return prices[best]||null;
+}
+async function drawHChart(){
+  var data=aggSnaps(_hPeriod);
+  var canvas=document.getElementById('hchart');
+  if(!canvas) return;
+  if(_hChart){_hChart.destroy();_hChart=null;}
+  if(!data.length){
+    document.getElementById('hist-tbl').innerHTML='<div style="text-align:center;padding:30px;color:var(--tx3)">\ud83d\udceb \uc790\uc0b0 \uae30\ub85d\uc774 \uc5c6\uc2b5\ub2c8\ub2e4.<br>\ud83d\udcbe \uc800\uc7a5 \ub610\ub294 \ud83d\udcf8 \uc9c0\uae08 \uae30\ub85d \ubc84\ud2bc\uc744 \ub208\ub7ec \uccab \uae30\ub85d\uc744 \uc800\uc7a5\ud558\uc138\uc694.</div>';
+    return;
   }
-  function editCell(key,val,id){
-    var v=val!=null?Math.round(val):'';
-    return '<td style="'+cellSt+'padding:3px 5px;">'
-      +'<input class="ed" style="width:100%;text-align:right;font-size:11px;color:var(--blu)"'
-      +' value="'+(v||'')+'" placeholder="직접입력"'
-      +' onchange="pensionEdit(\''+key+'\',\''+id+'\',this.value)">'
-      +'</td>';
-  }
-
-  var colLabels=cols.map(function(c){return '<th style="'+hdSt+'">'+c.label+'</th>';}).join('');
-  var sumHd='<th style="'+hdSt+'background:#0f2340;">합계</th>';
-
-  var rows=[
-    // 개설일자
-    function(){
-      return '<tr><td style="'+lblSt+'">개설일자</td>'
-        +cols.map(function(c){return '<td style="'+cellSt+'text-align:center">'+c.openDate+'</td>';}).join('')
-        +'<td style="'+cellSt+'"></td></tr>';
-    },
-    // 연금개시가능일
-    function(){
-      return '<tr><td style="'+lblSt+'">연금개시가능일</td>'
-        +cols.map(function(c){return '<td style="'+cellSt+'text-align:center">'+c.startDate+'</td>';}).join('')
-        +'<td style="'+cellSt+'"></td></tr>';
-    },
-    // 개시여부
-    function(){
-      return '<tr><td style="'+lblSt+'">개시여부</td>'
-        +cols.map(function(c){
-          return '<td style="'+cellSt+'text-align:center;color:'+(c.started?'var(--grn)':'var(--tx2)')+'">'
-            +(c.started?'개시':'미개시')+'</td>';
-        }).join('')+'<td style="'+cellSt+'"></td></tr>';
-    },
-    // 연금수령연차
-    function(){
-      return '<tr><td style="'+lblSt+'">연금수령연차</td>'
-        +cols.map(function(c){
-          return '<td style="'+cellSt+'text-align:center">'+(c.yr!=null?c.yr+'년차':'-')+'</td>';
-        }).join('')+'<td style="'+cellSt+'"></td></tr>';
-    },
-    // 구분선
-    function(){
-      return '<tr><td colspan="6" style="background:var(--gbg);height:6px;border:1px solid var(--brd)"></td></tr>';
-    },
-    // 평가잔액
-    function(){
-      return '<tr><td style="'+lblSt+'">평가잔액(현재총액)</td>'
-        +cols.map(function(c){return numCell(c.curTotal,'font-weight:700;');}).join('')
-        +numCell(sumCur,'font-weight:700;')+'</tr>';
-    },
-    // 비과세재원
-    function(){
-      return '<tr><td style="'+lblSt+'">비과세재원</td>'
-        +cols.map(function(c){return numCell(c.nontaxVal);}).join('')
-        +numCell(sumNon)+'</tr>';
-    },
-    // 이연퇴직금
-    function(){
-      return '<tr><td style="'+lblSt+'">이연퇴직금</td>'
-        +cols.map(function(c){return numCell(c.retireVal);}).join('')
-        +numCell(sumRet)+'</tr>';
-    },
-    // 과세재원
-    function(){
-      return '<tr><td style="'+lblSt+'">과세재원(운영수익 포함)</td>'
-        +cols.map(function(c){return numCell(c.taxable);}).join('')
-        +numCell(sumTax)+'</tr>';
-    },
-    // 구분선
-    function(){
-      return '<tr><td colspan="6" style="background:var(--gbg);height:6px;border:1px solid var(--brd)"></td></tr>';
-    },
-    // 연금수령한도 기준금액 (1월1일 or 수동)
-    function(){
-      return '<tr><td style="'+lblSt+'font-size:11px;">한도산정 기준금액<br><span style="font-weight:400;font-size:9px;color:var(--tx3)">1월1일 현재총액 (직접수정 가능)</span></td>'
-        +cols.map(function(c){
-          var v=saved['base_'+c.id]!=null?saved['base_'+c.id]:c.curTotal;
-          return '<td style="'+cellSt+'padding:3px 5px;">'
-            +'<input class="ed" style="width:100%;text-align:right;font-size:11px;color:var(--blu)"'
-            +' value="'+(v?Math.round(v):'')+'" placeholder="직접입력"'
-            +' onchange="pensionEdit(\'base\',\''+c.id+'\',this.value)">'
-            +'</td>';
-        }).join('')+'<td style="'+cellSt+'"></td></tr>';
-    },
-    // 연금수령한도(계좌별)
-    function(){
-      return '<tr><td style="'+lblSt+'font-size:11px;">연금수령한도(계좌별)<br><span style="font-weight:400;font-size:9px;color:var(--tx3)">과세재원÷(11-수령연차)×1.2 (직접수정 가능)</span></td>'
-        +cols.map(function(c){
-          if(!c.yr||c.yr>=11) return '<td style="'+cellSt+'text-align:center;color:var(--tx3)">-</td>';
-          var isCustom=saved['limit_'+c.id]!=null;
-          var v=c.limitVal!=null?Math.round(c.limitVal):'';
-          return '<td style="'+cellSt+'padding:3px 5px;">'
-            +'<input class="ed" style="width:100%;text-align:right;font-size:11px;color:'+(isCustom?'var(--red)':'var(--tx)')+'"'
-            +' value="'+v+'" placeholder="자동계산"'
-            +' title="'+(c.limitAuto!=null?'자동계산: '+fmt(Math.round(c.limitAuto)):'')+'"'
-            +' onchange="pensionEdit(\'limit\',\''+c.id+'\',this.value)"'
-            +' ondblclick="pensionResetAuto(\'limit\',\''+c.id+'\',this)">'
-            +'</td>';
-        }).join('')+'<td style="'+cellSt+'"></td></tr>';
-    },
-    // 구분선
-    function(){
-      return '<tr><td colspan="6" style="background:var(--gbg);height:6px;border:1px solid var(--brd)"></td></tr>';
-    },
-    // 사적연금수령한도 미포함 인출가능금액
-    function(){
-      return '<tr><td style="'+lblSt+'font-size:11px;">사적연금수령한도<br>미포함 인출가능금액</td>'
-        +cols.map(function(c){return numCell(c.freeWithdraw);}).join('')
-        +numCell(sumFree)+'</tr>';
-    },
-    // 비과세 수령가능액
-    function(){
-      return '<tr><td style="'+lblSt+'">비과세 수령가능액(자유인출)</td>'
-        +cols.map(function(c){return numCell(c.nontaxVal);}).join('')
-        +numCell(sumNon)+'</tr>';
-    },
-    // 퇴직소득세 감면(70%)
-    function(){
-      var c0=cols[0]; // mf-ira
-      var v70=c0.limitVal!=null?Math.round(c0.limitVal*0.7):null;
-      return '<tr><td style="'+lblSt+'font-size:11px;">퇴직소득세감면<br>수령가능액(70%)</td>'
-        +numCell(v70,'color:var(--grn);')
-        +'<td style="'+cellSt+'text-align:center;color:var(--tx3)">-</td>'
-        +'<td style="'+cellSt+'text-align:center;color:var(--tx3)">-</td>'
-        +'<td style="'+cellSt+'text-align:center;color:var(--tx3)">-</td>'
-        +numCell(v70,'color:var(--grn);')+'</tr>';
-    },
-    // 퇴직소득세 미감면(100%)
-    function(){
-      var c0=cols[0];
-      var v100=c0.limitVal!=null?Math.round(c0.limitVal*0.3):null;
-      var vTotal=c0.limitVal!=null?Math.round(c0.limitVal):null;
-      return '<tr><td style="'+lblSt+'font-size:11px;">퇴직소득세미감면<br>수령가능액(100%)</td>'
-        +numCell(v100,'color:var(--red);')
-        +'<td style="'+cellSt+'text-align:center;color:var(--tx3)">-</td>'
-        +'<td style="'+cellSt+'text-align:center;color:var(--tx3)">-</td>'
-        +'<td style="'+cellSt+'text-align:center;color:var(--tx3)">-</td>'
-        +numCell(vTotal,'color:var(--red);')+'</tr>';
-    },
-    // 구분선
-    function(){
-      return '<tr><td colspan="6" style="background:var(--gbg);height:6px;border:1px solid var(--brd)"></td></tr>';
-    },
-    // 사적연금수령한도포함금액 (직접 수정)
-    function(){
-      var LIMIT15M=15000000;
-      var warn=sumIncl>LIMIT15M;
-      return '<tr><td style="'+lblSt+'font-size:11px;background:#fff3cd;">사적연금수령한도<br>포함금액 <span style="font-size:9px;font-weight:400">(연금계좌 통합 1,500만원)</span></td>'
-        +cols.map(function(c){
-          var v=c.inclLimit!=null?Math.round(c.inclLimit):'';
-          return '<td style="border:1px solid var(--brd);padding:3px 5px;background:#fff3cd;">'
-            +'<input class="ed" style="width:100%;text-align:right;font-size:11px;font-weight:700;color:var(--blu)"'
-            +' value="'+v+'" placeholder="직접입력"'
-            +' onchange="pensionEdit(\'incl\',\''+c.id+'\',this.value)">'
-            +'</td>';
-        }).join('')
-        +'<td style="border:1px solid var(--brd);padding:7px 10px;text-align:right;font-size:12px;font-weight:700;background:#fff3cd;'
-        +(warn?'color:var(--red)':'color:var(--blu)')+'">'+fmt(sumIncl)
-        +(warn?'<br><span style="font-size:9px;font-weight:400">⚠ 한도초과</span>':'')
-        +'</td></tr>';
-    },
+  var intMap={daily:'1d',weekly:'1wk',monthly:'1mo',quarterly:'3mo',semi:'3mo',yearly:'3mo'};
+  var intv=intMap[_hPeriod]||'1mo';
+  var ndxP=null,spxP=null;
+  try{
+    var res=await Promise.all([fetchIdxData('QQQ',data[0].ts,intv),fetchIdxData('SPY',data[0].ts,intv)]);
+    ndxP=res[0]; spxP=res[1];
+  }catch(ex){}
+  var labels=data.map(function(d){return d.label;});
+  var curVals=data.map(function(d){return d.cur;});
+  var nPts=data.length;
+  var barColors=curVals.map(function(v,i){
+    if(i===0) return 'rgba(26,86,219,0.65)';
+    return v>=curVals[i-1]?'rgba(5,122,85,0.72)':'rgba(200,30,30,0.72)';
+  });
+  var myRates=data.map(function(d,i){
+    if(i===0) return null;
+    var prev=data[i-1].cur;
+    return prev>0?Math.round((d.cur-prev)/prev*10000)/100:null;
+  });
+  var ndxRates=ndxP?data.map(function(d,i){
+    if(i===0) return null;
+    var cp=getIdxAt(ndxP,d.ts),pp=getIdxAt(ndxP,data[i-1].ts);
+    return (cp&&pp)?Math.round((cp-pp)/pp*10000)/100:null;
+  }):null;
+  var spxRates=spxP?data.map(function(d,i){
+    if(i===0) return null;
+    var cp=getIdxAt(spxP,d.ts),pp=getIdxAt(spxP,data[i-1].ts);
+    return (cp&&pp)?Math.round((cp-pp)/pp*10000)/100:null;
+  }):null;
+  var datasets=[
+    {type:'bar',label:'\ud3c9\uac00\uc561',data:curVals,backgroundColor:barColors,
+     borderWidth:0,borderRadius:2,yAxisID:'y',order:10},
+    {type:'line',label:'\ub0b4 \ud3ec\ud2b8\ud3f4\ub9ac\uc624 \uc804\uae30\ub300\ube44',data:myRates,
+     borderColor:'#1a56db',backgroundColor:'rgba(0,0,0,0)',borderWidth:2.5,
+     pointRadius:nPts>60?0:3,pointHoverRadius:5,fill:false,tension:0.3,
+     spanGaps:false,yAxisID:'y_pct',order:1}
   ];
+  if(ndxRates) datasets.push({type:'line',label:'\ub098\uc2a4\ub2e5100(QQQ) \uc804\uae30\ub300\ube44',
+    data:ndxRates,borderColor:'#e67e22',borderDash:[6,3],borderWidth:2,
+    pointRadius:0,pointHoverRadius:4,fill:false,tension:0.3,spanGaps:false,yAxisID:'y_pct',order:2});
+  if(spxRates) datasets.push({type:'line',label:'S&P500(SPY) \uc804\uae30\ub300\ube44',
+    data:spxRates,borderColor:'#e74c3c',borderDash:[2,5],borderWidth:2,
+    pointRadius:0,pointHoverRadius:4,fill:false,tension:0.3,spanGaps:false,yAxisID:'y_pct',order:3});
+  _hChart=new Chart(canvas,{data:{labels:labels,datasets:datasets},options:{
+    responsive:true,maintainAspectRatio:false,
+    interaction:{mode:'index',intersect:false},
+    plugins:{
+      legend:{position:'top',labels:{font:{size:11},padding:14,usePointStyle:true,pointStyleWidth:18}},
+      tooltip:{callbacks:{label:function(ctx){
+        if(ctx.parsed.y==null) return null;
+        if(ctx.datasetIndex===0){
+          var eok=Math.round(ctx.parsed.y/100000000*10)/10;
+          return ' \ud3c9\uac00\uc561: '+Math.round(ctx.parsed.y).toLocaleString('ko-KR')+'\uc6d0 ('+eok+'\uc5b5)';
+        }
+        return ' '+ctx.dataset.label+': '+(ctx.parsed.y>=0?'+':'')+ctx.parsed.y.toFixed(2)+'%';
+      }}}
+    },
+    scales:{
+      y:{position:'left',
+         ticks:{callback:function(v){return Math.round(v/100000000)+'\uc5b5';},font:{size:10}},
+         grid:{color:'rgba(0,0,0,0.05)'},
+         title:{display:true,text:'\ud3c9\uac00\uc561(\uc5b5\uc6d0)',font:{size:10},color:'#6b7280'}},
+      y_pct:{position:'right',
+             ticks:{callback:function(v){return(v>=0?'+':'')+v.toFixed(1)+'%';},font:{size:10}},
+             grid:{display:false},
+             title:{display:true,text:'\uc804\uae30\ub300\ube44 \uc218\uc775\ub960(%)',font:{size:10},color:'#6b7280'}},
+      x:{ticks:{maxRotation:45,font:{size:10}},grid:{display:false}}
+    }
+  }});
+  canvas.style.height='310px';
 
-  var tableHTML='<div class="twrap"><table style="width:100%;border-collapse:collapse;min-width:700px;">'
-    +'<thead><tr><th style="'+hdSt+'min-width:120px;">구분</th>'
-    +colLabels+sumHd+'</tr></thead><tbody>'
-    +rows.map(function(fn){return fn();}).join('')
-    +'</tbody></table></div>';
+  var first=data[0],last=data[data.length-1];
+  var chg=last.cur-first.cur,chgPct=first.cur>0?chg/first.cur*100:0;
+  var maxCur=Math.max.apply(null,curVals),minCur=Math.min.apply(null,curVals);
+  var revData=data.slice().reverse();
+  var tableRows=revData.map(function(d,idx){
+    var prevCur=idx<revData.length-1?revData[idx+1].cur:0;
+    var chgAmt=prevCur>0?d.cur-prevCur:0;
+    var chgRate=prevCur>0?(d.cur-prevCur)/prevCur*100:0;
+    var tsEsc=d.ts.replace(/'/g,"\\'");
+    var noteVal=(d.note||'');
+    var noteEsc=noteVal.replace(/'/g,"\\'").replace(/"/g,'&quot;');
+    return '<tr>'
+      +'<td style="white-space:nowrap;font-size:11px">'+d.label+'</td>'
+      +'<td style="white-space:nowrap">'+Math.round(d.cur).toLocaleString('ko-KR')+'\uc6d0</td>'
+      +'<td class="'+pc(chgAmt)+'" style="white-space:nowrap">'+(prevCur>0?(chgAmt>=0?'+':'')+Math.round(chgAmt).toLocaleString('ko-KR')+'\uc6d0':'-')+'</td>'
+      +'<td class="'+pc(chgRate)+'" style="white-space:nowrap">'+(prevCur>0?(chgRate>=0?'+':'')+chgRate.toFixed(2)+'%':'-')+'</td>'
+      +'<td style="width:100%"><input class="ed" style="width:100%;min-width:80px;font-size:11px;box-sizing:border-box;text-align:left" value="'+noteEsc+'"'
+        +' onchange="saveSnapNote(\''+tsEsc+'\',this.value)"'
+        +' onfocus="this.style.background=\'#fffbeb\'"'
+        +' onblur="this.style.background=\'\'"></td>'
+      +'</tr>';
+  }).join('');
+  document.getElementById('hist-tbl').innerHTML=[
+    '<div class="hist-grid">',
+    '<div class="hist-card"><div class="slbl">\uc2dc\uc791</div><div class="sval" style="font-size:13px">'+first.label+'</div><div class="ssub">'+fmt(first.cur)+'\uc6d0</div></div>',
+    '<div class="hist-card"><div class="slbl">\ucd5c\uadfc</div><div class="sval" style="font-size:13px">'+last.label+'</div><div class="ssub">'+fmt(last.cur)+'\uc6d0</div></div>',
+    '<div class="hist-card"><div class="slbl">\uae30\uac04 \ubcc0\ub3d9</div><div class="sval '+pc(chg)+'" style="font-size:14px">'+(chg>=0?'+':'')+fmt(chg)+'\uc6d0</div></div>',
+    '<div class="hist-card"><div class="slbl">\ubcc0\ub3d9\ub960(\uc804\uccb4)</div><div class="sval '+pc(chgPct)+'" style="font-size:15px">'+(chgPct>=0?'+':'')+chgPct.toFixed(2)+'%</div></div>',
+    '<div class="hist-card"><div class="slbl">\uae30\uac04 \ucd5c\uace0</div><div class="sval" style="font-size:13px;color:var(--grn)">'+fmt(maxCur)+'\uc6d0</div></div>',
+    '<div class="hist-card"><div class="slbl">\uae30\uac04 \ucd5c\uc800</div><div class="sval" style="font-size:13px;color:var(--red)">'+fmt(minCur)+'\uc6d0</div></div>',
+    '</div>',
+    '<div class="twrap" style="padding:0 13px 13px">',
+    '<table style="table-layout:fixed;width:100%">',
+    '<colgroup><col style="width:90px"><col style="width:120px"><col style="width:120px"><col style="width:85px"><col></colgroup>',
+    '<thead><tr>'
+      +'<th style="text-align:left">\uae30\uac04</th>'
+      +'<th>\ud3c9\uac00\uc561</th>'
+      +'<th>\ubcc0\ub3d9\uc561(\uc804\uae30\ub300\ube44)</th>'
+      +'<th>\ubcc0\ub3d9\ub960</th>'
+      +'<th style="text-align:left">\ube44\uace0</th>'
+    +'</tr></thead>',
+    '<tbody>'+tableRows+'</tbody></table></div>'
+  ].join('');
 
-  // 전략 텍스트
-  var strategy=pensionStrategyGet();
-  var strategyHTML='<div class="sec" style="margin-top:12px">'
-    +'<div class="sechdr"><span class="sectitle">연금계좌 인출 및 운영전략</span>'
-    +'<button class="btn" style="font-size:11px;padding:3px 9px;margin-left:8px;" onclick="pensionSaveStrategy()">저장</button></div>'
-    +'<div style="padding:0 13px 13px">'
-    +'<textarea id="pension-strategy" style="width:100%;min-height:100px;border:1px solid var(--brd);border-radius:8px;padding:10px;font-size:12px;font-family:inherit;resize:vertical;box-sizing:border-box;line-height:1.6">'
-    +strategy+'</textarea></div></div>';
-
-  // 안내
-  var noteHTML='<div style="padding:4px 13px 8px;font-size:10px;color:var(--tx3)">'
-    +'* 한도산정 기준금액: 매년 1월1일 현재총액 기준 (데이터 없을 시 가장 가까운 날짜 사용, 직접 수정 가능)<br>'
-    +'* 연금수령한도: 더블클릭 시 자동계산값으로 초기화<br>'
-    +'* 사적연금 통합 연간 수령한도 1,500만원 초과 시 종합과세 대상'
-    +'</div>';
-
-  pg.innerHTML='<div class="sec"><div class="sechdr"><span class="sectitle">사적연금 통합관리</span>'
-    +'<span class="secsub">4개 계좌 · 데이터 자동 연동</span></div>'
-    +tableHTML+noteHTML+'</div>'+strategyHTML;
 }
 
-function pensionEdit(type,id,val){
-  var saved=pensionGet();
-  var v=val===''?null:(parseFloat(val.replace(/,/g,''))||0);
-  saved[type+'_'+id]=v;
-  pensionSet(saved);
-  renderPension();
+/* ===== 변경이력 ===== */
+function loadCL(){try{return JSON.parse(sGet(CLKEY)||'[]');}catch(e){return[];}}
+function addCL(today,t){
+  var list=loadCL();
+  var entry={id:Date.now(),date:today,ts:new Date().toISOString(),cur:t.cur,pnl:t.pnl};
+  var idx=list.findIndex(function(e){return e.date===today;});
+  if(idx>=0)list[idx]=entry;else list.unshift(entry);
+  sSet(CLKEY,JSON.stringify(list));
+}
+function saveSnapNote(ts,noteVal){
+  var stored;try{stored=JSON.parse(sGet(SNAPKEY)||'[]');}catch(e){stored=[];}
+  var idx=stored.findIndex(function(s){return s.ts===ts;});
+  if(idx>=0){stored[idx].note=noteVal;}
+  else{
+    var hist=HIST_SNAPS.find(function(h){return h.ts===ts;});
+    if(hist){var ns=JSON.parse(JSON.stringify(hist));ns.note=noteVal;stored.push(ns);}
+    else{stored.push({date:'',ts:ts,cur:0,cost:0,pnl:0,note:noteVal});}
+  }
+  stored.sort(function(a,b){return a.ts<b.ts?-1:1;});
+  sSet(SNAPKEY,JSON.stringify(stored));
+}
+function renderChangelog(){
+  var list=loadCL();
+  var rows=list.length===0
+    ?'<div style="text-align:center;padding:30px;color:var(--tx3)">\ud83d\udceb \uc800\uc7a5\uc774\ub825\uc774 \uc5c6\uc2b5\ub2c8\ub2e4.</div>'
+    :list.map(function(e){
+      return'<div class="cl-entry">'
+        +'<div class="cl-time">'+new Date(e.ts).toLocaleString('ko-KR')+'</div>'
+        +'<div style="background:var(--gbg);border-radius:5px;padding:5px 9px;margin-top:4px;font-size:11px">'
+        +'\ucd1d\ud3c9\uac00\uc561: <strong style="color:var(--blu)">'+fmt(e.cur)+'\uc6d0</strong>'
+        +' | \uc190\uc775: <strong class="'+(e.pnl>=0?'pos':'neg')+'">'+(e.pnl>=0?'+':'')+fmt(e.pnl)+'\uc6d0</strong>'
+        +'</div>'
+        +'<button class="btn-del" style="margin-top:5px" onclick="delCL('+e.id+')">\uc0ad\uc81c</button>'
+        +'</div>';
+    }).join('');
+  document.getElementById('pg-changelog').innerHTML=[
+    '<div class="sec"><div class="sechdr">',
+    '<span class="sectitle">\ud83d\udcdd \uc800\uc7a5\uc774\ub825</span>',
+    '<span class="secsub">\ucd1d '+list.length+'\uac74 (\uc77c\ubcc4 \ucd5c\uc2e0 1\uac74)</span>',
+    (list.length?'<button class="btn-del" style="margin-left:auto" onclick="clearCL()">\uc804\uccb4\uc0ad\uc81c</button>':''),
+    '</div><div style="padding:12px">'+rows+'</div></div>'
+  ].join('');
+}
+function delCL(id){if(!confirm('\uc0ad\uc81c\ud560\uae4c\uc694?'))return;var l=loadCL().filter(function(e){return e.id!==id;});sSet(CLKEY,JSON.stringify(l));renderChangelog();}
+function clearCL(){if(!confirm('\uc804\uccb4 \uc0ad\uc81c\ud560\uae4c\uc694?'))return;sSet(CLKEY,'[]');renderChangelog();}
+
+/* ===== 데이터 변경 ===== */
+function findAcc(id){return ACCOUNTS.find(function(a){return a.id===id;});}
+
+
+
+function delH(id,i){var a=findAcc(id);if(!a)return;if(!confirm('"'+a.holdings[i].n+'" \uc885\ubaa9\uc744 \uc0ad\uc81c\ud560\uae4c\uc694?'))return;a.holdings.splice(i,1);renderActive();}
+function openAddModal(id){
+  document.getElementById('add-accid').value=id;
+  ['add-name','add-tk','add-qty','add-cost','add-high','add-mi','add-mm'].forEach(function(eid){var el=document.getElementById(eid);if(el)el.value='';});
+  openModal('add-modal');
+}
+function doAddHolding(){
+  var id=document.getElementById('add-accid').value;
+  var a=findAcc(id);if(!a)return;
+  var n=(document.getElementById('add-name').value||'').trim();
+  if(!n){alert('\uc885\ubaa9\uba85\uc744 \uc785\ub825\ud558\uc138\uc694');return;}
+  var tk=document.getElementById('add-tk').value.trim()||null;
+  var enteredHigh=pf(document.getElementById('add-high').value)||null;
+  var syncHigh=enteredHigh;
+  if(tk&&!syncHigh){
+    ACCOUNTS.forEach(function(acc2){
+      acc2.holdings.forEach(function(hh){
+        if(hh.tk===tk&&hh.high&&!syncHigh) syncHigh=hh.high;
+      });
+    });
+  }
+  a.holdings.push({n:n,tk:tk,
+    qty:pf(document.getElementById('add-qty').value),
+    cost:pf(document.getElementById('add-cost').value),
+    high:syncHigh,
+    dpu:(document.getElementById('add-dpu')&&document.getElementById('add-dpu').value?pf(document.getElementById('add-dpu').value):null)});
+  closeModal('add-modal');
+  if(tk){
+    if(PRICES[tk]==null){
+      fetchKR(tk).then(function(p){if(p!=null){PRICES[tk]=p;}renderActive();});
+    } else {
+      ACCOUNTS.forEach(function(acc2){
+        acc2.holdings.forEach(function(hh,ii){if(hh.tk===tk)_recalcRow(acc2.id,ii);});
+      });
+      renderActive();
+    }
+  } else { renderActive(); }
+}
+function setCH(i,field,v){CMA.holdings[i][field]=pf(v);renderActive();renderOverview();}
+function delCH(i){if(!confirm('"'+CMA.holdings[i].n+'" \uc885\ubaa9\uc744 \uc0ad\uc81c\ud560\uae4c\uc694?'))return;CMA.holdings.splice(i,1);renderActive();renderOverview();}
+function doAddCMA(){
+  var n=(document.getElementById('cm-name').value||'').trim();
+  if(!n){alert('\uc885\ubaa9\uba85\uc744 \uc785\ub825\ud558\uc138\uc694');return;}
+  CMA.holdings.push({n:n,sub:document.getElementById('cm-sub').value.trim(),
+    cur:document.getElementById('cm-cur').value,
+    isRP:document.getElementById('cm-isrp').checked,
+    qty:pf(document.getElementById('cm-qty').value),
+    cost:pf(document.getElementById('cm-cost').value),
+    avgFX:pf(document.getElementById('cm-fx').value),
+    high:pf(document.getElementById('cm-high').value)||null,
+    distAnn:pf(document.getElementById('cm-dist').value)||null});
+  closeModal('cma-modal');renderActive();
+}
+function setCB(i,field,v){
+  var val=field==='qty'||field==='stk'||field==='cost'||field==='price'?parseFloat(v)||0:v;
+  CRYPTO.bithumb[i][field]=val;
+  if(field==='price') PRICES[CRYPTO.bithumb[i].sym]=val;
+  renderCrypto(true);
+}
+function setCU(i,field,v){
+  var val=field==='qty'||field==='stk'||field==='cost'||field==='price'?parseFloat(v)||0:v;
+  CRYPTO.upbit[i][field]=val;
+  if(field==='price') PRICES[CRYPTO.upbit[i].sym]=val;
+  renderCrypto(true);
+}
+function delCrypto(ex,i){
+  var list=ex==='B'?CRYPTO.bithumb:CRYPTO.upbit;
+  if(!confirm('"'+list[i].n+'" 종목을 삭제할까요?'))return;
+  list.splice(i,1);
+  renderCrypto(true);
+}
+function doAddCrypto(){
+  var ex=document.getElementById('acr-ex').value;
+  var n=(document.getElementById('acr-name').value||'').trim();
+  var sym=(document.getElementById('acr-sym').value||'').trim().toUpperCase();
+  if(!n||!sym){alert('종목명과 심볼을 입력하세요.');return;}
+  var entry={n:n,sym:sym,sr:'',stk:0,
+    qty:parseFloat(document.getElementById('acr-qty').value)||0,
+    cost:parseFloat(document.getElementById('acr-cost').value)||0,
+    high:parseFloat(document.getElementById('acr-high').value)||0};
+  if(ex==='B') CRYPTO.bithumb.push(entry);
+  else CRYPTO.upbit.push(entry);
+  closeModal('add-crypto-modal');
+  renderCrypto(true);
 }
 
-function pensionResetAuto(type,id,input){
-  var saved=pensionGet();
-  delete saved[type+'_'+id];
-  pensionSet(saved);
-  renderPension();
+
+/* ===== 모달/내비게이션 ===== */
+function openModal(id){var el=document.getElementById(id);if(el)el.classList.add('show');}
+function closeModal(id){var el=document.getElementById(id);if(el){el.classList.remove('show');el.querySelectorAll('input').forEach(function(e){e.value='';});}}
+var curPage='overview';
+function go(id,el){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on');});
+  document.querySelectorAll('.ntab').forEach(function(t){t.classList.remove('on');});
+  var pg=document.getElementById('pg-'+id);if(pg)pg.classList.add('on');
+  if(el)el.classList.add('on');
+  curPage=id;renderPage(id);
+}
+function renderActive(){
+  renderPage(curPage);
+  setTimeout(function(){ if(typeof applyCommaAll==='function') applyCommaAll(); }, 10);
+}
+function renderPage(id){
+  if(id==='overview')renderOverview();
+  else if(id==='holdings')renderHoldings();
+  else if(id==='cma')renderCMA();
+  else if(id==='crypto')renderCrypto();
+  else if(id==='history')renderHistory();
+  else if(id==='changelog')renderChangelog();
+  else{var a=findAcc(id);if(a)renderKR(a,'pg-'+id);}
 }
 
-function pensionSaveStrategy(){
-  var ta=document.getElementById('pension-strategy');
-  if(ta){ pensionStrategySet(ta.value); alert('\u2705 \uc6b4\uc601\uc804\ub7b5 \uc800\uc7a5 \uc644\ub8cc'); }
+/* ===== 비밀번호 시스템 ===== */
+var PW_STORE='fp_pw_v1', AUTH_STORE='fp_auth_v1';
+function pwHash(pw){var s='fungcha2025_'+pw+'_'+pw.length,a=0x9e3779b9|0,b=0x85ebca77|0;for(var i=0;i<s.length;i++){var x=s.charCodeAt(i);a=Math.imul(a^x,0x9e3779b9);a=(a<<13)|(a>>>19);b=Math.imul(b^x,0x85ebca77);b=(b<<7)|(b>>>25);}return((a>>>0).toString(16)+(b>>>0).toString(16));}
+function pwGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+function pwSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+function pwValid(){ return false; } // 매번 입력
+function pwGrant(){ /* 세션 없음 */ }
+function pwStored(){return !!pwGet(PW_STORE);}
+
+function initPW(){
+  var screen=document.getElementById('pw-screen');
+  var inp=document.getElementById('pw-inp');
+  var btn=document.getElementById('pw-btn');
+  if(!screen)return;
+  if(pwValid()){startApp();return;}
+  if(!pwStored()){
+    document.getElementById('pw-lbl').textContent='초기 비밀번호 설정 (4자 이상)';
+    inp.placeholder='사용할 비밀번호를 입력하세요';
+    document.getElementById('pw-sub').textContent='처음 사용하시는 경우 비밀번호를 설정해 주세요.';
+    btn.textContent='비밀번호 설정';
+  }
+  screen.style.display='flex';
+  setTimeout(function(){inp.focus();},100);
+  btn.onclick=function(){doLogin();};
+  inp.onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();doLogin();}};
 }
+function doLogin(){
+  var inp=document.getElementById('pw-inp');
+  var err=document.getElementById('pw-err');
+  var pw=inp?inp.value.trim():'';
+  if(!pw){if(inp)inp.focus();return;}
+  err.style.display='none';
+  var stored=pwGet(PW_STORE);
+  if(!stored){
+    if(pw.length<4){err.textContent='❌ 비밀번호는 4자 이상이어야 합니다.';err.style.display='block';return;}
+    pwSet(PW_STORE,pwHash(pw));pwGrant();
+    document.getElementById('pw-screen').style.display='none';startApp();
+  }else{
+    if(pwHash(pw)===stored){
+      pwGrant();document.getElementById('pw-screen').style.display='none';startApp();
+    }else{
+      err.textContent='❌ 비밀번호가 올바르지 않습니다.';err.style.display='block';
+      inp.value='';inp.focus();
+    }
+  }
+}
+function changePW(){
+  var oldV=prompt('현재 비밀번호:');if(!oldV)return;
+  var stored=pwGet(PW_STORE);
+  if(stored&&pwHash(oldV)!==stored){alert('현재 비밀번호가 틀렸습니다.');return;}
+  var newV=prompt('새 비밀번호 (4자 이상):');
+  if(!newV||newV.length<4){alert('4자 이상 입력해 주세요.');return;}
+  if(newV!==prompt('새 비밀번호 확인:')){alert('비밀번호가 일치하지 않습니다.');return;}
+  pwSet(PW_STORE,pwHash(newV));alert('✅ 비밀번호가 변경되었습니다.');
+}
+
+/* ===== 엑셀 내보내기 ===== */
+function exportToExcel(){
+  if(typeof XLSX==='undefined'){alert('SheetJS 라이브러리를 불러오는 중입니다. 잠시 후 다시 시도해 주세요.');return;}
+  var wb=XLSX.utils.book_new();
+  var today=new Date().toLocaleDateString('ko-KR');
+
+  // ── 스타일 헬퍼 ──
+  function hdr(v){return {v:v,t:'s',s:{font:{bold:true},fill:{fgColor:{rgb:'1A56DB'}},font:{bold:true,color:{rgb:'FFFFFF'}},alignment:{horizontal:'center'}}};}
+  function num(v){return {v:Math.round(v)||0,t:'n',z:'#,##0'};}
+  function pct(v){return {v:v||0,t:'n',z:'0.00%'};}
+  function str(v){return {v:(v==null?'':String(v)),t:'s'};}
+
+  // ── 1. 전체현황 ──
+  var ov1=[['풍차포트폴리오 전체현황','','','','','',today]];
+  ov1.push(['계좌명','납입(누적)','인출(누적)','실납입','매입총액','현재총액','평가손익','수익률','수익률(실납)','연간분배율','월분배금']);
+  ACCOUNTS.forEach(function(acc){
+    var cost=0,cur=0,dist=0;
+    acc.holdings.forEach(function(h){
+      if(h.isMMF)return;
+      cost+=h.cost*(h.qty||0); cur+=liveP(h)*(h.qty||0);
+      dist+=(h.dpu!=null?Math.round(h.dpu*(h.qty||0)):((h.mI||0)+(h.mM||0)));
+    });
+    var real=(acc.accDep||0)-(acc.accWit||0);
+    ov1.push([acc.name,acc.accDep||0,acc.accWit||0,real,Math.round(cost),Math.round(cur),Math.round(cur-cost),(cost>0?(cur-cost)/cost:0),(real>0?(cur-real)/real:0),(acc.annualDistRate||0),dist]);
+  });
+  var cmaCT=0,cmaCR=0;
+  CMA.holdings.forEach(function(h){cmaCT+=cmaCostKRW(h);cmaCR+=cmaCurKRW(h);});
+  var cmaReal=(CMA.accDep||0)-(CMA.accWit||0);
+  ov1.push([CMA.name,CMA.accDep||0,CMA.accWit||0,cmaReal,Math.round(cmaCT),Math.round(cmaCR),Math.round(cmaCR-cmaCT),(cmaCT>0?(cmaCR-cmaCT)/cmaCT:0),(cmaReal>0?(cmaCR-cmaReal)/cmaReal:0),0,0]);
+  var crC=0,crV=0;
+  [].concat(CRYPTO.bithumb,CRYPTO.upbit).forEach(function(h){var p=PRICES[h.sym]||h.cost;var tq=(h.stk||0)+(h.qty||0);crC+=h.cost*tq;crV+=p*tq;});
+  ov1.push(['가상화폐(빗썸+업비트)',0,0,Math.round(crC),Math.round(crC),Math.round(crV),Math.round(crV-crC),(crC>0?(crV-crC)/crC:0),0,0,0]);
+  var wsOv=XLSX.utils.aoa_to_sheet(ov1);
+  wsOv['!cols']=[{wch:30},{wch:14},{wch:14},{wch:14},{wch:14},{wch:14},{wch:14},{wch:10},{wch:10},{wch:10},{wch:12}];
+  XLSX.utils.book_append_sheet(wb,wsOv,'전체현황');
+
+  // ── 2. 종목총괄 ──
+  var h2=[['종목명','유형','계좌','매입총액','현재총액','평가손익','수익률','비중(%)','월분배금']];
+  var totalCur2=0;
+  var map2={};
+  ACCOUNTS.forEach(function(acc){
+    acc.holdings.forEach(function(h){
+      if(h.isMMF)return;
+      var qty=h.qty||0,price=liveP(h);
+      var cost=h.cost*qty,cur=price*qty;
+      var key=h.tk||('__'+h.n);
+      if(!map2[key]){map2[key]={n:h.n,type:'KR ETF',cost:0,cur:0,dpu:h.dpu!=null?h.dpu:null,qty:0,accs:[]};}
+      map2[key].cost+=cost;map2[key].cur+=cur;map2[key].qty+=qty;
+      map2[key].accs.push(acc.name);
+      if(h.dpu!=null)map2[key].dpu=h.dpu;
+      totalCur2+=cur;
+    });
+  });
+  CMA.holdings.forEach(function(h){
+    var costK=cmaCostKRW(h),curK=cmaCurKRW(h);
+    map2['__cma__'+h.n]={n:h.n,type:'해외/RP('+h.cur+')',cost:costK,cur:curK,qty:h.qty||1,dpu:null,accs:[CMA.name]};
+    totalCur2+=curK;
+  });
+  [].concat(CRYPTO.bithumb,CRYPTO.upbit).forEach(function(h){
+    var p=PRICES[h.sym]||h.cost,tq=(h.stk||0)+(h.qty||0);
+    var cost=h.cost*tq,cur=p*tq;
+    if(!map2['__cr_'+h.sym]){map2['__cr_'+h.sym]={n:h.n,type:'가상화폐',cost:0,cur:0,qty:tq,dpu:null,accs:['빗썸/업비트']};}
+    map2['__cr_'+h.sym].cost+=cost;map2['__cr_'+h.sym].cur+=cur;
+    totalCur2+=cur;
+  });
+  Object.values(map2).sort(function(a,b){return b.cur-a.cur;}).forEach(function(r){
+    var wt=totalCur2>0?r.cur/totalCur2*100:0;
+    var dist=r.dpu&&r.qty?Math.round(r.dpu*r.qty):0;
+    h2.push([r.n,r.type,r.accs.join(', '),Math.round(r.cost),Math.round(r.cur),Math.round(r.cur-r.cost),(r.cost>0?(r.cur-r.cost)/r.cost:0),Math.round(wt*10)/10,dist||0]);
+  });
+  var wsH=XLSX.utils.aoa_to_sheet(h2);
+  wsH['!cols']=[{wch:30},{wch:12},{wch:30},{wch:14},{wch:14},{wch:14},{wch:10},{wch:8},{wch:12}];
+  XLSX.utils.book_append_sheet(wb,wsH,'종목총괄');
+
+  // ── 3. 계좌별 상세 ──
+  ACCOUNTS.forEach(function(acc){
+    var rows=[['종목명','티커','수량','매입단가','현재가','전고점','매입총액','현재총액','수익률','전고점대비','월분배금']];
+    acc.holdings.forEach(function(h){
+      if(h.isMMF)return;
+      var qty=h.qty||0,price=liveP(h);
+      var cost=h.cost*qty,cur=price*qty;
+      var pnlR=cost>0?(cur-cost)/cost:0;
+      var highR=(h.high&&price>0)?(price-h.high)/h.high:0;
+      var dist=h.dpu!=null?Math.round(h.dpu*qty):((h.mI||0)+(h.mM||0));
+      rows.push([h.n,h.tk||'',qty,h.cost,price,h.high||0,Math.round(cost),Math.round(cur),pnlR,highR,dist]);
+    });
+    var ws=XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols']=[{wch:28},{wch:8},{wch:7},{wch:10},{wch:10},{wch:10},{wch:14},{wch:14},{wch:9},{wch:9},{wch:12}];
+    var shName=acc.name.replace(/[:\\/?\[\]*]/g,'').substring(0,31);
+    XLSX.utils.book_append_sheet(wb,ws,shName);
+  });
+
+  // ── 4. CMA 해외주식 ──
+  var cmR=[['종목명','통화','수량','매입단가(현지)','매입환율','현재가(현지)','현재환율','매입총액(원)','현재총액(원)','수익률','전고점대비']];
+  CMA.holdings.forEach(function(h){
+    var curFX=cmaFX(h),buyFX=h.avgFX||curFX;
+    var priceL=cmaLiveP(h);
+    var costK=cmaCostKRW(h),curK=cmaCurKRW(h);
+    var pnlR=costK>0?(curK-costK)/costK:0;
+    var highR=(h.high&&priceL>0)?(priceL-h.high)/h.high:null;
+    cmR.push([h.n,h.cur,h.qty||1,h.cost,buyFX,priceL,curFX,Math.round(costK),Math.round(curK),pnlR,highR!=null?highR:'']);
+  });
+  var wsCMA=XLSX.utils.aoa_to_sheet(cmR);
+  wsCMA['!cols']=[{wch:25},{wch:5},{wch:7},{wch:12},{wch:10},{wch:12},{wch:10},{wch:14},{wch:14},{wch:9},{wch:9}];
+  XLSX.utils.book_append_sheet(wb,wsCMA,'CMA 해외주식');
+
+  // ── 5. 가상화폐 ──
+  var crR=[['거래소','종목명','심볼','스테이킹','수량','합산수량','매입단가','현재가','매입총액','현재총액','수익률','전고점대비']];
+  var addCR=function(list,ex){
+    list.forEach(function(h){
+      var price=PRICES[h.sym]||h.cost,tq=(h.stk||0)+(h.qty||0);
+      var high52=HIGH52[h.sym]||h.high;
+      var cost=h.cost*tq,cur=price*tq;
+      var pnlR=cost>0?(cur-cost)/cost:0;
+      var highR=high52>0?(price-high52)/high52:0;
+      crR.push([ex,h.n,h.sym,h.stk||0,h.qty,tq,h.cost,price,Math.round(cost),Math.round(cur),pnlR,highR]);
+    });
+  };
+  addCR(CRYPTO.bithumb,'빗썸');addCR(CRYPTO.upbit,'업비트');
+  var wsCR=XLSX.utils.aoa_to_sheet(crR);
+  wsCR['!cols']=[{wch:7},{wch:14},{wch:6},{wch:14},{wch:14},{wch:12},{wch:14},{wch:14},{wch:14},{wch:14},{wch:9},{wch:9}];
+  XLSX.utils.book_append_sheet(wb,wsCR,'가상화폐');
+
+  // ── 6. 자산변동 ──
+  var snaps=loadSnaps();
+  var snapR=[['날짜','평가액(원)','변동액(전기대비)','변동률(전기대비)','비고']];
+  var rev=snaps.slice().reverse();
+  rev.forEach(function(d,idx){
+    var prev=idx<rev.length-1?rev[idx+1].cur:0;
+    var chgAmt=prev>0?d.cur-prev:0;
+    var chgRate=prev>0?(d.cur-prev)/prev:0;
+    snapR.push([d.date,d.cur,prev>0?chgAmt:'',prev>0?chgRate:'',d.note||'']);
+  });
+  var wsSnap=XLSX.utils.aoa_to_sheet(snapR);
+  wsSnap['!cols']=[{wch:14},{wch:16},{wch:16},{wch:12},{wch:40}];
+  XLSX.utils.book_append_sheet(wb,wsSnap,'자산변동');
+
+  // ── 다운로드 ──
+  var dateStr=new Date().toLocaleDateString('ko-KR').replace(/\. /g,'-').replace('.','');
+  XLSX.writeFile(wb,'풍차포트폴리오_'+dateStr+'.xlsx');
+}
+
+
+/* ===== 모바일 퀵메뉴 ===== */
+function mobSel(id){
+  document.querySelectorAll('.mob-btn').forEach(function(b){b.classList.remove('on');});
+  var el=document.getElementById(id);if(el)el.classList.add('on');
+}
+function mobShowAccMenu(){
+  var sheet=document.getElementById('mob-acc-sheet');
+  var overlay=document.getElementById('mob-acc-overlay');
+  var list=document.getElementById('mob-acc-list');
+  // 계좌 목록 동적 생성
+  var items=[
+    {id:'mf-ira',name:'퇴직연금(미래)'},
+    {id:'mf-pension',name:'개인연금(미래)'},
+    {id:'mf-isa',name:'ISA(미래)'},
+    {id:'ss-pension',name:'개인연금(삼성)'},
+    {id:'mf-irp2',name:'IRP(미래)'},
+    {id:'cma',name:'CMA 해외주식'},
+    {id:'changelog',name:'\ud83d\udcdd 변경이력'}
+  ];
+  list.innerHTML=items.map(function(it){
+    return '<button onclick="go(\''+it.id+'\',null);mobSel(\'mob-ac\');document.getElementById(\'mob-acc-sheet\').style.display=\'none\';document.getElementById(\'mob-acc-overlay\').style.display=\'none\'" '
+      +'style="display:block;width:100%;text-align:left;padding:13px 20px;border:none;background:none;font-size:14px;font-family:inherit;cursor:pointer;border-bottom:1px solid var(--brd2);color:var(--tx)">'
+      +it.name+'</button>';
+  }).join('');
+  overlay.style.display='block';
+  sheet.style.display='block';
+}
+
 
 
 /* ===== 전체현황 렌더 ===== */
@@ -1989,7 +2642,7 @@ function renderOverview(){
       +'<td class="'+pc(cur-cost)+'">'+(cur>=cost?'+':'')+fmt(cur-cost)+'</td>'
       +'<td class="'+pc(pnlR)+'">'+fmtPct(pnlR)+'</td>'
       +'<td class="'+pc(pnlReal)+'">'+fmtPct(pnlReal)+'</td>'
-      +'<td>'+(acc.annualDistRate?(acc.annualDistRate*100).toFixed(2)+'%':'-')+'</td>'
+
       +'<td>'+(dist?fmt(dist):'-')+'</td>'
       +'</tr>');
   });
@@ -2021,10 +2674,11 @@ function renderOverview(){
     crC+=h.cost*tq; crV+=p*tq;
   });
   gCost+=crC; gCur+=crV;
+  gDep+=crC; // 가상화폐 매입총액을 총납입에 포함
   var crPR=crC>0?(crV-crC)/crC:0;
   rows.push('<tr>'
-    +'<td style="font-weight:700">\uac00\uc0c1\ud654\ud3d0 (\ube57\uc12c+\uc5c5\ube44\ud2b8)</td>'
-    +'<td>-</td><td>-</td>'
+    +'<td style="font-weight:700">가상화폐 (빗썸+업비트)</td>'
+    +'<td>'+fmt(crC)+'</td><td>-</td>'
     +'<td>'+fmt(crC)+'</td>'
     +'<td>'+fmt(crC)+'</td>'
     +'<td style="font-weight:700">'+fmt(crV)+'</td>'
@@ -2032,9 +2686,8 @@ function renderOverview(){
     +'<td class="'+pc(crPR)+'">'+fmtPct(crPR)+'</td>'
     +'<td>-</td><td>-</td><td>-</td></tr>');
 
-  var gReal=gDep-gWit+crC, gPnl=gCur-gCost;
+  var gReal=gDep-gWit, gPnl=gCur-gCost;
   var gPnlR=gCost>0?gPnl/gCost:0, gPnlRL=gReal>0?(gCur-gReal)/gReal:0;
-  var gAnnDist=gDist*12;
 
   /* ── 자산구성 계산 ── */
   var _cashKw=['CD\uae08\ub9ac','MMF','\uba38\ub2c8\ub9c8\ucf13','\ud604\uae08\uc131','\ub2e8\uae30\ucc44','\ub2e8\uae30\uc790\uae08'];
@@ -2085,6 +2738,14 @@ function renderOverview(){
 
   var compSection=[
     '<div class="sec"><div class="sechdr">',
+    '<div class="sec" style="margin-top:10px">'
+    +'<div class="sechdr" style="padding:8px 13px">'  
+    +'<span class="sectitle" style="font-size:13px">월별 배당금 현황</span>'
+    +'<span class="secsub" style="margin-left:8px">'
+    +'<select id="dist-year-sel" style="font-size:11px;border:1px solid var(--brd);border-radius:4px;padding:1px 4px;background:var(--sur);cursor:pointer" onchange="distSelectYear(parseInt(this.value))">'
+    +(function(){var opts='';for(var y=2020;y<=2070;y++){var curY=new Date().getFullYear();opts+='<option value="'+y+'"'+(y===curY?' selected':'')+'>'+y+'년</option>';}return opts;})()
+    +'</select></span></div>'
+    +'<div style="padding:0 13px 10px"><div id="dist-dashboard" data-year="'+new Date().getFullYear()+'"></div></div></div>',
     '<span class="sectitle">\uc790\uc0b0\uad6c\uc131 \ud604\ud669</span>',
     '<span class="secsub">\ud604\uc7ac\ud3c9\uac00\uc561 \uae30\uc900</span></div>',
     /* 스택 바 */
@@ -2185,7 +2846,7 @@ function renderOverview(){
     '<div class="scard"><div class="slbl">\uc2e4\ub0a9\ub300\ube44 \ud3c9\uac00\uc190\uc775</div><div class="sval '+pc(gCur-gReal)+'" style="font-size:14px">'+(gCur-gReal>=0?'+':'')+fmt(gCur-gReal)+'\uc6d0</div></div>',
     '<div class="scard"><div class="slbl">\uc218\uc775\ub960(\uc2e4\ub0a9\uc785\ub300\ube44)</div><div class="sval '+pc(gPnlRL)+'" style="font-size:14px">'+fmtPct(gPnlRL)+'</div></div>',
     '<div class="scard scard-grn"><div class="slbl">\uc6d4 \ubd84\ubc30\uae08\ud569\uacc4</div><div class="sval" style="color:var(--grn)">'+fmt(gDist)+'\uc6d0</div>'+
-      '<div style="font-size:12px;font-weight:800;color:#6b7280;margin-top:3px">\uc5f0\uac04\ubd84\ubc30\uae08\ud569\uacc4 '+fmt(gAnnDist)+'\uc6d0</div></div>',
+      '</div>',
     '<div class="scard"><div class="slbl">\ube44\uacfc\uc138\uc7ac\uc6d0</div><div class="ival pur">'+fmt(gExtraTax)+'\uc6d0</div></div>',
     '<div class="scard"><div class="slbl">\uc774\uc5f0\ud1f4\uc9c1\uae08</div><div class="ival blu">'+fmt(gExtraRet)+'\uc6d0</div></div>',
     '<div class="scard scard-grn"><div class="slbl">\ube44\uacfc\uc138/\uc774\uc5f0\ud1f4\uc9c1\uae08 \ud569\uacc4</div><div class="ival grn" style="font-weight:700">'+fmt(gExtra)+'\uc6d0</div></div>',
@@ -2210,6 +2871,7 @@ function renderOverview(){
     '<td>-</td><td>'+fmt(gDist)+'</td>',
     '</tr></tbody></table></div></div>'
   ].join('');
+  setTimeout(function(){renderDistDashboard();},10);
 }
 
 
@@ -2642,7 +3304,7 @@ function exportToExcel(){
 
   // ── 1. 전체현황 ──
   var ov1=[['풍차포트폴리오 전체현황','','','','','',today]];
-  ov1.push(['계좌명','납입(누적)','인출(누적)','실납입','매입총액','현재총액','평가손익','수익률','수익률(실납)','연간분배율','월분배금']);
+  ov1.push(['계좌명','납입(누적)','인출(누적)','실납입','매입총액','현재총액','평가손익','수익률','수익률(실납)','월분배금']);
   ACCOUNTS.forEach(function(acc){
     var cost=0,cur=0,dist=0;
     acc.holdings.forEach(function(h){
@@ -2651,7 +3313,7 @@ function exportToExcel(){
       dist+=(h.dpu!=null?Math.round(h.dpu*(h.qty||0)):((h.mI||0)+(h.mM||0)));
     });
     var real=(acc.accDep||0)-(acc.accWit||0);
-    ov1.push([acc.name,acc.accDep||0,acc.accWit||0,real,Math.round(cost),Math.round(cur),Math.round(cur-cost),(cost>0?(cur-cost)/cost:0),(real>0?(cur-real)/real:0),(acc.annualDistRate||0),dist]);
+    ov1.push([acc.name,acc.accDep||0,acc.accWit||0,real,Math.round(cost),Math.round(cur),Math.round(cur-cost),(cost>0?(cur-cost)/cost:0),(real>0?(cur-real)/real:0),dist]);
   });
   var cmaCT=0,cmaCR=0;
   CMA.holdings.forEach(function(h){cmaCT+=cmaCostKRW(h);cmaCR+=cmaCurKRW(h);});
