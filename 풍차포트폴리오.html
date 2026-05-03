@@ -723,6 +723,7 @@ function iChange(el) {
     _recalcTotals(accId, 'pg-'+accId);
   }
   if (curPage !== 'overview') renderOverview();
+  autoSync();
 }
 
 function iboxE(lbl,val,fn){
@@ -1019,6 +1020,7 @@ function distSaveMonth(y,m,v){
   saved[key]['m'+m]=val;
   distSet(saved);
   renderDistDashboard();
+  autoSync();
 }
 
 function distSelectYear(y){
@@ -1314,7 +1316,7 @@ function renderPension(){
       +'<td style="'+cellN+'text-align:center;color:var(--tx3)">-</td></tr>'
     +sep()
     // ── 인출가능금액 ──
-    +'<tr><td style="'+lblBase+'font-weight:700;">사적연금수령한도<br>미포함 인출가능금액</td>'
+    +'<tr><td style="'+lblBase+'font-weight:700;">사적연금분리과세기준<br>미포함 인출가능금액</td>'
       +cols.map(function(c){return '<td style="'+cellN+'font-weight:700;">'+fmt(c.freeWithdraw)+'</td>';}).join('')
       +'<td style="'+sumSt+'">'+fmt(sumFree)+'</td></tr>'
     // 하위항목 3개 - 들여쓰기 + 보통 글씨
@@ -1326,7 +1328,7 @@ function renderPension(){
       +cols.map(function(c){return n(c.tax100);}).join('')+nSum(sumTax100)+'</tr>'
     +sep()
     // ── 한도포함금액 ──
-    +'<tr><td style="'+lblBase+'font-size:11px;background:#fff3cd;">사적연금수령한도<br>포함금액 <span style="font-size:9px;font-weight:400">(통합 1,500만원)</span></td>'
+    +'<tr><td style="'+lblBase+'font-size:11px;background:#fff3cd;">사적연금분리과세기준<br>포함금액 <span style="font-size:9px;font-weight:400">(통합 1,500만원)</span></td>'
       +cols.map(function(c){return editableCell('incl',c.p.id,c.inclLimit,true);}).join('')
       +'<td style="'+brd+'padding:6px 9px;text-align:right;font-size:12px;font-weight:700;background:#fff3cd;'+(sumIncl>LIMIT15M?'color:var(--red)':'color:var(--blu)')+';">'
         +fmt(sumIncl)+(sumIncl>LIMIT15M?'<br><span style="font-size:9px;font-weight:400">⚠ 한도초과</span>':'')
@@ -1365,6 +1367,7 @@ function pensionEditBool(type,id,val){
   saved[type+'_'+id]=(val==='true');
   pensionSet(saved);
   renderPension();
+  autoSync();
 }
 function pensionEditYr(id,val){
   var saved=pensionGet();
@@ -1372,6 +1375,7 @@ function pensionEditYr(id,val){
   if(v===null) delete saved['yr_'+id]; else saved['yr_'+id]=v;
   pensionSet(saved);
   renderPension();
+  autoSync();
 }
 function pensionResetAuto(id,input){
   var saved=pensionGet();
@@ -1498,8 +1502,8 @@ function renderKR(acc, cid) {
 }
 
 // ── 입력 핸들러 ──
-function onQty(el, id, i)  { var a=findAcc(id); if(!a)return; a.holdings[i].qty=pf(el.value);   _recalcRow(id,i); renderOverview(); }
-function onCost(el, id, i) { var a=findAcc(id); if(!a)return; a.holdings[i].cost=pf(el.value);  _recalcRow(id,i); renderOverview(); }
+function onQty(el, id, i)  { var a=findAcc(id); if(!a)return; a.holdings[i].qty=pf(el.value);   _recalcRow(id,i); renderOverview(); autoSync(); }
+function onCost(el, id, i) { var a=findAcc(id); if(!a)return; a.holdings[i].cost=pf(el.value);  _recalcRow(id,i); renderOverview(); autoSync(); }
 function onHigh(el, id, i) {
   var a=findAcc(id); if(!a)return;
   var val=pf(el.value);
@@ -1518,6 +1522,7 @@ function onHigh(el, id, i) {
     });
   }
   _recalcRow(id,i);
+  autoSync();
 }
 function onDpu(el, id, i) {
   var a=findAcc(id); if(!a)return;
@@ -1539,6 +1544,7 @@ function onDpu(el, id, i) {
   });
   // 티커 없는 경우 해당 항목만 적용
   if(!tk){ a.holdings[i].dpu=val; _recalcRow(id,i); }
+  autoSync();
 }
 function onDist(el, id, i) {
   // dpu 없을 때 직접 입력 (mI+mM 합산 저장)
@@ -1547,6 +1553,7 @@ function onDist(el, id, i) {
   a.holdings[i].mI=v; a.holdings[i].mM=0;
   _recalcRow(id,i);
   renderOverview();
+  autoSync();
 }
 
 function setAcctV(id, field, v) {
@@ -1654,6 +1661,7 @@ function cmaChange(el) {
   }
   renderCMA();
   if (curPage !== 'overview') renderOverview();
+  autoSync();
 }
 
 function onCMADepYr(v) {
@@ -1756,8 +1764,8 @@ function renderCMA(){
 
   document.getElementById('pg-cma').innerHTML=[
     '<div class="fxbar">',
-    '<div class="fxitem">\uc6d0/\ub2ec\ub7ec(USD): <input class="fxinp" value="'+FX.USD+'" onchange="FX.USD=+this.value;renderActive()"> <span class="abadge">\uc790\ub3d9\uac31\uc2e0</span></div>',
-    '<div class="fxitem">\uc6d0/\uc5d4(JPY): <input class="fxinp" value="'+FX.JPY+'" onchange="FX.JPY=+this.value;renderActive()"> <span class="abadge">\uc790\ub3d9\uac31\uc2e0</span></div>',
+    '<div class="fxitem">\uc6d0/\ub2ec\ub7ec(USD): <input class="fxinp" value="'+FX.USD+'" onchange="FX.USD=+this.value;renderActive();autoSync()"> <span class="abadge">\uc790\ub3d9\uac31\uc2e0</span></div>',
+    '<div class="fxitem">\uc6d0/\uc5d4(JPY): <input class="fxinp" value="'+FX.JPY+'" onchange="FX.JPY=+this.value;renderActive();autoSync()"> <span class="abadge">\uc790\ub3d9\uac31\uc2e0</span></div>',
     '<span style="font-size:11px;color:var(--tx3)">\u203b \ud658\uc728 \uc790\ub3d9\ubc18\uc601, \uc9c1\uc811\uc218\uc815 \uac00\ub2a5</span></div>',
     '<div class="sec"><div class="ahdr">',
     '<div class="ameta"><span class="aname">'+CMA.name+'</span></div>',
@@ -2261,6 +2269,7 @@ function saveSnapNote(ts,noteVal){
   }
   stored.sort(function(a,b){return a.ts<b.ts?-1:1;});
   sSet(SNAPKEY,JSON.stringify(stored));
+  autoSync();
 }
 function renderChangelog(){
   var list=loadCL();
@@ -2330,7 +2339,7 @@ function doAddHolding(){
     }
   } else { renderActive(); }
 }
-function setCH(i,field,v){CMA.holdings[i][field]=pf(v);renderActive();renderOverview();}
+function setCH(i,field,v){CMA.holdings[i][field]=pf(v);renderActive();renderOverview();autoSync();}
 function delCH(i){if(!confirm('"'+CMA.holdings[i].n+'" \uc885\ubaa9\uc744 \uc0ad\uc81c\ud560\uae4c\uc694?'))return;CMA.holdings.splice(i,1);renderActive();renderOverview();}
 function doAddCMA(){
   var n=(document.getElementById('cm-name').value||'').trim();
@@ -2350,12 +2359,14 @@ function setCB(i,field,v){
   CRYPTO.bithumb[i][field]=val;
   if(field==='price') PRICES[CRYPTO.bithumb[i].sym]=val;
   renderCrypto(true);
+  autoSync();
 }
 function setCU(i,field,v){
   var val=field==='qty'||field==='stk'||field==='cost'||field==='price'?parseFloat(v)||0:v;
   CRYPTO.upbit[i][field]=val;
   if(field==='price') PRICES[CRYPTO.upbit[i].sym]=val;
   renderCrypto(true);
+  autoSync();
 }
 function delCrypto(ex,i){
   var list=ex==='B'?CRYPTO.bithumb:CRYPTO.upbit;
@@ -2994,7 +3005,7 @@ function onCHPrice(el,i){
   var h=CMA.holdings[i];
   if(h.tk) PRICES[h.tk]=val;
   h.curPrice=val;
-  renderCMA();renderOverview();
+  renderCMA();renderOverview();autoSync();
 }
 function delCH(i){if(!confirm('"'+CMA.holdings[i].n+'" \uc885\ubaa9\uc744 \uc0ad\uc81c\ud560\uae4c\uc694?'))return;CMA.holdings.splice(i,1);renderActive();renderOverview();}
 function doAddCMA(){
@@ -3298,6 +3309,18 @@ function mobShowAccMenu(){
 }
 
 
+
+/* ===== 자동 동기화 ===== */
+var _autoSyncTimer=null;
+function autoSync(){
+  // 토큰 있을 때만 자동 push (debounce 3초)
+  if(!ghGetToken()) return;
+  if(_autoSyncTimer) clearTimeout(_autoSyncTimer);
+  _autoSyncTimer=setTimeout(function(){
+    ghPush(true); // silent=true
+  },3000);
+}
+
 /* ===== GitHub 동기화 ===== */
 var GH_REPO='jiroonlee/portfolio';
 var GH_FILE='data.json';
@@ -3324,18 +3347,19 @@ function ghForcePull(){
     else alert('\uc2e4\ud328\nPC\uc5d0\uc11c \uba3c\uc800 \uc800\uc7a5 \ud6c4 \uc2dc\ub3c4\ud558\uc138\uc694.');
   });
 }
-async function ghPush(){
+async function ghPush(silent){
   var btn=document.getElementById('gh-btn');
   var token=ghGetToken();
-  if(!token){alert('\ud1a0\ud070\uc744 \uba3c\uc800 \uc785\ub825\ud558\uc138\uc694.');return;}
-  if(btn){btn.textContent='\uc5c5\ub85c\ub4dc...';btn.className='hbtn hbtn-sync syncing';}
+  if(!token){if(!silent)alert('\ud1a0\ud070\uc744 \uba3c\uc800 \uc785\ub825\ud558\uc138\uc694.');return;}
+  if(btn&&!silent){btn.textContent='\uc5c5\ub85c\ub4dc...';btn.className='hbtn hbtn-sync syncing';}
   try{
     var snaps=loadSnaps();
     var cl=[];try{cl=JSON.parse(sGet('fp_cl')||'[]');}catch(e){}
     var distData=distGet();
-    var payload={v:6,saved:new Date().toISOString(),
+    var payload={v:7,saved:new Date().toISOString(),
       data:{accounts:ACCOUNTS,cma:CMA,crypto:CRYPTO,fx:{usd:FX.USD,jpy:FX.JPY},prices:PRICES},
-      snaps:snaps,changelog:cl,distData:distData};
+      snaps:snaps,changelog:cl,distData:distData,
+      pensionData:pensionGet(),pensionStrategy:pensionStrategyGet()};
     var apiBase='https://api.github.com/repos/'+GH_REPO+'/contents/'+GH_FILE;
     var hdrs={'Authorization':'token '+token,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'};
     var sha=null;
@@ -3346,11 +3370,14 @@ async function ghPush(){
     var r=await fetch(apiBase,{method:'PUT',headers:hdrs,body:JSON.stringify(body)});
     if(!r.ok){var err=await r.json();throw new Error(err.message||r.status);}
     sSet('fp_last_save',payload.saved);
-    if(btn){btn.textContent='\u2601\ufe0f \uc644\ub8cc';btn.style.background='#10b981';btn.style.borderColor='#10b981';
+    // 동기화 성공 시간 저장
+    var syncEl=document.getElementById('upd');
+    if(syncEl&&silent) syncEl.dataset.lastSync=new Date().toLocaleTimeString('ko-KR');
+    if(btn&&!silent){btn.textContent='\u2601\ufe0f \uc644\ub8cc';btn.style.background='#10b981';btn.style.borderColor='#10b981';
       setTimeout(function(){btn.textContent='\u2601\ufe0f \ub3d9\uae30\ud654';btn.style.background='';btn.style.borderColor='';btn.className='hbtn hbtn-sync';},3000);}
   }catch(e){
-    if(btn){btn.textContent='\u2601\ufe0f \ub3d9\uae30\ud654';btn.className='hbtn hbtn-sync';}
-    alert('\uc5c5\ub85c\ub4dc \uc2e4\ud328: '+e.message);
+    if(btn&&!silent){btn.textContent='\u2601\ufe0f \ub3d9\uae30\ud654';btn.className='hbtn hbtn-sync';}
+    if(!silent) alert('\uc5c5\ub85c\ub4dc \uc2e4\ud328: '+e.message);
   }
 }
 async function ghPull(force){
@@ -3384,6 +3411,8 @@ async function ghPull(force){
     if(obj.changelog&&obj.changelog.length) sSet('fp_cl',JSON.stringify(obj.changelog));
     sSet(SKEY,JSON.stringify({accounts:ACCOUNTS,cma:CMA,crypto:CRYPTO,fx:{usd:FX.USD,jpy:FX.JPY},prices:PRICES}));
     if(obj.distData){sSet(DIST_KEY,JSON.stringify(obj.distData));sSet('fp_dist_ver','v3');}
+    if(obj.pensionData) sSet('fp_pension_v1',JSON.stringify(obj.pensionData));
+    if(obj.pensionStrategy) sSet('fp_pension_strategy',obj.pensionStrategy);
     sSet('fp_last_save',obj.saved||new Date().toISOString());
     return true;
   }catch(e){return false;}
@@ -3430,6 +3459,15 @@ function startApp(){
     setDot('fail');
     setTimeout(function(){fetchAll();setInterval(fetchAll,60000);},300);
   }
+
+  // 다른 기기/탭에서 변경 후 돌아왔을 때 자동 pull
+  document.addEventListener('visibilitychange',function(){
+    if(document.visibilityState==='visible'&&ghGetToken()){
+      ghPull(false).then(function(ok){
+        if(ok){try{loadData();}catch(e){}try{migrateTickers();}catch(e){}renderActive();}
+      });
+    }
+  });
 
   ghPull(false).then(function(ok){
     var btn=document.getElementById('gh-btn');
