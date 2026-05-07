@@ -178,6 +178,8 @@ tr:hover:not(.trow):not(.nrow):not(.xhdr) td{background:#f8fafc}
   th,td{padding:3px 4px;font-size:10px;}
   .hbtn{padding:4px 7px;font-size:10px;}
 }
+.meta-order-item:hover{box-shadow:0 2px 8px rgba(0,0,0,.1);}
+.meta-order-item[draggable="true"]:active{cursor:grabbing;}
 /* ── 로그인 ── */
 #pw-screen{position:fixed;inset:0;background:linear-gradient(135deg,#1a1d23,#1a3a5c);z-index:9999;display:flex;align-items:center;justify-content:center}
 .pw-box{background:#fff;border-radius:16px;padding:36px 30px;width:340px;max-width:92vw;box-shadow:0 20px 60px rgba(0,0,0,.4);text-align:center}
@@ -278,6 +280,55 @@ tr:hover:not(.trow):not(.nrow):not(.xhdr) td{background:#f8fafc}
     </div>
   </div>
 </div>
+<!-- ✏️ 앱 정보 편집 모달 -->
+<div class="moverlay" id="meta-modal">
+  <div class="modal" style="width:560px;max-width:97vw;padding:18px 18px 14px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <h3 style="margin:0">✏️ 앱 정보 편집</h3>
+      <button onclick="closeModal('meta-modal')" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--tx2);line-height:1">✕</button>
+    </div>
+    <!-- 탭 헤더 -->
+    <div style="display:flex;gap:4px;margin-bottom:14px;border-bottom:1px solid var(--brd);padding-bottom:0">
+      <button id="meta-tab-title" onclick="metaTab('title')" style="padding:7px 14px;border:none;border-bottom:2px solid var(--blu);background:none;font-size:12px;font-weight:700;color:var(--blu);cursor:pointer;font-family:inherit">📱 앱 제목</button>
+      <button id="meta-tab-acc" onclick="metaTab('acc')" style="padding:7px 14px;border:none;border-bottom:2px solid transparent;background:none;font-size:12px;font-weight:600;color:var(--tx2);cursor:pointer;font-family:inherit">🏦 계좌 정보</button>
+      <button id="meta-tab-order" onclick="metaTab('order')" style="padding:7px 14px;border:none;border-bottom:2px solid transparent;background:none;font-size:12px;font-weight:600;color:var(--tx2);cursor:pointer;font-family:inherit">↕️ 계좌 순서</button>
+    </div>
+
+    <!-- 패널: 앱 제목 -->
+    <div id="meta-panel-title" style="display:block">
+      <div class="mrow">
+        <div class="mlbl">메인 제목 (이모지 포함 가능)</div>
+        <input id="meta-title" class="minp" type="text" placeholder="🌸 수익은 길게, 손실은 짧게!!!">
+      </div>
+      <div class="mrow">
+        <div class="mlbl">부제목</div>
+        <input id="meta-sub" class="minp" type="text" placeholder="연금계좌 풍차계획 포트폴리오">
+      </div>
+    </div>
+
+    <!-- 패널: 계좌 정보 -->
+    <div id="meta-panel-acc" style="display:none">
+      <div id="meta-acc-list" style="max-height:390px;overflow-y:auto;padding-right:2px"></div>
+    </div>
+
+    <!-- 패널: 계좌 순서 -->
+    <div id="meta-panel-order" style="display:none">
+      <div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:6px;padding:7px 10px;margin-bottom:10px;font-size:11px;color:#92400e">
+        ☝️ 드래그하거나 <strong>▲ ▼</strong> 버튼으로 순서를 변경하세요. 저장 후 내비게이션 탭과 모든 화면에 즉시 반영됩니다.
+      </div>
+      <div id="meta-order-list" style="max-height:380px;overflow-y:auto"></div>
+    </div>
+
+    <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:7px 10px;margin-top:12px;font-size:11px;color:#1e40af">
+      💾 저장 후 <strong>[저장]</strong> 또는 <strong>☁️ [동기화]</strong>를 누르면 GitHub에 반영되어 모든 기기에서 동기화됩니다.
+    </div>
+    <div class="mbtns" style="margin-top:10px">
+      <button class="mbtn mbtn-cancel" onclick="closeModal('meta-modal')">취소</button>
+      <button class="mbtn mbtn-ok" onclick="saveMetaEditor()">💾 저장 &amp; 적용</button>
+    </div>
+  </div>
+</div>
+
 <!-- GitHub 동기화 모달 -->
 <div class="moverlay" id="gh-modal">
   <div class="modal" style="max-width:460px">
@@ -296,11 +347,12 @@ tr:hover:not(.trow):not(.nrow):not(.xhdr) td{background:#f8fafc}
 </div>
 
 <div class="hdr">
-  <div><div class="hdr-title">🌸 수익은 길게, 손실은 짧게!!! <span style="font-size:10px;color:#9ca3af;font-weight:400">v5.0</span></div><div class="hdr-sub">연금계좌 풍차계획 포트폴리오</div></div>
+  <div><div class="hdr-title" id="hdr-title-el">🌸 수익은 길게, 손실은 짧게!!! <span style="font-size:10px;color:#9ca3af;font-weight:400">v5.0</span></div><div class="hdr-sub" id="hdr-sub-el">연금계좌 풍차계획 포트폴리오</div></div>
   <div class="hdr-sp"></div>
   <div class="upd" id="upd">종전가</div>
   <div class="dot" id="dot"></div>
   <button class="hbtn hbtn-hide" onclick="exportToExcel()">📥 엑셀저장</button>
+  <button class="hbtn" onclick="openMetaEditor()" title="앱 제목·계좌 정보 수정" style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.25)">✏️ 편집</button>
   <button class="hbtn hbtn-save" onclick="saveData()">💾 저장</button>
   <button class="hbtn hbtn-sync" onclick="ghSync()" id="gh-btn">☁️ 동기화</button>
   <button class="hbtn" onclick="fetchAll()">🔄 새로고침</button>
@@ -325,6 +377,9 @@ tr:hover:not(.trow):not(.nrow):not(.xhdr) td{background:#f8fafc}
   <button class="mob-btn on" id="mob-ov" onclick="go('overview',null);mobSel('mob-ov')">
     <span class="mico">📊</span>전체현황
   </button>
+  <button class="mob-btn" id="mob-ps" onclick="go('pension',null);mobSel('mob-ps')">
+    <span class="mico">🏛</span>사적연금
+  </button>
   <button class="mob-btn" id="mob-hd" onclick="go('holdings',null);mobSel('mob-hd')">
     <span class="mico">📋</span>종목총괄
   </button>
@@ -336,9 +391,6 @@ tr:hover:not(.trow):not(.nrow):not(.xhdr) td{background:#f8fafc}
   </button>
   <button class="mob-btn" id="mob-hi" onclick="go('history',null);mobSel('mob-hi')">
     <span class="mico">📈</span>자산변동
-  </button>
-  <button class="mob-btn" id="mob-ps" onclick="go('pension',null);mobSel('mob-ps')">
-    <span class="mico">🏛</span>사적연금
   </button>
 </div>
 
@@ -445,12 +497,99 @@ const DEF = {
 /* ===== 상태 ===== */
 var FX = {USD:1479, JPY:927.83};
 var PRICES = {}, HIGH52 = {};
-var SKEY='fp_data', SNAPKEY='fp_snaps', CLKEY='fp_cl';
+var SKEY='fp_data', SNAPKEY='fp_snaps', CLKEY='fp_cl', META_KEY='fp_meta';
 var ACCOUNTS, CMA, CRYPTO;
+var APP_META = {
+  title: '🌸 수익은 길게, 손실은 짧게!!!',
+  sub: '연금계좌 풍차계획 포트폴리오',
+  accMeta: {}, // { [accId]: {name, openDate, note} }
+  accOrder: [] // account id 순서 배열 (비어있으면 DEF 순서 그대로)
+};
 
 /* ===== 저장소 ===== */
 function sGet(k){try{var v=localStorage.getItem(k);if(v!==null)return v;}catch(e){}try{var v=sessionStorage.getItem(k);if(v!==null)return v;}catch(e){}return null;}
 function sSet(k,v){try{localStorage.setItem(k,v);}catch(e){}try{sessionStorage.setItem(k,v);}catch(e){}}
+
+/* ===== 메타 로드/저장 ===== */
+function loadMeta(){
+  try{
+    var m=JSON.parse(sGet(META_KEY)||'null');
+    if(m){
+      if(m.title) APP_META.title=m.title;
+      if(m.sub) APP_META.sub=m.sub;
+      if(m.accMeta) APP_META.accMeta=m.accMeta;
+      if(m.accOrder&&m.accOrder.length) APP_META.accOrder=m.accOrder;
+    }
+  }catch(e){}
+  applyAccOrder();
+  applyMetaToAccounts();
+  renderAppHeader();
+  try{renderNav();}catch(e){}
+}
+function saveMeta(){
+  sSet(META_KEY,JSON.stringify(APP_META));
+}
+/* 저장된 순서대로 ACCOUNTS 배열 재정렬 */
+function applyAccOrder(){
+  if(!ACCOUNTS||!APP_META.accOrder||!APP_META.accOrder.length) return;
+  var order=APP_META.accOrder;
+  var map={};
+  ACCOUNTS.forEach(function(a){map[a.id]=a;});
+  var sorted=[];
+  order.forEach(function(id){if(map[id]){sorted.push(map[id]);}});
+  // order에 없는 계좌는 뒤에 추가
+  ACCOUNTS.forEach(function(a){if(order.indexOf(a.id)<0)sorted.push(a);});
+  ACCOUNTS.length=0;
+  sorted.forEach(function(a){ACCOUNTS.push(a);});
+}
+/* 메타에 저장된 계좌 이름/날짜/메모를 ACCOUNTS 객체에 반영 */
+function applyMetaToAccounts(){
+  if(!ACCOUNTS) return;
+  ACCOUNTS.forEach(function(acc){
+    var m=APP_META.accMeta[acc.id];
+    if(m){
+      if(m.name!==undefined) acc.name=m.name;
+      if(m.openDate!==undefined) acc.openDate=m.openDate;
+      if(m.note!==undefined) acc.note=m.note;
+    }
+  });
+  if(CMA){
+    var cm=APP_META.accMeta['__cma__'];
+    if(cm&&cm.name!==undefined) CMA.name=cm.name;
+  }
+}
+/* 헤더 DOM 갱신 */
+function renderAppHeader(){
+  var te=document.getElementById('hdr-title-el');
+  var se=document.getElementById('hdr-sub-el');
+  if(te) te.innerHTML=APP_META.title+' <span style="font-size:10px;color:#9ca3af;font-weight:400">v5.0</span>';
+  if(se) se.textContent=APP_META.sub;
+  document.title=APP_META.title.replace(/[\u{1F300}-\u{1FFFF}\u2600-\u27FF]/gu,'').trim()||'풍차계획 포트폴리오';
+}
+/* 상단 nav 탭을 ACCOUNTS 순서 기준으로 동적 렌더링 */
+function renderNav(){
+  var navEl=document.querySelector('.nav');
+  if(!navEl) return;
+  var fixed=[
+    {id:'overview',label:'전체현황'},
+    {id:'pension', label:'사적연금'},
+    {id:'holdings',label:'종목총괄'}
+  ];
+  var accTabs=ACCOUNTS.map(function(acc){
+    return {id:acc.id, label:acc.name};
+  });
+  var extra=[
+    {id:'cma',   label: (CMA&&CMA.name?CMA.name:'CMA 해외주식')},
+    {id:'crypto',label:'가상화폐'},
+    {id:'history',label:'자산변동'},
+    {id:'changelog',label:'변경이력'}
+  ];
+  var all=fixed.concat(accTabs).concat(extra);
+  navEl.innerHTML=all.map(function(t){
+    var isCur=(typeof curPage!=='undefined'&&curPage===t.id);
+    return '<div class="ntab'+(isCur?' on':'')+'" onclick="go(\''+t.id+'\',this)">'+escH(t.label)+'</div>';
+  }).join('');
+}
 
 /* ===== 데이터 로드/저장 ===== */
 function loadData(){
@@ -469,12 +608,14 @@ function loadData(){
           // extraVal은 사용자 입력값 유지
         }
       });
+      loadMeta();
       return;
     }
   }catch(e){}
   ACCOUNTS=JSON.parse(JSON.stringify(DEF.accounts));
   CMA=JSON.parse(JSON.stringify(DEF.cma));
   CRYPTO=JSON.parse(JSON.stringify(DEF.crypto));
+  loadMeta();
 }
 function saveData(){
   var today=new Date().toLocaleDateString('ko-KR');
@@ -487,6 +628,7 @@ function saveData(){
   snaps.sort(function(a,b){return a.date<b.date?-1:1;});
   sSet(SNAPKEY,JSON.stringify(snaps));
   sSet(SKEY,JSON.stringify({accounts:ACCOUNTS,cma:CMA,crypto:CRYPTO,fx:{usd:FX.USD,jpy:FX.JPY},prices:PRICES}));
+  saveMeta();
   addCL(today,t);
   sSet('fp_last_save',now);
   if(ghGetToken()){
@@ -2623,27 +2765,18 @@ function mobShowAccMenu(){
   var sheet=document.getElementById('mob-acc-sheet');
   var overlay=document.getElementById('mob-acc-overlay');
   var list=document.getElementById('mob-acc-list');
-  // 계좌 목록 동적 생성
-  var items=[
-    {id:'mf-ira',name:'퇴직연금(미래)'},
-    {id:'mf-pension',name:'개인연금(미래)'},
-    {id:'mf-isa',name:'ISA(미래)'},
-    {id:'ss-pension',name:'개인연금(삼성)'},
-    {id:'mf-irp2',name:'IRP(미래)'},
-    {id:'cma',name:'CMA 해외주식'},
-    {id:'changelog',name:'\ud83d\udcdd 변경이력'}
-  ];
+  // 계좌 목록: ACCOUNTS 순서 기반으로 동적 생성
+  var items=ACCOUNTS.map(function(acc){return {id:acc.id,name:acc.name};});
+  items.push({id:'cma',name:(CMA&&CMA.name?CMA.name:'CMA 해외주식')});
+  items.push({id:'changelog',name:'📝 변경이력'});
   list.innerHTML=items.map(function(it){
     return '<button onclick="go(\''+it.id+'\',null);mobSel(\'mob-ac\');document.getElementById(\'mob-acc-sheet\').style.display=\'none\';document.getElementById(\'mob-acc-overlay\').style.display=\'none\'" '
       +'style="display:block;width:100%;text-align:left;padding:13px 20px;border:none;background:none;font-size:14px;font-family:inherit;cursor:pointer;border-bottom:1px solid var(--brd2);color:var(--tx)">'
-      +it.name+'</button>';
+      +escH(it.name)+'</button>';
   }).join('');
   overlay.style.display='block';
   sheet.style.display='block';
 }
-
-
-
 /* ===== 전체현황 렌더 ===== */
 function renderOverview(){
   var gDep=0,gWit=0,gCost=0,gCur=0,gDist=0,gExtra=0,gExtraTax=0,gExtraRet=0;
@@ -3289,20 +3422,13 @@ function mobShowAccMenu(){
   var sheet=document.getElementById('mob-acc-sheet');
   var overlay=document.getElementById('mob-acc-overlay');
   var list=document.getElementById('mob-acc-list');
-  // 계좌 목록 동적 생성
-  var items=[
-    {id:'mf-ira',name:'퇴직연금(미래)'},
-    {id:'mf-pension',name:'개인연금(미래)'},
-    {id:'mf-isa',name:'ISA(미래)'},
-    {id:'ss-pension',name:'개인연금(삼성)'},
-    {id:'mf-irp2',name:'IRP(미래)'},
-    {id:'cma',name:'CMA 해외주식'},
-    {id:'changelog',name:'변경이력'}
-  ];
+  var items=ACCOUNTS.map(function(acc){return {id:acc.id,name:acc.name};});
+  items.push({id:'cma',name:(CMA&&CMA.name?CMA.name:'CMA 해외주식')});
+  items.push({id:'changelog',name:'📝 변경이력'});
   list.innerHTML=items.map(function(it){
     return '<button onclick="go(\''+it.id+'\',null);mobSel(\'mob-ac\');document.getElementById(\'mob-acc-sheet\').style.display=\'none\';document.getElementById(\'mob-acc-overlay\').style.display=\'none\'" '
       +'style="display:block;width:100%;text-align:left;padding:13px 20px;border:none;background:none;font-size:14px;font-family:inherit;cursor:pointer;border-bottom:1px solid var(--brd2);color:var(--tx)">'
-      +it.name+'</button>';
+      +escH(it.name)+'</button>';
   }).join('');
   overlay.style.display='block';
   sheet.style.display='block';
@@ -3359,7 +3485,8 @@ async function ghPush(silent){
     var payload={v:7,saved:new Date().toISOString(),
       data:{accounts:ACCOUNTS,cma:CMA,crypto:CRYPTO,fx:{usd:FX.USD,jpy:FX.JPY},prices:PRICES},
       snaps:snaps,changelog:cl,distData:distData,
-      pensionData:pensionGet(),pensionStrategy:pensionStrategyGet()};
+      pensionData:pensionGet(),pensionStrategy:pensionStrategyGet(),
+      appMeta:JSON.parse(JSON.stringify(APP_META))};
     var apiBase='https://api.github.com/repos/'+GH_REPO+'/contents/'+GH_FILE;
     var hdrs={'Authorization':'token '+token,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'};
     var sha=null;
@@ -3413,10 +3540,168 @@ async function ghPull(force){
     if(obj.distData){sSet(DIST_KEY,JSON.stringify(obj.distData));sSet('fp_dist_ver','v3');}
     if(obj.pensionData) sSet('fp_pension_v1',JSON.stringify(obj.pensionData));
     if(obj.pensionStrategy) sSet('fp_pension_strategy',obj.pensionStrategy);
+    if(obj.appMeta){ sSet(META_KEY,JSON.stringify(obj.appMeta)); }
     sSet('fp_last_save',obj.saved||new Date().toISOString());
     return true;
   }catch(e){return false;}
 }
+/* ===== 앱 정보 편집 (메타 에디터) ===== */
+var _metaTabCur = 'title';
+var _metaDragSrc = null;
+
+function metaTab(tab){
+  _metaTabCur = tab;
+  ['title','acc','order'].forEach(function(t){
+    var btn=document.getElementById('meta-tab-'+t);
+    var panel=document.getElementById('meta-panel-'+t);
+    var active=(t===tab);
+    if(btn){ btn.style.borderBottomColor=active?'var(--blu)':'transparent'; btn.style.color=active?'var(--blu)':'var(--tx2)'; btn.style.fontWeight=active?'700':'600'; }
+    if(panel) panel.style.display=active?'block':'none';
+  });
+}
+
+function openMetaEditor(){
+  // 제목 패널
+  document.getElementById('meta-title').value = APP_META.title;
+  document.getElementById('meta-sub').value = APP_META.sub;
+
+  // 계좌 정보 패널 렌더링
+  _renderMetaAccList();
+  // 순서 패널 렌더링
+  _renderMetaOrderList();
+  // 첫 탭 활성화
+  metaTab('title');
+  openModal('meta-modal');
+}
+
+function _renderMetaAccList(){
+  var listEl = document.getElementById('meta-acc-list');
+  var rows = '';
+  ACCOUNTS.forEach(function(acc){
+    var m = APP_META.accMeta[acc.id] || {};
+    rows += '<div style="border:1px solid var(--brd2);border-radius:8px;padding:10px 12px;margin-bottom:8px;background:var(--gbg)">';
+    rows += '<div style="font-size:10px;color:var(--tx3);margin-bottom:6px;font-weight:700">🏦 '+escH(acc.id)+'</div>';
+    rows += '<div class="mgrid2" style="gap:6px">';
+    rows += '<div><div class="mlbl">계좌명</div><input class="minp" style="font-size:12px;padding:5px 7px" data-mid="'+acc.id+'" data-mfield="name" value="'+escH(m.name!==undefined?m.name:acc.name)+'"></div>';
+    rows += '<div><div class="mlbl">개설일</div><input class="minp" style="font-size:12px;padding:5px 7px" data-mid="'+acc.id+'" data-mfield="openDate" value="'+escH(m.openDate!==undefined?m.openDate:acc.openDate)+'"></div>';
+    rows += '</div>';
+    rows += '<div style="margin-top:6px"><div class="mlbl">메모 / 요건</div><input class="minp" style="font-size:12px;padding:5px 7px" data-mid="'+acc.id+'" data-mfield="note" value="'+escH(m.note!==undefined?m.note:acc.note)+'"></div>';
+    rows += '</div>';
+  });
+  // CMA
+  var cm = APP_META.accMeta['__cma__'] || {};
+  rows += '<div style="border:1px solid var(--brd2);border-radius:8px;padding:10px 12px;margin-bottom:8px;background:var(--gbg)">';
+  rows += '<div style="font-size:10px;color:var(--tx3);margin-bottom:6px;font-weight:700">🏦 CMA 해외주식</div>';
+  rows += '<div><div class="mlbl">계좌명</div><input class="minp" style="font-size:12px;padding:5px 7px" data-mid="__cma__" data-mfield="name" value="'+escH(cm.name!==undefined?cm.name:CMA.name)+'"></div>';
+  rows += '</div>';
+  listEl.innerHTML = rows;
+}
+
+function _renderMetaOrderList(){
+  var el = document.getElementById('meta-order-list');
+  if(!el) return;
+  var html='';
+  ACCOUNTS.forEach(function(acc, idx){
+    var m = APP_META.accMeta[acc.id]||{};
+    var dispName = m.name!==undefined ? m.name : acc.name;
+    html += '<div class="meta-order-item" draggable="true" data-oid="'+acc.id+'" '
+      +'ondragstart="metaDragStart(event)" ondragover="metaDragOver(event)" ondrop="metaDrop(event)" ondragend="metaDragEnd(event)" '
+      +'style="display:flex;align-items:center;gap:8px;border:1px solid var(--brd2);border-radius:8px;padding:9px 12px;margin-bottom:6px;background:#fff;cursor:grab;user-select:none;transition:box-shadow .15s">'
+      +'<span style="color:var(--tx3);font-size:16px;cursor:grab">⠿</span>'
+      +'<span style="flex:1;font-size:13px;font-weight:600">'+escH(dispName)+'</span>'
+      +'<span style="font-size:10px;color:var(--tx3)">'+escH(acc.id)+'</span>'
+      +'<div style="display:flex;flex-direction:column;gap:2px">'
+      +'<button onclick="metaOrderMove(\''+acc.id+'\',-1)" style="border:1px solid var(--brd);border-radius:3px;background:#fff;cursor:pointer;font-size:10px;padding:1px 5px;line-height:1">▲</button>'
+      +'<button onclick="metaOrderMove(\''+acc.id+'\',1)" style="border:1px solid var(--brd);border-radius:3px;background:#fff;cursor:pointer;font-size:10px;padding:1px 5px;line-height:1">▼</button>'
+      +'</div>'
+      +'</div>';
+  });
+  el.innerHTML = html;
+}
+
+/* 버튼으로 순서 이동 - 모달 안 임시 ACCOUNTS 순서만 변경 */
+function metaOrderMove(id, dir){
+  var idx = ACCOUNTS.findIndex(function(a){return a.id===id;});
+  if(idx<0) return;
+  var newIdx = idx + dir;
+  if(newIdx<0||newIdx>=ACCOUNTS.length) return;
+  var tmp = ACCOUNTS[idx];
+  ACCOUNTS[idx] = ACCOUNTS[newIdx];
+  ACCOUNTS[newIdx] = tmp;
+  _renderMetaOrderList();
+}
+
+/* 드래그앤드롭 핸들러 */
+function metaDragStart(e){
+  _metaDragSrc = e.currentTarget;
+  e.dataTransfer.effectAllowed='move';
+  e.dataTransfer.setData('text/plain', e.currentTarget.dataset.oid);
+  e.currentTarget.style.opacity='0.4';
+}
+function metaDragOver(e){
+  e.preventDefault();
+  e.dataTransfer.dropEffect='move';
+  var items=document.querySelectorAll('.meta-order-item');
+  items.forEach(function(el){el.style.boxShadow='';});
+  if(e.currentTarget!==_metaDragSrc) e.currentTarget.style.boxShadow='0 0 0 2px var(--blu)';
+}
+function metaDragEnd(e){
+  document.querySelectorAll('.meta-order-item').forEach(function(el){
+    el.style.opacity='1'; el.style.boxShadow='';
+  });
+  _metaDragSrc=null;
+}
+function metaDrop(e){
+  e.preventDefault();
+  if(!_metaDragSrc||e.currentTarget===_metaDragSrc) return;
+  var fromId=_metaDragSrc.dataset.oid;
+  var toId=e.currentTarget.dataset.oid;
+  var fromIdx=ACCOUNTS.findIndex(function(a){return a.id===fromId;});
+  var toIdx=ACCOUNTS.findIndex(function(a){return a.id===toId;});
+  if(fromIdx<0||toIdx<0) return;
+  var item=ACCOUNTS.splice(fromIdx,1)[0];
+  ACCOUNTS.splice(toIdx,0,item);
+  _renderMetaOrderList();
+}
+
+function saveMetaEditor(){
+  // 1. 앱 제목/부제목 저장
+  var newTitle = document.getElementById('meta-title').value.trim();
+  var newSub = document.getElementById('meta-sub').value.trim();
+  if(newTitle) APP_META.title = newTitle;
+  if(newSub) APP_META.sub = newSub;
+
+  // 2. 계좌 메타(이름/날짜/메모) 저장
+  var inputs = document.querySelectorAll('#meta-acc-list input[data-mid]');
+  inputs.forEach(function(inp){
+    var mid = inp.dataset.mid;
+    var field = inp.dataset.mfield;
+    if(!APP_META.accMeta[mid]) APP_META.accMeta[mid] = {};
+    APP_META.accMeta[mid][field] = inp.value.trim();
+  });
+
+  // 3. 계좌 순서 저장 (현재 ACCOUNTS 배열 순서 → accOrder)
+  APP_META.accOrder = ACCOUNTS.map(function(a){return a.id;});
+
+  // 4. ACCOUNTS/CMA 에 이름·날짜·메모 즉시 반영
+  applyMetaToAccounts();
+
+  // 5. 헤더·nav 탭 갱신
+  renderAppHeader();
+  renderNav();
+
+  // 6. localStorage 저장
+  saveMeta();
+
+  closeModal('meta-modal');
+
+  // 7. 전체 화면 재렌더링 (계좌명·순서 반영)
+  renderActive();
+  renderOverview();
+}
+
+function escH(s){ return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
 function migrateTickers(){
   DEF.accounts.forEach(function(defAcc){
     var acc=ACCOUNTS.find(function(a){return a.id===defAcc.id;});
@@ -3438,7 +3723,10 @@ function startApp(){
     ACCOUNTS=JSON.parse(JSON.stringify(DEF.accounts));
     CMA=JSON.parse(JSON.stringify(DEF.cma));
     CRYPTO=JSON.parse(JSON.stringify(DEF.crypto));
+    loadMeta();
   }
+  renderAppHeader();
+  try{renderNav();}catch(e){}
   try{migrateTickers();}catch(e){}
   // 월별 분배금 데이터 (버전 v3 강제 업데이트)
   (function(){
@@ -3464,7 +3752,7 @@ function startApp(){
   document.addEventListener('visibilitychange',function(){
     if(document.visibilityState==='visible'&&ghGetToken()){
       ghPull(false).then(function(ok){
-        if(ok){try{loadData();}catch(e){}try{migrateTickers();}catch(e){}renderActive();}
+        if(ok){try{loadData();}catch(e){}try{migrateTickers();}catch(e){}renderAppHeader();try{renderNav();}catch(e){}renderActive();}
       });
     }
   });
@@ -3474,6 +3762,8 @@ function startApp(){
     if(ok){
       try{loadData();}catch(e){}
       try{migrateTickers();}catch(e){}
+      renderAppHeader();
+      try{renderNav();}catch(e){}
     }
     if(btn) btn.textContent='\u2601\ufe0f \ub3d9\uae30\ud654';
     renderOverview();
