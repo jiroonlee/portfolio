@@ -3837,7 +3837,8 @@ function metaAddAccount(){
   _renderMetaOrderList();
   _renderMetaDelList();
   renderNav();
-  alert('✅ 계좌 "'+name+'" 이(가) 추가되었습니다.\n저장 버튼을 눌러 최종 반영하세요.');
+  saveData(); autoSync();
+  alert('✅ 계좌 "'+name+'" 이(가) 추가되었습니다.');
 }
 
 /* CMA 계좌명 변경 */
@@ -3851,6 +3852,7 @@ function metaRenameCMA(){
   _renderMetaAccList();
   _renderMetaOrderList();
   renderNav();
+  saveMeta(); autoSync();
   alert('✅ CMA 계좌명이 "'+name+'"(으)로 변경되었습니다.');
 }
 
@@ -3872,7 +3874,8 @@ function metaDeleteAccount(id){
   renderNav();
   // 현재 페이지가 삭제된 계좌면 overview로 이동
   if(typeof curPage!=='undefined' && curPage===id) go('overview');
-  alert('✅ "'+name+'" 계좌가 삭제되었습니다.\n저장 버튼을 눌러 최종 반영하세요.');
+  saveData(); autoSync();
+  alert('✅ "'+name+'" 계좌가 삭제되었습니다.');
 }
 
 /* 버튼으로 순서 이동 */
