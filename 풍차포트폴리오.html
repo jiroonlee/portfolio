@@ -282,6 +282,88 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
     </div>
   </div>
 </div>
+<!-- ── 종목 상세/수정 모달 ── -->
+<div class="moverlay" id="holding-detail-modal">
+  <div class="modal" style="width:480px">
+    <h3 id="hdm-title">📋 종목 상세</h3>
+    <input type="hidden" id="hdm-accid">
+    <input type="hidden" id="hdm-idx">
+    <div class="mgrid2">
+      <div class="mrow" style="grid-column:1/-1"><div class="mlbl">종목명 *</div><input class="minp" id="hdm-name" placeholder="종목명"></div>
+      <div class="mrow"><div class="mlbl">티커/코드</div><input class="minp" id="hdm-tk" placeholder="예: 441640"></div>
+      <div class="mrow"><div class="mlbl">수량</div><input class="minp" id="hdm-qty" type="number" placeholder="0"></div>
+      <div class="mrow"><div class="mlbl">매입단가</div><input class="minp" id="hdm-cost" type="number" placeholder="0"></div>
+      <div class="mrow"><div class="mlbl">현재가 (수동)</div><input class="minp" id="hdm-price" type="number" placeholder="자동조회"></div>
+      <div class="mrow"><div class="mlbl">전고점</div><input class="minp" id="hdm-high" type="number" placeholder="0"></div>
+      <div class="mrow"><div class="mlbl">주당분배금(DPU)</div><input class="minp" id="hdm-dpu" type="number" placeholder="자동계산시 비워두기"></div>
+      <div class="mrow"><div class="mlbl">월분배금(수동)</div><input class="minp" id="hdm-dist" type="number" placeholder="DPU 없을 때만"></div>
+    </div>
+    <div class="mbtns" style="justify-content:space-between">
+      <button class="mbtn" style="background:#fee2e2;color:#dc2626;border-color:#fca5a5" onclick="hdmDelete()">🗑 삭제</button>
+      <div style="display:flex;gap:8px">
+        <button class="mbtn mbtn-cancel" onclick="closeModal('holding-detail-modal')">취소</button>
+        <button class="mbtn mbtn-ok" onclick="hdmSave()">저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── CMA 종목 상세/수정 모달 ── -->
+<div class="moverlay" id="cma-detail-modal">
+  <div class="modal" style="width:460px">
+    <h3 id="cdm-title">📋 CMA 종목 상세</h3>
+    <input type="hidden" id="cdm-idx">
+    <div class="mgrid2">
+      <div class="mrow" style="grid-column:1/-1"><div class="mlbl">종목명 *</div><input class="minp" id="cdm-name" placeholder="종목명"></div>
+      <div class="mrow" style="grid-column:1/-1"><div class="mlbl">설명</div><input class="minp" id="cdm-sub" placeholder="예: 연2%배당"></div>
+      <div class="mrow"><div class="mlbl">통화</div>
+        <select class="msel" id="cdm-cur"><option value="JPY">JPY (엔화)</option><option value="USD">USD (달러)</option><option value="KRW">KRW (원화)</option></select>
+      </div>
+      <div class="mrow"><div class="mlbl">유형</div>
+        <select class="msel" id="cdm-isrp"><option value="0">일반 (수량×단가)</option><option value="1">RP/현금 (금액만)</option></select>
+      </div>
+      <div class="mrow"><div class="mlbl">수량</div><input class="minp" id="cdm-qty" type="number" placeholder="0"></div>
+      <div class="mrow"><div class="mlbl">매입단가(현지)</div><input class="minp" id="cdm-cost" type="number" placeholder="0"></div>
+      <div class="mrow"><div class="mlbl">매입환율</div><input class="minp" id="cdm-fx" type="number" placeholder="0"></div>
+      <div class="mrow"><div class="mlbl">전고점</div><input class="minp" id="cdm-high" type="number" placeholder="0"></div>
+      <div class="mrow" style="grid-column:1/-1"><div class="mlbl">연간배당(현지통화)</div><input class="minp" id="cdm-dist" type="number" placeholder="0"></div>
+    </div>
+    <div class="mbtns" style="justify-content:space-between">
+      <button class="mbtn" style="background:#fee2e2;color:#dc2626;border-color:#fca5a5" onclick="cdmDelete()">🗑 삭제</button>
+      <div style="display:flex;gap:8px">
+        <button class="mbtn mbtn-cancel" onclick="closeModal('cma-detail-modal')">취소</button>
+        <button class="mbtn mbtn-ok" onclick="cdmSave()">저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── 가상화폐 종목 상세/수정 모달 ── -->
+<div class="moverlay" id="crypto-detail-modal">
+  <div class="modal" style="width:440px">
+    <h3 id="crdm-title">📋 코인 상세</h3>
+    <input type="hidden" id="crdm-ex">
+    <input type="hidden" id="crdm-idx">
+    <div class="mgrid2">
+      <div class="mrow"><div class="mlbl">종목명 *</div><input class="minp" id="crdm-name" placeholder="예: 비트코인(BTC)"></div>
+      <div class="mrow"><div class="mlbl">심볼</div><input class="minp" id="crdm-sym" placeholder="예: BTC"></div>
+      <div class="mrow"><div class="mlbl">보유수량</div><input class="minp" id="crdm-qty" type="number" placeholder="0"></div>
+      <div class="mrow"><div class="mlbl">스테이킹수량</div><input class="minp" id="crdm-stk" type="number" placeholder="0"></div>
+      <div class="mrow"><div class="mlbl">매입단가</div><input class="minp" id="crdm-cost" type="number" placeholder="0"></div>
+      <div class="mrow"><div class="mlbl">현재가 (수동)</div><input class="minp" id="crdm-price" type="number" placeholder="자동조회"></div>
+      <div class="mrow"><div class="mlbl">전고점</div><input class="minp" id="crdm-high" type="number" placeholder="0"></div>
+      <div class="mrow"><div class="mlbl">스테이킹 이율</div><input class="minp" id="crdm-sr" placeholder="예: 3.1% (없으면 비워두기)"></div>
+    </div>
+    <div class="mbtns" style="justify-content:space-between">
+      <button class="mbtn" style="background:#fee2e2;color:#dc2626;border-color:#fca5a5" onclick="crdmDelete()">🗑 삭제</button>
+      <div style="display:flex;gap:8px">
+        <button class="mbtn mbtn-cancel" onclick="closeModal('crypto-detail-modal')">취소</button>
+        <button class="mbtn mbtn-ok" onclick="crdmSave()">저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- CMA 종목추가 -->
 <div class="moverlay" id="cma-modal">
   <div class="modal"><h3>+ CMA 종목 추가</h3>
@@ -1620,8 +1702,8 @@ function renderKR(acc, cid) {
          + '<button onclick="moveHolding(\''+id+'\','+i+',-1)" style="border:1px solid var(--brd);background:#fff;border-radius:2px;cursor:pointer;font-size:9px;padding:0 3px;line-height:1.4;color:var(--tx2)">▲</button>'
          + '<button onclick="moveHolding(\''+id+'\','+i+',1)" style="border:1px solid var(--brd);background:#fff;border-radius:2px;cursor:pointer;font-size:9px;padding:0 3px;line-height:1.4;color:var(--tx2)">▼</button>'
          + '</div></td>';
-    // 종목명 + 코드 아래 표시
-    row += '<td style="min-width:130px;text-align:left"><div class="tname">' + h.n + '</div>'
+    // 종목명 + 코드 아래 표시 (더블클릭으로 상세 편집)
+    row += '<td style="min-width:130px;text-align:left;cursor:pointer" ondblclick="openHoldingDetail(\''+id+'\','+i+')" title="더블클릭으로 상세편집"><div class="tname">' + h.n + '</div>'
          + (h.tk ? '<div style="font-size:9px;color:var(--tx3)">' + h.tk + '</div>' : '')
          + '</td>';
     row += '<td><input class="ed" id="' + qid + '_qty" style="width:55px"'
@@ -1948,7 +2030,7 @@ function renderCMA(){
         +'<button onclick="moveCMAHolding('+i+',-1)" style="border:1px solid var(--brd);background:#fff;border-radius:2px;cursor:pointer;font-size:9px;padding:0 3px;line-height:1.4;color:var(--tx2)">▲</button>'
         +'<button onclick="moveCMAHolding('+i+',1)" style="border:1px solid var(--brd);background:#fff;border-radius:2px;cursor:pointer;font-size:9px;padding:0 3px;line-height:1.4;color:var(--tx2)">▼</button>'
         +'</div></td>'
-        +'<td style="text-align:left"><div class="tname">'+h.n+'</div></td>'
+        +'<td style="text-align:left;cursor:pointer" ondblclick="openCMADetail('+i+')" title="더블클릭으로 상세편집"><div class="tname">'+h.n+'</div></td>'
         +'<td style="text-align:center;color:var(--tx3)">-</td>'
         +'<td><input class="ed" style="width:86px" value="'+h.cost+'" onchange="setCH('+i+',\'cost\',this.value)"> '+h.cur+'</td>'
         +'<td>'+avgFXinp+'</td>'
@@ -1966,7 +2048,7 @@ function renderCMA(){
       +'<button onclick="moveCMAHolding('+i+',-1)" style="border:1px solid var(--brd);background:#fff;border-radius:2px;cursor:pointer;font-size:9px;padding:0 3px;line-height:1.4;color:var(--tx2)">▲</button>'
       +'<button onclick="moveCMAHolding('+i+',1)" style="border:1px solid var(--brd);background:#fff;border-radius:2px;cursor:pointer;font-size:9px;padding:0 3px;line-height:1.4;color:var(--tx2)">▼</button>'
       +'</div></td>'
-      +'<td style="text-align:left"><div class="tname">'+h.n+'</div><div style="font-size:9px;color:var(--tx3)">'+(h.sub||'')+'</div></td>'
+      +'<td style="text-align:left;cursor:pointer" ondblclick="openCMADetail('+i+')" title="더블클릭으로 상세편집"><div class="tname">'+h.n+'</div><div style="font-size:9px;color:var(--tx3)">'+(h.sub||'')+'</div></td>'
       +'<td><input class="ed" style="width:56px" value="'+(h.qty||'')+'" onchange="setCH('+i+',\'qty\',this.value)"></td>'
       +'<td><input class="ed" style="width:78px" value="'+h.cost+'" onchange="setCH('+i+',\'cost\',this.value)"> '+h.cur+'</td>'
       +'<td>'+avgFXinp+'</td>'
@@ -2093,7 +2175,7 @@ function renderCrypto(force){
         +'<button onclick="moveCryptoHolding(\''+ex+'\','+i+',-1)" style="border:1px solid var(--brd);background:#fff;border-radius:2px;cursor:pointer;font-size:9px;padding:0 3px;line-height:1.4;color:var(--tx2)">▲</button>'
         +'<button onclick="moveCryptoHolding(\''+ex+'\','+i+',1)" style="border:1px solid var(--brd);background:#fff;border-radius:2px;cursor:pointer;font-size:9px;padding:0 3px;line-height:1.4;color:var(--tx2)">▼</button>'
         +'</div></td>'
-        +'<td style="text-align:left"><div class="tname">'+h.n
+        +'<td style="text-align:left;cursor:pointer" ondblclick="openCryptoDetail(\''+ex+'\','+i+')" title="더블클릭으로 상세편집"><div class="tname">'+h.n
         +(h.sr?' <span style="font-size:9px;background:var(--pur2);color:var(--pur);padding:1px 3px;border-radius:3px">'+h.sr+' \uc2a4\ud14c\uc774\ud0b9</span>':'')
         +'</div></td>'
         +'<td><input class="ed" style="width:110px" value="'+(h.stk||'')+'" onchange="'+sfn+'"></td>'
@@ -2222,7 +2304,7 @@ function renderHoldings(){
     var wtBar='<div style="background:var(--gbg);border-radius:2px;height:4px;margin-top:3px">'
       +'<div style="background:var(--blu);width:'+Math.min(100,wt).toFixed(1)+'%;height:4px;border-radius:2px"></div></div>';
     return '<tr>'
-      +'<td style="text-align:left;position:sticky;left:0;background:#fff;z-index:2">'
+      +'<td style="text-align:left">'
         +'<div style="font-weight:600;font-size:12px;line-height:1.4">'+r.n+'</div>'
         +(r.tk?'<div style="font-size:9px;color:var(--tx3)">'+r.tk+'</div>':'')
       +'</td>'
@@ -2257,21 +2339,21 @@ function renderHoldings(){
     '<div class="scard"><div class="slbl">\uc6d4 \ubd84\ubc30\uae08 \ud569\uacc4</div><div class="sval" style="color:var(--grn)">'+fmt(gDist)+'\uc6d0</div></div>',
     '</div>',
     '<div class="twrap" style="padding:0 8px 12px">',
-    '<table style="table-layout:auto;width:100%;min-width:680px">',
+    '<table style="table-layout:fixed;width:100%;min-width:660px">',
     '<thead><tr>',
-    '<th style="text-align:left;min-width:130px;position:sticky;left:0;background:#f1f5f9;z-index:3">\uc885\ubaa9\uba85</th>',
-    '<th style="text-align:right;width:68px">\ud569\uacc4\uc218\ub7c9</th>',
-    '<th style="text-align:right;width:90px">\ud3c9\uade0\ub9e4\uc785\ub2e8\uac00</th>',
-    '<th style="text-align:right;width:80px">\ud604\uc7ac\uac00</th>',
-    '<th style="text-align:right;width:98px">\ub9e4\uc785\ucd1d\uc561</th>',
-    '<th style="text-align:right;width:98px">\ud604\uc7ac\ucd1d\uc561</th>',
-    '<th style="text-align:right;width:96px">\ud3c9\uac00\uc190\uc775</th>',
-    '<th style="text-align:right;width:60px">\uc218\uc775\ub960</th>',
-    '<th style="text-align:right;width:64px">\ube44\uc911</th>',
+    '<th style="text-align:left;width:160px">\uc885\ubaa9\uba85</th>',
+    '<th style="width:60px">\uc218\ub7c9</th>',
+    '<th style="width:86px">\ud3c9\uade0\ub9e4\uc785\ub2e8\uac00</th>',
+    '<th style="width:78px">\ud604\uc7ac\uac00</th>',
+    '<th style="width:94px">\ub9e4\uc785\ucd1d\uc561</th>',
+    '<th style="width:94px">\ud604\uc7ac\ucd1d\uc561</th>',
+    '<th style="width:90px">\ud3c9\uac00\uc190\uc775</th>',
+    '<th style="width:58px">\uc218\uc775\ub960</th>',
+    '<th style="width:60px">\ube44\uc911</th>',
     '</tr></thead>',
     '<tbody>'+tableRows+'</tbody>',
     '<tr class="trow">',
-    '<td style="position:sticky;left:0;background:#e8f0fe;z-index:2">\uc804\uccb4 \ud569\uacc4</td>',
+    '<td>\uc804\uccb4 \ud569\uacc4</td>',
     '<td colspan="2"></td>',
     '<td style="text-align:right">'+fmt(Math.round(gCost))+'</td>',
     '<td style="text-align:right;font-weight:700">'+fmt(Math.round(totalCur))+'</td>',
@@ -2605,6 +2687,173 @@ function splitTablesOnMobile(){
   });
 }
 function findAcc(id){return ACCOUNTS.find(function(a){return a.id===id;});}
+
+/* ===== 종목 상세/수정 모달 ===== */
+function openHoldingDetail(accId, idx){
+  var a=findAcc(accId); if(!a) return;
+  var h=a.holdings[idx]; if(!h) return;
+  var price=liveP(h);
+  var costV=h.cost*(h.qty||0), curV=price*(h.qty||0);
+  var pnlR=costV>0?(curV-costV)/costV:0;
+  document.getElementById('hdm-accid').value=accId;
+  document.getElementById('hdm-idx').value=idx;
+  document.getElementById('hdm-title').textContent='📋 '+h.n+' 상세';
+  document.getElementById('hdm-name').value=h.n||'';
+  document.getElementById('hdm-tk').value=h.tk||'';
+  document.getElementById('hdm-qty').value=h.qty!=null?h.qty:'';
+  document.getElementById('hdm-cost').value=h.cost!=null?h.cost:'';
+  document.getElementById('hdm-price').value=price||'';
+  document.getElementById('hdm-high').value=h.high!=null?h.high:'';
+  document.getElementById('hdm-dpu').value=h.dpu!=null?h.dpu:'';
+  document.getElementById('hdm-dist').value=(h.dpu==null&&((h.mI||0)+(h.mM||0)))?((h.mI||0)+(h.mM||0)):'';
+  openModal('holding-detail-modal');
+}
+function hdmSave(){
+  var accId=document.getElementById('hdm-accid').value;
+  var idx=parseInt(document.getElementById('hdm-idx').value);
+  var a=findAcc(accId); if(!a) return;
+  var h=a.holdings[idx]; if(!h) return;
+  var newName=document.getElementById('hdm-name').value.trim();
+  if(!newName){alert('종목명을 입력하세요.');return;}
+  var oldTk=h.tk;
+  h.n=newName;
+  h.tk=document.getElementById('hdm-tk').value.trim()||null;
+  h.qty=pf(document.getElementById('hdm-qty').value)||0;
+  h.cost=pf(document.getElementById('hdm-cost').value)||0;
+  var manualPrice=pf(document.getElementById('hdm-price').value);
+  if(manualPrice&&h.tk) PRICES[h.tk]=manualPrice;
+  h.high=pf(document.getElementById('hdm-high').value)||null;
+  var dpuVal=document.getElementById('hdm-dpu').value.trim();
+  h.dpu=dpuVal!==''?pf(dpuVal):null;
+  if(h.dpu==null){
+    var distVal=pf(document.getElementById('hdm-dist').value)||0;
+    h.mI=distVal; h.mM=null;
+  }
+  if(h.tk&&h.tk!==oldTk){
+    fetchKR(h.tk).then(function(p){if(p!=null)PRICES[h.tk]=p;renderActive();});
+  }
+  closeModal('holding-detail-modal');
+  renderActive(); autoSync();
+}
+function hdmDelete(){
+  var accId=document.getElementById('hdm-accid').value;
+  var idx=parseInt(document.getElementById('hdm-idx').value);
+  var a=findAcc(accId); if(!a) return;
+  var name=a.holdings[idx]?a.holdings[idx].n:'종목';
+  if(!confirm('"'+name+'" 종목을 삭제할까요?')) return;
+  a.holdings.splice(idx,1);
+  closeModal('holding-detail-modal');
+  renderActive(); autoSync();
+}
+
+/* ===== CMA 종목 추가 ===== */
+function doAddCMA(){
+  var n=(document.getElementById('cm-name').value||'').trim();
+  if(!n){alert('종목명을 입력하세요.');return;}
+  var isRP=document.getElementById('cm-isrp').checked;
+  var cur=document.getElementById('cm-cur').value;
+  var qty=isRP?1:(pf(document.getElementById('cm-qty').value)||0);
+  var cost=pf(document.getElementById('cm-cost').value)||0;
+  var fx=pf(document.getElementById('cm-fx').value)||null;
+  var high=pf(document.getElementById('cm-high').value)||null;
+  var distAnn=pf(document.getElementById('cm-dist').value)||null;
+  var sub=(document.getElementById('cm-sub').value||'').trim();
+  CMA.holdings.push({n:n,sub:sub,cur:cur,isRP:isRP,qty:qty,cost:cost,avgFX:fx,high:high,distAnn:distAnn});
+  closeModal('cma-modal');
+  renderActive(); autoSync();
+}
+
+/* ===== CMA 종목 상세/수정 ===== */
+function openCMADetail(idx){
+  var h=CMA.holdings[idx]; if(!h) return;
+  document.getElementById('cdm-idx').value=idx;
+  document.getElementById('cdm-title').textContent='📋 '+h.n+' 상세';
+  document.getElementById('cdm-name').value=h.n||'';
+  document.getElementById('cdm-sub').value=h.sub||'';
+  document.getElementById('cdm-cur').value=h.cur||'JPY';
+  document.getElementById('cdm-isrp').value=h.isRP?'1':'0';
+  document.getElementById('cdm-qty').value=h.isRP?'':(h.qty||'');
+  document.getElementById('cdm-cost').value=h.cost||'';
+  document.getElementById('cdm-fx').value=h.avgFX||'';
+  document.getElementById('cdm-high').value=h.high||'';
+  document.getElementById('cdm-dist').value=h.distAnn||'';
+  openModal('cma-detail-modal');
+}
+function cdmSave(){
+  var idx=parseInt(document.getElementById('cdm-idx').value);
+  var h=CMA.holdings[idx]; if(!h) return;
+  var n=(document.getElementById('cdm-name').value||'').trim();
+  if(!n){alert('종목명을 입력하세요.');return;}
+  h.n=n;
+  h.sub=document.getElementById('cdm-sub').value.trim();
+  h.cur=document.getElementById('cdm-cur').value;
+  h.isRP=document.getElementById('cdm-isrp').value==='1';
+  h.qty=h.isRP?1:(pf(document.getElementById('cdm-qty').value)||0);
+  h.cost=pf(document.getElementById('cdm-cost').value)||0;
+  h.avgFX=pf(document.getElementById('cdm-fx').value)||null;
+  h.high=pf(document.getElementById('cdm-high').value)||null;
+  h.distAnn=pf(document.getElementById('cdm-dist').value)||null;
+  closeModal('cma-detail-modal');
+  renderActive(); autoSync();
+}
+function cdmDelete(){
+  var idx=parseInt(document.getElementById('cdm-idx').value);
+  var name=CMA.holdings[idx]?CMA.holdings[idx].n:'종목';
+  if(!confirm('"'+name+'" 종목을 삭제할까요?')) return;
+  CMA.holdings.splice(idx,1);
+  closeModal('cma-detail-modal');
+  renderActive(); autoSync();
+}
+
+/* ===== 가상화폐 종목 상세/수정 ===== */
+function openCryptoDetail(ex, idx){
+  var list=ex==='B'?CRYPTO.bithumb:CRYPTO.upbit;
+  var h=list[idx]; if(!h) return;
+  var price=PRICES[h.sym]!=null?PRICES[h.sym]:h.cost;
+  document.getElementById('crdm-ex').value=ex;
+  document.getElementById('crdm-idx').value=idx;
+  document.getElementById('crdm-title').textContent='📋 '+h.n+' 상세 ('+(ex==='B'?'빗썸':'업비트')+')';
+  document.getElementById('crdm-name').value=h.n||'';
+  document.getElementById('crdm-sym').value=h.sym||'';
+  document.getElementById('crdm-qty').value=h.qty||'';
+  document.getElementById('crdm-stk').value=h.stk||'';
+  document.getElementById('crdm-cost').value=h.cost||'';
+  document.getElementById('crdm-price').value=price||'';
+  document.getElementById('crdm-high').value=h.high||'';
+  document.getElementById('crdm-sr').value=h.sr||'';
+  openModal('crypto-detail-modal');
+}
+function crdmSave(){
+  var ex=document.getElementById('crdm-ex').value;
+  var idx=parseInt(document.getElementById('crdm-idx').value);
+  var list=ex==='B'?CRYPTO.bithumb:CRYPTO.upbit;
+  var h=list[idx]; if(!h) return;
+  var n=(document.getElementById('crdm-name').value||'').trim();
+  if(!n){alert('종목명을 입력하세요.');return;}
+  var oldSym=h.sym;
+  h.n=n;
+  h.sym=(document.getElementById('crdm-sym').value||'').toUpperCase();
+  h.qty=parseFloat(document.getElementById('crdm-qty').value)||0;
+  h.stk=parseFloat(document.getElementById('crdm-stk').value)||0;
+  h.cost=parseFloat(document.getElementById('crdm-cost').value)||0;
+  h.high=parseFloat(document.getElementById('crdm-high').value)||0;
+  h.sr=document.getElementById('crdm-sr').value.trim();
+  var manualP=parseFloat(document.getElementById('crdm-price').value)||0;
+  if(manualP&&h.sym) PRICES[h.sym]=manualP;
+  closeModal('crypto-detail-modal');
+  renderActive(); autoSync();
+}
+function crdmDelete(){
+  var ex=document.getElementById('crdm-ex').value;
+  var idx=parseInt(document.getElementById('crdm-idx').value);
+  var list=ex==='B'?CRYPTO.bithumb:CRYPTO.upbit;
+  var name=list[idx]?list[idx].n:'코인';
+  if(!confirm('"'+name+'" 코인을 삭제할까요?')) return;
+  list.splice(idx,1);
+  closeModal('crypto-detail-modal');
+  renderActive(); autoSync();
+}
+
 function moveHolding(accId, idx, dir){
   var a=findAcc(accId); if(!a) return;
   var newIdx=idx+dir;
@@ -3133,12 +3382,12 @@ function renderOverview(){
     compSection,
     curSection,
     '<div class="sec"><div class="sechdr"><span class="sectitle">\uacc4\uc88c\ubcc4 \ud604\ud669</span></div>',
-    '<div class="twrap"><table><thead><tr>',
-    '<th style="text-align:left;min-width:200px">\uacc4\uc88c\uba85</th>',
-    '<th>\ub0a9\uc785\uae08\uc561(\ub204\uc801)</th><th>\uc778\ucd9c\uae08\uc561(\ub204\uc801)</th><th>\uc2e4\ub0a9\uc785\uae08\uc561</th>',
-    '<th>\ub9e4\uc785\ucd1d\uc561</th><th>\ud604\uc7ac\ucd1d\uc561</th><th>\uc190\uc775\uae08\uc561</th>',
-    '<th>\uc218\uc775\ub960</th><th>\uc218\uc775\ub960(\uc2e4\ub0a9)</th>',
-    '<th>\uc6d4\ubd84\ubc30\uae08</th>',
+    '<div class="twrap"><table style="table-layout:fixed;width:100%;min-width:680px"><thead><tr>',
+    '<th style="text-align:left;width:170px">\uacc4\uc88c\uba85</th>',
+    '<th style="width:95px">\ub0a9\uc785(\ub204\uc801)</th><th style="width:90px">\uc778\ucd9c(\ub204\uc801)</th><th style="width:95px">\uc2e4\ub0a9\uc785\uae08\uc561</th>',
+    '<th style="width:95px">\ub9e4\uc785\ucd1d\uc561</th><th style="width:100px">\ud604\uc7ac\ucd1d\uc561</th><th style="width:90px">\uc190\uc775\uae08\uc561</th>',
+    '<th style="width:66px">\uc218\uc775\ub960</th><th style="width:74px">\uc218\uc775(\uc2e4\ub0a9)</th>',
+    '<th style="width:84px">\uc6d4\ubd84\ubc30\uae08</th>',
     '</tr></thead><tbody>',rows.join(''),
     '<tr class="trow"><td>\uc804\uccb4 \ud569\uacc4</td>',
     '<td>'+fmt(gDep)+'</td><td>'+fmt(Math.abs(gWit))+'</td><td>'+fmt(gReal)+'</td>',
