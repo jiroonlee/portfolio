@@ -1571,13 +1571,15 @@ function renderPension(){
     };
   });
 
-  // ─ 계좌명 ACCOUNTS에서 자동 싱크
+  // ─ 계좌명 및 날짜 ACCOUNTS + 저장값에서 자동 싱크
   PACC.forEach(function(p){
     var acc=ACCOUNTS.find(function(a){return a.id===p.id;});
     var metaName=(APP_META.accMeta[p.id]&&APP_META.accMeta[p.id].name)||null;
     p.label=metaName||(acc?acc.name:p.id);
-    p.openDateDisp=acc&&acc.openDate?acc.openDate:p.openDate;
-    p.startDateDisp=acc&&acc.note?acc.note:(acc&&acc.openDate?acc.openDate:p.pensionStart);
+    // 개설일: 저장값 > 계좌 openDate > 기본값
+    p.openDateDisp=saved['openDate_'+p.id]||(acc&&acc.openDate?acc.openDate:p.openDate);
+    // 개시가능일: 저장값 > 계좌 note > 기본값
+    p.startDateDisp=saved['startDate_'+p.id]||(acc&&acc.note?acc.note:(acc&&acc.openDate?acc.openDate:p.pensionStart));
   });
 
   // ─ 오늘 기준 자동 연차 계산 헬퍼
@@ -1770,9 +1772,19 @@ function renderPension(){
 
   var tbody='<tbody>'
     +'<tr><td style="'+lblBase+'">개설일자</td>'
-      +cols.map(function(c){return '<td style="'+cellC+'">'+escH(c.p.openDateDisp)+'</td>';}).join('')+'<td style="'+cellC+'"></td></tr>'
-    +'<tr><td style="'+lblBase+'">연금개시가능일</td>'
-      +cols.map(function(c){return '<td style="'+cellC+'">'+escH(c.p.startDateDisp)+'</td>';}).join('')+'<td style="'+cellC+'"></td></tr>'
+      +cols.map(function(c){
+        return '<td style="padding:3px 6px;background:#fff">'
+          +'<input class="ed" style="width:90px;text-align:center;font-size:11px" value="'+escH(c.p.openDateDisp)+'"'
+          +' onchange="pensionEditDate(\'openDate\',\''+c.p.id+'\',this.value)">'
+        +'</td>';
+      }).join('')+'<td style="'+cellC+'"></td></tr>'
+    +'<tr><td style="'+lblBase+'">연금개시(가능)일</td>'
+      +cols.map(function(c){
+        return '<td style="padding:3px 6px;background:#fff">'
+          +'<input class="ed" style="width:90px;text-align:center;font-size:11px" value="'+escH(c.p.startDateDisp)+'"'
+          +' onchange="pensionEditDate(\'startDate\',\''+c.p.id+'\',this.value)">'
+        +'</td>';
+      }).join('')+'<td style="'+cellC+'"></td></tr>'
     +'<tr><td style="'+lblBase+'">개시여부</td>'
       +cols.map(function(c){return startedCell(c);}).join('')+'<td style="'+cellC+'"></td></tr>'
     +'<tr><td style="'+lblBase+'">연금수령연차</td>'
@@ -1909,6 +1921,14 @@ function pensionTypeChange(accId, type){
   var saved=pensionGet();
   saved['type_'+accId]=type;
   pensionSet(saved);
+}
+function pensionEditDate(field, id, val){
+  var saved=pensionGet();
+  var v=(val||'').trim();
+  if(v) saved[field+'_'+id]=v; else delete saved[field+'_'+id];
+  pensionSet(saved);
+  renderPension();
+  autoSync();
 }
 function isISAId(id){
   return id.toLowerCase().indexOf('isa')>=0;
