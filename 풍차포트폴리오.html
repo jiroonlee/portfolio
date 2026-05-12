@@ -432,42 +432,90 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
 <!-- ✏️ 앱 정보 편집 모달 -->
 <div class="moverlay" id="meta-modal">
   <div class="modal" style="width:560px;max-width:97vw;padding:18px 18px 14px">
+
+    <!-- 헤더 -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
       <h3 style="margin:0">✏️ 앱 정보 편집</h3>
       <button onclick="closeModal('meta-modal')" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--tx2);line-height:1">✕</button>
     </div>
+
     <!-- 탭 헤더 -->
-    <div style="display:flex;gap:4px;margin-bottom:14px;border-bottom:1px solid var(--brd);padding-bottom:0">
-      <button id="meta-tab-title" onclick="metaTab('title')" style="padding:7px 14px;border:none;border-bottom:2px solid var(--blu);background:none;font-size:12px;font-weight:700;color:var(--blu);cursor:pointer;font-family:inherit">📱 앱 제목</button>
-      <button id="meta-tab-acc" onclick="metaTab('acc')" style="padding:7px 14px;border:none;border-bottom:2px solid transparent;background:none;font-size:12px;font-weight:600;color:var(--tx2);cursor:pointer;font-family:inherit">🏦 계좌 정보</button>
-      <button id="meta-tab-order" onclick="metaTab('order')" style="padding:7px 14px;border:none;border-bottom:2px solid transparent;background:none;font-size:12px;font-weight:600;color:var(--tx2);cursor:pointer;font-family:inherit">↕️ 계좌 순서</button>
+    <div style="display:flex;gap:0;margin-bottom:14px;border-bottom:2px solid var(--brd);overflow-x:auto;scrollbar-width:none">
+      <button id="meta-tab-title"  onclick="metaTab('title')"  style="padding:7px 12px;border:none;border-bottom:2px solid var(--blu);margin-bottom:-2px;background:none;font-size:11px;font-weight:700;color:var(--blu);cursor:pointer;font-family:inherit;white-space:nowrap">📱 앱 제목</button>
+      <button id="meta-tab-acc"    onclick="metaTab('acc')"    style="padding:7px 12px;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;background:none;font-size:11px;font-weight:600;color:var(--tx2);cursor:pointer;font-family:inherit;white-space:nowrap">🏦 계좌 정보</button>
+      <button id="meta-tab-order"  onclick="metaTab('order')"  style="padding:7px 12px;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;background:none;font-size:11px;font-weight:600;color:var(--tx2);cursor:pointer;font-family:inherit;white-space:nowrap">↕️ 계좌 순서</button>
+      <button id="meta-tab-manage" onclick="metaTab('manage')" style="padding:7px 12px;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;background:none;font-size:11px;font-weight:600;color:var(--tx2);cursor:pointer;font-family:inherit;white-space:nowrap">➕ 계좌 관리</button>
+      <button id="meta-tab-pw"     onclick="metaTab('pw')"     style="padding:7px 12px;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;background:none;font-size:11px;font-weight:600;color:var(--tx2);cursor:pointer;font-family:inherit;white-space:nowrap">🔑 비밀번호</button>
     </div>
 
-    <!-- 패널: 앱 제목 -->
-    <div id="meta-panel-title" style="display:block">
-      <div class="mrow">
-        <div class="mlbl">메인 제목 (이모지 포함 가능)</div>
-        <input id="meta-title" class="minp" type="text" placeholder="🌸 수익은 길게, 손실은 짧게!!!">
+    <!-- 패널 영역 (고정 높이 + 스크롤) -->
+    <div style="min-height:280px;max-height:58vh;overflow-y:auto;padding-right:2px">
+
+      <!-- 패널: 앱 제목 -->
+      <div id="meta-panel-title" style="display:block">
+        <div class="mrow">
+          <div class="mlbl">메인 제목 (이모지 포함 가능)</div>
+          <input id="meta-title" class="minp" type="text" placeholder="🌸 수익은 길게, 손실은 짧게!!!">
+        </div>
+        <div class="mrow">
+          <div class="mlbl">부제목</div>
+          <input id="meta-sub" class="minp" type="text" placeholder="연금계좌 풍차계획 포트폴리오">
+        </div>
       </div>
-      <div class="mrow">
-        <div class="mlbl">부제목</div>
-        <input id="meta-sub" class="minp" type="text" placeholder="연금계좌 풍차계획 포트폴리오">
+
+      <!-- 패널: 계좌 정보 -->
+      <div id="meta-panel-acc" style="display:none">
+        <div id="meta-acc-list"></div>
       </div>
-    </div>
 
-    <!-- 패널: 계좌 정보 -->
-    <div id="meta-panel-acc" style="display:none">
-      <div id="meta-acc-list" style="max-height:390px;overflow-y:auto;padding-right:2px"></div>
-    </div>
-
-    <!-- 패널: 계좌 순서 -->
-    <div id="meta-panel-order" style="display:none">
-      <div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:6px;padding:7px 10px;margin-bottom:10px;font-size:11px;color:#92400e">
-        ☝️ 드래그하거나 <strong>▲ ▼</strong> 버튼으로 순서를 변경하세요. 저장 후 내비게이션 탭과 모든 화면에 즉시 반영됩니다.
+      <!-- 패널: 계좌 순서 -->
+      <div id="meta-panel-order" style="display:none">
+        <div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:6px;padding:7px 10px;margin-bottom:10px;font-size:11px;color:#92400e">
+          ☝️ 드래그하거나 <strong>▲ ▼</strong> 버튼으로 순서를 변경하세요. 저장 후 즉시 반영됩니다.
+        </div>
+        <div id="meta-order-list"></div>
       </div>
-      <div id="meta-order-list" style="max-height:380px;overflow-y:auto"></div>
-    </div>
 
+      <!-- 패널: 계좌 추가/삭제 -->
+      <div id="meta-panel-manage" style="display:none">
+        <div style="margin-bottom:14px">
+          <div style="font-size:11px;font-weight:700;color:var(--tx2);margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--brd2)">연금 계좌 추가</div>
+          <div class="mgrid2" style="gap:6px;margin-bottom:8px">
+            <div><div class="mlbl">계좌 ID (영문·숫자·- 만 사용)</div><input class="minp" id="new-acc-id" placeholder="예: mf-isa2" style="font-size:12px"></div>
+            <div><div class="mlbl">계좌명</div><input class="minp" id="new-acc-name" placeholder="예: 미래_ISA2" style="font-size:12px"></div>
+            <div><div class="mlbl">개설일</div><input class="minp" id="new-acc-date" placeholder="예: 25.1.1" style="font-size:12px"></div>
+            <div><div class="mlbl">메모 (선택)</div><input class="minp" id="new-acc-note" placeholder="" style="font-size:12px"></div>
+          </div>
+          <button class="mbtn mbtn-ok" onclick="metaAddAccount()" style="font-size:12px;padding:6px 14px">➕ 연금 계좌 추가</button>
+        </div>
+        <div style="margin-bottom:14px;padding-top:12px;border-top:1px solid var(--brd2)">
+          <div style="font-size:11px;font-weight:700;color:var(--tx2);margin-bottom:8px">CMA 계좌명 변경</div>
+          <div style="display:flex;gap:8px;align-items:flex-end">
+            <div style="flex:1"><div class="mlbl">새 계좌명</div><input class="minp" id="new-cma-name" placeholder="예: CMA 해외주식2" style="font-size:12px"></div>
+            <button class="mbtn mbtn-ok" onclick="metaRenameCMA()" style="font-size:12px;padding:6px 14px;white-space:nowrap">변경</button>
+          </div>
+        </div>
+        <div style="padding-top:12px;border-top:1px solid var(--brd2)">
+          <div style="font-size:11px;font-weight:700;color:#dc2626;margin-bottom:4px">계좌 삭제</div>
+          <div style="font-size:10px;color:var(--tx3);margin-bottom:8px">⚠️ 삭제 시 해당 계좌의 모든 종목 데이터가 영구 삭제됩니다.</div>
+          <div id="meta-del-list"></div>
+        </div>
+      </div>
+
+      <!-- 패널: 비밀번호 변경 -->
+      <div id="meta-panel-pw" style="display:none">
+        <div style="max-width:320px;margin:0 auto">
+          <div class="mrow"><div class="mlbl">현재 비밀번호</div><input class="minp" id="pw-old" type="password" placeholder="현재 비밀번호"></div>
+          <div class="mrow"><div class="mlbl">새 비밀번호 (4자 이상)</div><input class="minp" id="pw-new1" type="password" placeholder="새 비밀번호"></div>
+          <div class="mrow"><div class="mlbl">새 비밀번호 확인</div><input class="minp" id="pw-new2" type="password" placeholder="새 비밀번호 재입력"></div>
+          <div id="pw-change-err" style="display:none;color:#dc2626;font-size:12px;margin:4px 0 8px"></div>
+          <button class="mbtn mbtn-ok" onclick="metaChangePW()" style="width:100%;margin-top:4px">🔑 비밀번호 변경</button>
+        </div>
+      </div>
+
+    </div><!-- /패널 영역 -->
+
+    <!-- 안내 + 버튼 (항상 하단 고정) -->
     <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:7px 10px;margin-top:12px;font-size:11px;color:#1e40af">
       💾 저장 후 <strong>[저장]</strong> 또는 <strong>☁️ [동기화]</strong>를 누르면 GitHub에 반영되어 모든 기기에서 동기화됩니다.
     </div>
@@ -475,6 +523,7 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
       <button class="mbtn mbtn-cancel" onclick="closeModal('meta-modal')">취소</button>
       <button class="mbtn mbtn-ok" onclick="saveMetaEditor()">💾 저장 &amp; 적용</button>
     </div>
+
   </div>
 </div>
 
@@ -646,7 +695,7 @@ const DEF = {
 /* ===== 상태 ===== */
 var FX = {USD:1479, JPY:927.83};
 var PRICES = {}, HIGH52 = {};
-var SKEY='fp_data', SNAPKEY='fp_snaps', CLKEY='fp_cl', META_KEY='fp_meta';
+var SKEY='fp2_data', SNAPKEY='fp2_snaps', CLKEY='fp2_cl', META_KEY='fp2_meta';
 var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
@@ -779,7 +828,7 @@ function saveData(){
   sSet(SKEY,JSON.stringify({accounts:ACCOUNTS,cma:CMA,crypto:CRYPTO,fx:{usd:FX.USD,jpy:FX.JPY},prices:PRICES}));
   saveMeta();
   addCL(today,t);
-  sSet('fp_last_save',now);
+  sSet('fp2_last_save',now);
   if(ghGetToken()){
     ghPush();
     alert('\u2705 저장 완료 ('+today+')\n총평가액: '+fmt(t.cur)+'원\n\n\u2601\ufe0f GitHub \uc5c5\ub85c\ub4dc \uc911...');
@@ -1246,7 +1295,7 @@ function setDot(s,msg){
 }
 
 /* ===== 월별 배당금 대시보드 ===== */
-var DIST_KEY='fp_dist_v2';
+var DIST_KEY='fp2_dist_v2';
 
 function distGet(){
   try{return JSON.parse(sGet(DIST_KEY)||'{}');}catch(e){return {};}
@@ -1419,8 +1468,8 @@ function renderDistDashboard(){
 
 
 /* ===== 사적연금 통합관리 ===== */
-var PENSION_KEY='fp_pension_v1';
-var PENSION_STRATEGY_KEY='fp_pension_strategy';
+var PENSION_KEY='fp2_pension_v1';
+var PENSION_STRATEGY_KEY='fp2_pension_strategy';
 
 function pensionGet(){try{return JSON.parse(sGet(PENSION_KEY)||'{}');}catch(e){return {};}}
 function pensionSet(obj){sSet(PENSION_KEY,JSON.stringify(obj));}
@@ -2916,7 +2965,7 @@ function renderPage(id){
 }
 
 /* ===== 비밀번호 시스템 ===== */
-var PW_STORE='fp_pw_v1', AUTH_STORE='fp_auth_v1';
+var PW_STORE='fp2_pw_v1', AUTH_STORE='fp2_auth_v1';
 function pwHash(pw){var s='fungcha2025_'+pw+'_'+pw.length,a=0x9e3779b9|0,b=0x85ebca77|0;for(var i=0;i<s.length;i++){var x=s.charCodeAt(i);a=Math.imul(a^x,0x9e3779b9);a=(a<<13)|(a>>>19);b=Math.imul(b^x,0x85ebca77);b=(b<<7)|(b>>>25);}return((a>>>0).toString(16)+(b>>>0).toString(16));}
 function pwGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
 function pwSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
@@ -2960,6 +3009,22 @@ function doLogin(){
       inp.value='';inp.focus();
     }
   }
+}
+function metaChangePW(){
+  var err=document.getElementById('pw-change-err');
+  var show=function(msg){err.textContent=msg;err.style.display='block';};
+  var oldV=(document.getElementById('pw-old').value||'');
+  var newV=(document.getElementById('pw-new1').value||'');
+  var newV2=(document.getElementById('pw-new2').value||'');
+  var stored=pwGet(PW_STORE);
+  if(stored&&pwHash(oldV)!==stored){show('❌ 현재 비밀번호가 올바르지 않습니다.');return;}
+  if(newV.length<4){show('❌ 새 비밀번호는 4자 이상이어야 합니다.');return;}
+  if(newV!==newV2){show('❌ 새 비밀번호가 일치하지 않습니다.');return;}
+  pwSet(PW_STORE,pwHash(newV));
+  err.style.display='none';
+  ['pw-old','pw-new1','pw-new2'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  alert('✅ 비밀번호가 변경되었습니다.');
+  metaTab('title');
 }
 function changePW(){
   var oldV=prompt('현재 비밀번호:');if(!oldV)return;
@@ -3539,7 +3604,7 @@ function autoSync(){
 /* ===== GitHub 동기화 ===== */
 var GH_REPO='jiroonlee/portfolio';
 var GH_FILE='data.json';
-var GH_TOKEN_KEY='fp_gh_token';
+var GH_TOKEN_KEY='fp2_gh_token';
 function ghGetToken(){return sGet(GH_TOKEN_KEY)||'';}
 function ghSetToken(t){sSet(GH_TOKEN_KEY,t);}
 
@@ -3553,7 +3618,7 @@ function ghSaveAndSync(){
   ghSetToken(t);closeModal('gh-modal');ghPush();
 }
 function ghForcePull(){
-  closeModal('gh-modal');sSet('fp_last_save','0');
+  closeModal('gh-modal');sSet('fp2_last_save','0');
   var btn=document.getElementById('gh-btn');
   if(btn){btn.textContent='\ub85c\ub529...';btn.className='hbtn hbtn-sync syncing';}
   ghPull(true).then(function(ok){
@@ -3569,7 +3634,7 @@ async function ghPush(silent){
   if(btn&&!silent){btn.textContent='\uc5c5\ub85c\ub4dc...';btn.className='hbtn hbtn-sync syncing';}
   try{
     var snaps=loadSnaps();
-    var cl=[];try{cl=JSON.parse(sGet('fp_cl')||'[]');}catch(e){}
+    var cl=[];try{cl=JSON.parse(sGet('fp2_cl')||'[]');}catch(e){}
     var distData=distGet();
     var payload={v:7,saved:new Date().toISOString(),
       data:{accounts:ACCOUNTS,cma:CMA,crypto:CRYPTO,fx:{usd:FX.USD,jpy:FX.JPY},prices:PRICES},
@@ -3585,7 +3650,7 @@ async function ghPush(silent){
     if(sha) body.sha=sha;
     var r=await fetch(apiBase,{method:'PUT',headers:hdrs,body:JSON.stringify(body)});
     if(!r.ok){var err=await r.json();throw new Error(err.message||r.status);}
-    sSet('fp_last_save',payload.saved);
+    sSet('fp2_last_save',payload.saved);
     // 동기화 성공 시간 저장
     var syncEl=document.getElementById('upd');
     if(syncEl&&silent) syncEl.dataset.lastSync=new Date().toLocaleTimeString('ko-KR');
@@ -3614,7 +3679,7 @@ async function ghPull(force){
     }catch(de){decoded=decodeURIComponent(escape(atob(raw)));}
     var obj=JSON.parse(decoded);
     if(!obj||!obj.data||!obj.data.accounts) return false;
-    var localSaved=sGet('fp_last_save')||'0';
+    var localSaved=sGet('fp2_last_save')||'0';
     if(!force&&obj.saved&&obj.saved<=localSaved) return false;
     ACCOUNTS=obj.data.accounts;CMA=obj.data.cma;CRYPTO=obj.data.crypto;
     if(obj.data.fx){FX.USD=obj.data.fx.usd||FX.USD;FX.JPY=obj.data.fx.jpy||FX.JPY;}
@@ -3624,13 +3689,13 @@ async function ghPull(force){
       obj.snaps.forEach(function(s){map[s.date]=s;});
       sSet(SNAPKEY,JSON.stringify(Object.values(map).sort(function(a,b){return a.date<b.date?-1:1;})));
     }
-    if(obj.changelog&&obj.changelog.length) sSet('fp_cl',JSON.stringify(obj.changelog));
+    if(obj.changelog&&obj.changelog.length) sSet('fp2_cl',JSON.stringify(obj.changelog));
     sSet(SKEY,JSON.stringify({accounts:ACCOUNTS,cma:CMA,crypto:CRYPTO,fx:{usd:FX.USD,jpy:FX.JPY},prices:PRICES}));
-    if(obj.distData){sSet(DIST_KEY,JSON.stringify(obj.distData));sSet('fp_dist_ver','v3');}
-    if(obj.pensionData) sSet('fp_pension_v1',JSON.stringify(obj.pensionData));
-    if(obj.pensionStrategy) sSet('fp_pension_strategy',obj.pensionStrategy);
+    if(obj.distData){sSet(DIST_KEY,JSON.stringify(obj.distData));sSet('fp2_dist_ver','v3');}
+    if(obj.pensionData) sSet('fp2_pension_v1',JSON.stringify(obj.pensionData));
+    if(obj.pensionStrategy) sSet('fp2_pension_strategy',obj.pensionStrategy);
     if(obj.appMeta){ sSet(META_KEY,JSON.stringify(obj.appMeta)); }
-    sSet('fp_last_save',obj.saved||new Date().toISOString());
+    sSet('fp2_last_save',obj.saved||new Date().toISOString());
     return true;
   }catch(e){return false;}
 }
@@ -3640,25 +3705,26 @@ var _metaDragSrc = null;
 
 function metaTab(tab){
   _metaTabCur = tab;
-  ['title','acc','order'].forEach(function(t){
+  ['title','acc','order','manage','pw'].forEach(function(t){
     var btn=document.getElementById('meta-tab-'+t);
     var panel=document.getElementById('meta-panel-'+t);
     var active=(t===tab);
     if(btn){ btn.style.borderBottomColor=active?'var(--blu)':'transparent'; btn.style.color=active?'var(--blu)':'var(--tx2)'; btn.style.fontWeight=active?'700':'600'; }
     if(panel) panel.style.display=active?'block':'none';
   });
+  // 비밀번호 탭 열 때 입력 초기화
+  if(tab==='pw'){
+    ['pw-old','pw-new1','pw-new2'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+    var err=document.getElementById('pw-change-err'); if(err) err.style.display='none';
+  }
 }
 
 function openMetaEditor(){
-  // 제목 패널
   document.getElementById('meta-title').value = APP_META.title;
   document.getElementById('meta-sub').value = APP_META.sub;
-
-  // 계좌 정보 패널 렌더링
   _renderMetaAccList();
-  // 순서 패널 렌더링
   _renderMetaOrderList();
-  // 첫 탭 활성화
+  _renderMetaDelList();
   metaTab('title');
   openModal('meta-modal');
 }
@@ -3690,6 +3756,7 @@ function _renderMetaOrderList(){
   var el = document.getElementById('meta-order-list');
   if(!el) return;
   var html='';
+  // 순서 변경 가능한 연금 계좌들
   ACCOUNTS.forEach(function(acc, idx){
     var m = APP_META.accMeta[acc.id]||{};
     var dispName = m.name!==undefined ? m.name : acc.name;
@@ -3697,6 +3764,7 @@ function _renderMetaOrderList(){
       +'ondragstart="metaDragStart(event)" ondragover="metaDragOver(event)" ondrop="metaDrop(event)" ondragend="metaDragEnd(event)" '
       +'style="display:flex;align-items:center;gap:8px;border:1px solid var(--brd2);border-radius:8px;padding:9px 12px;margin-bottom:6px;background:#fff;cursor:grab;user-select:none;transition:box-shadow .15s">'
       +'<span style="color:var(--tx3);font-size:16px;cursor:grab">⠿</span>'
+      +'<span style="font-size:11px;padding:1px 5px;border-radius:3px;background:#dbeafe;color:#1e40af">연금</span>'
       +'<span style="flex:1;font-size:13px;font-weight:600">'+escH(dispName)+'</span>'
       +'<span style="font-size:10px;color:var(--tx3)">'+escH(acc.id)+'</span>'
       +'<div style="display:flex;flex-direction:column;gap:2px">'
@@ -3705,10 +3773,109 @@ function _renderMetaOrderList(){
       +'</div>'
       +'</div>';
   });
+  // CMA — nav 순서 내 위치 변경 가능 (cmaNavPos)
+  var cmaName = (APP_META.accMeta['__cma__']&&APP_META.accMeta['__cma__'].name) ? APP_META.accMeta['__cma__'].name : CMA.name;
+  html += '<div style="display:flex;align-items:center;gap:8px;border:1px solid #d1fae5;border-radius:8px;padding:9px 12px;margin-bottom:6px;background:#f0fdf4">'
+    +'<span style="font-size:16px;color:var(--tx3)">🟢</span>'
+    +'<span style="font-size:11px;padding:1px 5px;border-radius:3px;background:#d1fae5;color:#065f46">CMA</span>'
+    +'<span style="flex:1;font-size:13px;font-weight:600">'+escH(cmaName)+'</span>'
+    +'<span style="font-size:10px;color:var(--tx3)">고정 (연금 계좌 다음)</span>'
+    +'</div>';
+  // 가상화폐
+  html += '<div style="display:flex;align-items:center;gap:8px;border:1px solid #ede9fe;border-radius:8px;padding:9px 12px;margin-bottom:6px;background:#faf5ff">'
+    +'<span style="font-size:16px;color:var(--tx3)">🟣</span>'
+    +'<span style="font-size:11px;padding:1px 5px;border-radius:3px;background:#ede9fe;color:#5b21b6">가상화폐</span>'
+    +'<span style="flex:1;font-size:13px;font-weight:600">가상화폐</span>'
+    +'<span style="font-size:10px;color:var(--tx3)">고정 (CMA 다음)</span>'
+    +'</div>';
   el.innerHTML = html;
 }
 
-/* 버튼으로 순서 이동 - 모달 안 임시 ACCOUNTS 순서만 변경 */
+/* 삭제 목록 렌더 */
+function _renderMetaDelList(){
+  var el=document.getElementById('meta-del-list'); if(!el) return;
+  var html='';
+  ACCOUNTS.forEach(function(acc){
+    var m=APP_META.accMeta[acc.id]||{};
+    var name=m.name||acc.name;
+    html+='<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--brd2);border-radius:7px;margin-bottom:5px;background:#fff">'
+      +'<span style="flex:1;font-size:12px;font-weight:600">'+escH(name)+'</span>'
+      +'<span style="font-size:10px;color:var(--tx3)">'+escH(acc.id)+'</span>'
+      +'<button onclick="metaDeleteAccount(\''+acc.id+'\')" style="border:1px solid #fca5a5;background:#fee2e2;color:#dc2626;border-radius:5px;cursor:pointer;font-size:11px;padding:3px 9px;font-family:inherit">삭제</button>'
+      +'</div>';
+  });
+  if(!html) html='<div style="font-size:12px;color:var(--tx3);padding:10px">삭제 가능한 계좌가 없습니다.</div>';
+  el.innerHTML=html;
+}
+
+/* 연금 계좌 추가 */
+function metaAddAccount(){
+  var id=(document.getElementById('new-acc-id').value||'').trim().toLowerCase();
+  var name=(document.getElementById('new-acc-name').value||'').trim();
+  var date=(document.getElementById('new-acc-date').value||'').trim();
+  var note=(document.getElementById('new-acc-note').value||'').trim();
+  if(!id||!name){alert('계좌 ID와 계좌명을 입력하세요.');return;}
+  if(!/^[a-z0-9\-_]+$/.test(id)){alert('계좌 ID는 영문 소문자, 숫자, -, _ 만 사용 가능합니다.');return;}
+  if(ACCOUNTS.find(function(a){return a.id===id;})){alert('이미 존재하는 계좌 ID입니다: '+id);return;}
+  ACCOUNTS.push({
+    id:id, name:name, openDate:date||'', note:note||'',
+    accDep:0, depositsYr:0, accWit:0, withdrawalsYr:0,
+    extraLabel:'', extraVal:0, annualDistRate:0,
+    holdings:[]
+  });
+  // pg div 생성
+  if(!document.getElementById('pg-'+id)){
+    var pgDiv=document.createElement('div');
+    pgDiv.className='page'; pgDiv.id='pg-'+id;
+    document.getElementById('pg-overview').parentNode.appendChild(pgDiv);
+  }
+  // 입력 초기화
+  ['new-acc-id','new-acc-name','new-acc-date','new-acc-note'].forEach(function(eid){
+    var el=document.getElementById(eid); if(el) el.value='';
+  });
+  _renderMetaAccList();
+  _renderMetaOrderList();
+  _renderMetaDelList();
+  renderNav();
+  alert('✅ 계좌 "'+name+'" 이(가) 추가되었습니다.\n저장 버튼을 눌러 최종 반영하세요.');
+}
+
+/* CMA 계좌명 변경 */
+function metaRenameCMA(){
+  var name=(document.getElementById('new-cma-name').value||'').trim();
+  if(!name){alert('계좌명을 입력하세요.');return;}
+  CMA.name=name;
+  if(!APP_META.accMeta['__cma__']) APP_META.accMeta['__cma__']={};
+  APP_META.accMeta['__cma__'].name=name;
+  document.getElementById('new-cma-name').value='';
+  _renderMetaAccList();
+  _renderMetaOrderList();
+  renderNav();
+  alert('✅ CMA 계좌명이 "'+name+'"(으)로 변경되었습니다.');
+}
+
+/* 계좌 삭제 */
+function metaDeleteAccount(id){
+  var acc=ACCOUNTS.find(function(a){return a.id===id;});
+  if(!acc) return;
+  var m=APP_META.accMeta[id]||{};
+  var name=m.name||acc.name;
+  if(!confirm('⚠️ "'+name+'" 계좌를 삭제합니까?\n\n이 계좌의 모든 종목('+acc.holdings.length+'개) 데이터가 사라집니다.\n이 작업은 되돌릴 수 없습니다.')) return;
+  ACCOUNTS=ACCOUNTS.filter(function(a){return a.id!==id;});
+  delete APP_META.accMeta[id];
+  // pg div 숨기기
+  var pg=document.getElementById('pg-'+id);
+  if(pg) pg.remove();
+  _renderMetaAccList();
+  _renderMetaOrderList();
+  _renderMetaDelList();
+  renderNav();
+  // 현재 페이지가 삭제된 계좌면 overview로 이동
+  if(typeof curPage!=='undefined' && curPage===id) go('overview');
+  alert('✅ "'+name+'" 계좌가 삭제되었습니다.\n저장 버튼을 눌러 최종 반영하세요.');
+}
+
+/* 버튼으로 순서 이동 */
 function metaOrderMove(id, dir){
   var idx = ACCOUNTS.findIndex(function(a){return a.id===id;});
   if(idx<0) return;
@@ -3819,9 +3986,9 @@ function startApp(){
   try{migrateTickers();}catch(e){}
   // 월별 분배금 데이터 (버전 v3 강제 업데이트)
   (function(){
-    if(sGet('fp_dist_ver')!=='v3'){
+    if(sGet('fp2_dist_ver')!=='v3'){
       sSet(DIST_KEY,"{\"y2023\":{\"m1\":0,\"m2\":2550,\"m3\":105014,\"m4\":87014,\"m5\":170537,\"m6\":289496,\"m7\":1071701,\"m8\":641299,\"m9\":1566065,\"m10\":1584347,\"m11\":1773076,\"m12\":2200277},\"y2024\":{\"m1\":6103826,\"m2\":5310958,\"m3\":4728500,\"m4\":4704000,\"m5\":4851000,\"m6\":4851000,\"m7\":4851000,\"m8\":4851000,\"m9\":4851000,\"m10\":4851000,\"m11\":4851000,\"m12\":4851000},\"y2025\":{\"m1\":3791571,\"m2\":5539175,\"m3\":4925236,\"m4\":4608313,\"m5\":4345458,\"m6\":5311764,\"m7\":5601346,\"m8\":5548515,\"m9\":5260115,\"m10\":5458915,\"m11\":5757331,\"m12\":5404500},\"y2026\":{\"m1\":6103826,\"m2\":5310958,\"m3\":4728500,\"m4\":4704000}}");
-      sSet('fp_dist_ver','v3');
+      sSet('fp2_dist_ver','v3');
     }
   })();
 
