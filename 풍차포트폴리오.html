@@ -282,6 +282,36 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
     </div>
   </div>
 </div>
+<!-- ── 자산변동 개별삭제 확인 모달 ── -->
+<div class="moverlay" id="snap-one-del-modal">
+  <div class="modal" style="width:320px">
+    <h3 style="color:#dc2626">🗑 기록 삭제</h3>
+    <p id="snap-one-del-msg" style="font-size:13px;color:#374151;margin:8px 0 14px"></p>
+    <input type="hidden" id="snap-one-del-ts">
+    <div class="mbtns">
+      <button class="mbtn mbtn-cancel" onclick="closeModal('snap-one-del-modal')">취소</button>
+      <button class="mbtn" style="background:#dc2626;color:#fff;border-color:#dc2626" onclick="snapOneDelConfirm()">삭제</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── 자산변동 전체삭제 확인 모달 ── -->
+<div class="moverlay" id="snap-del-modal">
+  <div class="modal" style="width:360px">
+    <h3 style="color:#dc2626">🗑 이력 전체삭제</h3>
+    <p id="snap-del-msg" style="font-size:13px;color:#374151;margin:8px 0 14px"></p>
+    <div id="snap-del-pw-wrap" style="display:none;margin-bottom:12px">
+      <div class="mlbl">비밀번호 확인</div>
+      <input class="minp" id="snap-del-pw" type="password" placeholder="비밀번호 입력">
+      <div id="snap-del-err" style="display:none;color:#dc2626;font-size:12px;margin-top:4px"></div>
+    </div>
+    <div class="mbtns">
+      <button class="mbtn mbtn-cancel" onclick="closeModal('snap-del-modal')">취소</button>
+      <button class="mbtn" style="background:#dc2626;color:#fff;border-color:#dc2626" onclick="snapDelConfirm()">전체삭제</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── 종목 상세/수정 모달 ── -->
 <div class="moverlay" id="holding-detail-modal">
   <div class="modal" style="width:480px">
@@ -2584,7 +2614,7 @@ async function drawHChart(){
       +'<td style="white-space:nowrap">'+Math.round(d.cur).toLocaleString('ko-KR')+'\uc6d0</td>'
       +'<td class="'+pc(chgAmt)+'" style="white-space:nowrap">'+(prevCur>0?(chgAmt>=0?'+':'')+Math.round(chgAmt).toLocaleString('ko-KR')+'\uc6d0':'-')+'</td>'
       +'<td class="'+pc(chgRate)+'" style="white-space:nowrap">'+(prevCur>0?(chgRate>=0?'+':'')+chgRate.toFixed(2)+'%':'-')+'</td>'
-      +'<td style="text-align:left;width:100%"><input class="ed" style="width:100%;min-width:80px;font-size:11px;box-sizing:border-box;text-align:left" value="'+noteEsc+'"'
+      +'<td style="text-align:left;width:100%;background:#fff"><input class="ed" style="width:100%;min-width:80px;font-size:11px;box-sizing:border-box;text-align:left;background:#fff" value="'+noteEsc+'"'
         +' onchange="saveSnapNote(\''+tsEsc+'\',this.value)"'
         +' onfocus="this.style.background=\'#fffbeb\'"'
         +' onblur="this.style.background=\'\'"></td>'
@@ -2642,15 +2672,21 @@ function deleteSnap(ts){
   var snaps=loadSnaps();
   var target=snaps.find(function(s){return s.ts===ts;});
   var label=target?(target.date||new Date(ts).toLocaleDateString('ko-KR')):'해당 기록';
-  if(!confirm('"'+label+'" 기록을 삭제할까요?')) return;
-  // localStorage에서 제거
+  var msg=document.getElementById('snap-one-del-msg');
+  var tsInp=document.getElementById('snap-one-del-ts');
+  if(msg) msg.textContent='"'+label+'" 기록을 삭제할까요?';
+  if(tsInp) tsInp.value=ts;
+  openModal('snap-one-del-modal');
+}
+function snapOneDelConfirm(){
+  var ts=document.getElementById('snap-one-del-ts').value;
   var stored;try{stored=JSON.parse(sGet(SNAPKEY)||'[]');}catch(e){stored=[];}
   stored=stored.filter(function(s){return s.ts!==ts;});
   sSet(SNAPKEY,JSON.stringify(stored));
-  // 삭제 목록에 추가 (HIST_SNAPS 포함 차단)
   var deleted;try{deleted=JSON.parse(sGet(SNAP_DEL_KEY)||'[]');}catch(e){deleted=[];}
   if(deleted.indexOf(ts)<0) deleted.push(ts);
   sSet(SNAP_DEL_KEY,JSON.stringify(deleted));
+  closeModal('snap-one-del-modal');
   autoSync();
   renderHistory();
 }
@@ -2658,12 +2694,29 @@ function deleteSnap(ts){
 function deleteAllSnaps(){
   var snaps=loadSnaps();
   if(!snaps.length){alert('삭제할 이력이 없습니다.');return;}
-  if(!confirm('자산변동 이력 전체('+snaps.length+'건)를 삭제할까요?\n\n이 작업은 되돌릴 수 없습니다.')) return;
-  // localStorage 스냅 전체 제거
+  var hasPw=!!pwGet(PW_STORE);
+  var msg=document.getElementById('snap-del-msg');
+  var pwWrap=document.getElementById('snap-del-pw-wrap');
+  var pwInp=document.getElementById('snap-del-pw');
+  var err=document.getElementById('snap-del-err');
+  if(msg) msg.textContent='자산변동 이력 전체 '+snaps.length+'건을 삭제합니다.\n이 작업은 되돌릴 수 없습니다.';
+  if(pwWrap) pwWrap.style.display=hasPw?'block':'none';
+  if(pwInp) pwInp.value='';
+  if(err) err.style.display='none';
+  openModal('snap-del-modal');
+}
+function snapDelConfirm(){
+  var hasPw=!!pwGet(PW_STORE);
+  if(hasPw){
+    var pw=(document.getElementById('snap-del-pw').value||'').trim();
+    var err=document.getElementById('snap-del-err');
+    if(!pw){if(err){err.textContent='비밀번호를 입력하세요.';err.style.display='block';}return;}
+    if(pwHash(pw)!==pwGet(PW_STORE)){if(err){err.textContent='❌ 비밀번호가 올바르지 않습니다.';err.style.display='block';}return;}
+  }
   sSet(SNAPKEY,'[]');
-  // HIST_SNAPS 전체를 삭제 목록에 등록
   var allTs=HIST_SNAPS.map(function(h){return h.ts;});
   sSet(SNAP_DEL_KEY,JSON.stringify(allTs));
+  closeModal('snap-del-modal');
   autoSync();
   renderHistory();
 }
