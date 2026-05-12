@@ -44,17 +44,61 @@ body{font-family:'Malgun Gothic',-apple-system,sans-serif;font-size:12px;backgro
 .ival.pos{color:var(--grn)}.ival.neg{color:var(--red)}.ival.blu{color:var(--blu)}.ival.grn{color:var(--grn)}.ival.pur{color:var(--pur)}
 .iedit{border:1px solid var(--brd);border-radius:4px;padding:3px 6px;font-size:12px;font-family:inherit;color:var(--tx);background:#fff;width:100%;margin-top:2px}
 .iedit:focus{outline:none;border-color:var(--blu)}
-.twrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:12px}
-th{padding:4px 5px;text-align:right;font-size:10px;color:var(--tx2);font-weight:700;background:#f8fafc;border-bottom:1px solid var(--brd);white-space:nowrap}
+.twrap{overflow-x:auto;position:relative}
+/* ── 분할 테이블: 고정열(왼쪽) + 스크롤열(오른쪽) ── */
+.twrap-split{display:flex;align-items:flex-start;overflow:hidden;}
+.twrap-fixed{flex-shrink:0;overflow:hidden;z-index:1;}
+.twrap-fixed table{width:auto;}
+.twrap-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;flex:1;min-width:0;}
+.twrap-scroll table{width:max-content;min-width:100%;}
+/* 두 테이블의 행 높이를 동기화 */
+.twrap-fixed table,.twrap-scroll table{
+  border-collapse:separate;border-spacing:0;font-size:12px;table-layout:fixed;
+}
+/* ── 이동버튼+종목명 셀을 하나처럼 표시 ── */
+.has-order table td:first-child,
+.has-order table th:first-child{
+  padding-right:0;
+}
+.has-order table td:nth-child(2),
+.has-order table th:nth-child(2){
+  padding-left:2px;
+}
+/* ── 테이블 기본 디자인 ── */
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:12px}
+th{
+  padding:6px 8px;text-align:right;font-size:10px;
+  color:#4b5563;font-weight:700;
+  background:#f1f5f9;
+  border:none;
+  box-shadow:inset 0 -2px 0 #d1d9e0;
+  white-space:nowrap;letter-spacing:.02em;
+}
+th:after{display:none}
 th:first-child{text-align:left}
-td{padding:4px 5px;border-bottom:1px solid var(--brd2);text-align:right;white-space:nowrap;vertical-align:middle}
+td{
+  padding:5px 8px;
+  border:none;
+  box-shadow:inset 0 -1px 0 #f0f2f5;
+  text-align:right;white-space:nowrap;vertical-align:middle;
+  color:#1a1d23;background:#fff;
+}
 td:first-child{text-align:left}
-tr:last-child td{border-bottom:none}
-tr:hover:not(.trow):not(.nrow):not(.xhdr) td{background:#f8fafc}
-.trow td{background:#eff6ff;font-weight:700;border-top:2px solid var(--brd)}
-.nrow td{background:#fffbf0;color:#92400e;font-size:11px;text-align:left;padding:5px 9px}
-.xhdr td{background:var(--gbg);font-size:11px;font-weight:700;color:var(--tx2);text-align:left;padding:5px 9px;border-bottom:1px solid var(--brd)}
+tr:last-child td{box-shadow:none;}
+tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
+  background:#f0f6ff;transition:background .12s;
+}
+.trow td{
+  background:#e8f0fe;font-weight:700;
+  color:#1e3a8a;border:none;
+  box-shadow:inset 0 2px 0 #93c5fd;
+}
+.nrow td{background:#fffbf0;color:#92400e;font-size:11px;text-align:left;padding:5px 9px;border:none;box-shadow:none}
+.xhdr td{
+  background:#f1f5f9;font-size:11px;font-weight:700;
+  color:#64748b;text-align:left;padding:5px 9px;
+  border:none;box-shadow:inset 0 -1px 0 #d1d9e0;
+}
 .pos{color:var(--grn);font-weight:600}.neg{color:var(--red);font-weight:600}
 .tname{font-weight:600;line-height:1.4}.tsub{font-size:10px;color:var(--tx2);margin-top:1px}
 .ed{background:transparent;border:1px solid transparent;border-radius:3px;padding:1px 3px;text-align:right;font-family:inherit;font-size:11px;color:inherit;cursor:text}
@@ -100,29 +144,11 @@ tr:hover:not(.trow):not(.nrow):not(.xhdr) td{background:#f8fafc}
 .mbtn-ok{background:var(--blu);color:#fff;border-color:var(--blu)}
 .mbtn-cancel{background:#fff;color:var(--tx2)}
 .mgrid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-/* ── 테이블 첫 열 고정 (모바일에서 종목명 항상 보임) ── */
+/* ── 테이블 첫 열 고정 (모바일) ── */
 @media(max-width:768px){
   #dist-dashboard table{min-width:360px !important;}
   #dist-dashboard input{font-size:9px !important;padding:1px !important;}
   #dist-dashboard th{font-size:9px !important;padding:2px 1px !important;}
-  /* 이동버튼 없는 테이블: 종목명(1번째) 고정 */
-  table td:first-child, table th:first-child{
-    position:sticky;left:0;background:#fff;z-index:2;
-  }
-  table th:first-child{background:#f8fafc;}
-  /* 이동버튼 있는 테이블: 버튼(1번째)+종목명(2번째) 함께 고정 */
-  .has-order table td:nth-child(2),
-  .has-order table th:nth-child(2){
-    position:sticky;left:22px;background:#fff;z-index:2;
-    box-shadow:2px 0 4px rgba(0,0,0,.06);
-  }
-  .has-order table th:nth-child(2){background:#f8fafc;}
-  /* trow(합계행) 배경 */
-  table tr.trow td:first-child{background:#eff6ff;}
-  .has-order table tr.trow td:nth-child(2){background:#eff6ff;}
-  /* xhdr(구분행) 배경 */
-  table tr.xhdr td:first-child{background:var(--gbg);}
-  .has-order table tr.xhdr td:nth-child(2){background:var(--gbg);}
   /* 하단 모바일 퀵메뉴 */
   #mob-bar{
     display:none;
@@ -189,6 +215,35 @@ tr:hover:not(.trow):not(.nrow):not(.xhdr) td{background:#f8fafc}
   .sval{font-size:12px;}
   th,td{padding:3px 4px;font-size:10px;}
   .hbtn{padding:4px 7px;font-size:10px;}
+}
+/* ── 모바일 테이블 ── */
+@media(max-width:768px){
+  /* 이동버튼+종목명 간격 제거 */
+  .has-order table td:first-child,
+  .has-order table th:first-child{padding-right:0;}
+  .has-order table td:nth-child(2),
+  .has-order table th:nth-child(2){padding-left:2px;}
+  table{border-collapse:separate;border-spacing:0;}
+  table td{
+    background:#fff;border:none;
+    box-shadow:inset 0 -1px 0 #f0f2f5;
+    padding:5px 6px;
+  }
+  table th{
+    background:#f1f5f9;border:none;
+    box-shadow:inset 0 -2px 0 #d1d9e0;
+    padding:5px 6px;font-size:10px;
+  }
+  tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{background:#f0f6ff;}
+  tr.trow td{
+    background:#e8f0fe;border:none;
+    box-shadow:inset 0 2px 0 #93c5fd;
+  }
+  tr.xhdr td{
+    background:#f1f5f9;border:none;
+    box-shadow:inset 0 -1px 0 #d1d9e0;
+  }
+  tr:last-child td{box-shadow:none;}
 }
 .meta-order-item:hover{box-shadow:0 2px 8px rgba(0,0,0,.1);}
 .meta-order-item[draggable="true"]:active{cursor:grabbing;}
@@ -1378,14 +1433,14 @@ function renderPension(){
 
   var LIMIT15M=15000000;
 
-  // 스타일 헬퍼
-  var brd='border:1px solid var(--brd);';
-  var lblBase=brd+'padding:6px 9px;font-size:12px;font-weight:600;background:var(--gbg);';
-  var lblSub=brd+'padding:6px 9px 6px 20px;font-size:11px;font-weight:400;background:var(--gbg);';
-  var cellN=brd+'padding:6px 9px;text-align:right;font-size:12px;color:#111;';
-  var cellC=brd+'padding:6px 9px;text-align:center;font-size:12px;color:#111;';
-  var hdSt=brd+'padding:8px 9px;text-align:center;font-size:11px;font-weight:700;background:#1e3a5f;color:#fff;';
-  var sumSt=brd+'padding:6px 9px;text-align:right;font-size:12px;font-weight:700;color:var(--blu);';
+  // 스타일 헬퍼 — 공통 테이블 CSS 활용 (border 제거, box-shadow 방식)
+  var brd='';
+  var lblBase='font-weight:600;background:#f1f5f9;text-align:left;';
+  var lblSub='font-weight:400;background:#f8fafc;text-align:left;padding-left:18px;color:#4b5563;font-size:11px;';
+  var cellN='text-align:right;';
+  var cellC='text-align:center;';
+  var hdSt='text-align:center;font-size:11px;font-weight:700;background:#1e3a5f;color:#fff;padding:7px 8px;';
+  var sumSt='text-align:right;font-weight:700;color:var(--blu);background:#e8f0fe;';
 
   function n(v,extra){
     if(v==null||v===0) return '<td style="'+cellN+(extra||'')+'">' + '-</td>';
@@ -1397,7 +1452,7 @@ function renderPension(){
   }
   function editableCell(key,id,val,bold){
     var v=val!=null?Math.round(val):'';
-    return '<td style="'+brd+'padding:3px 6px;">'
+    return '<td style="padding:3px 6px;">'
       +'<input class="ed" style="width:100%;text-align:right;font-size:12px;'+(bold?'font-weight:700;':'')+'color:var(--blu)"'
       +' value="'+v+'" placeholder="-"'
       +' onchange="pensionEdit(\''+key+'\',\''+id+'\',this.value)"></td>';
@@ -1406,7 +1461,7 @@ function renderPension(){
     if(c.yr==null) return '<td style="'+cellC+'color:var(--tx3)">미개시</td>';
     var isCustom=saved['limit_'+c.p.id]!=null;
     var v=c.limitVal!=null?Math.round(c.limitVal):'';
-    return '<td style="'+brd+'padding:3px 6px;">'
+    return '<td style="padding:3px 6px;">'
       +'<input class="ed" style="width:100%;text-align:right;font-size:12px;font-weight:700;color:'+(isCustom?'var(--red)':'#111')+'"'
       +' value="'+v+'" placeholder="자동계산"'
       +' title="'+(c.limitAuto!=null?'자동: '+fmt(Math.round(c.limitAuto)):'')+'"'
@@ -1437,7 +1492,7 @@ function renderPension(){
     +'<th style="'+hdSt+'background:#0f2340;">합계</th>'
     +'</tr></thead>';
 
-  function sep(){return '<tr><td colspan="6" style="height:5px;background:var(--gbg);'+brd+'"></td></tr>';}
+  function sep(){return '<tr class="xhdr"><td colspan="6"> </td></tr>';}
 
   var tbody='<tbody>'
     // ── 기본 정보 ──
@@ -1484,7 +1539,7 @@ function renderPension(){
     // ── 한도포함금액 ──
     +'<tr><td style="'+lblBase+'font-size:11px;background:#fff3cd;">사적연금분리과세기준<br>포함금액 <span style="font-size:9px;font-weight:400">(통합 1,500만원)</span></td>'
       +cols.map(function(c){return editableCell('incl',c.p.id,c.inclLimit,true);}).join('')
-      +'<td style="'+brd+'padding:6px 9px;text-align:right;font-size:12px;font-weight:700;background:#fff3cd;'+(sumIncl>LIMIT15M?'color:var(--red)':'color:var(--blu)')+';">'
+      +'<td style="text-align:right;font-size:12px;font-weight:700;background:#fff3cd;'+(sumIncl>LIMIT15M?'color:var(--red)':'color:var(--blu)')+';">'
         +fmt(sumIncl)+(sumIncl>LIMIT15M?'<br><span style="font-size:9px;font-weight:400">⚠ 한도초과</span>':'')
       +'</td></tr>'
     +'</tbody>';
@@ -1505,7 +1560,7 @@ function renderPension(){
 
   pg.innerHTML='<div class="sec"><div class="sechdr"><span class="sectitle">사적연금 통합관리</span>'
     +'<span class="secsub">4개 계좌 · 데이터 자동 연동</span></div>'
-    +'<div class="twrap" style="padding:0 13px 6px"><table style="width:100%;border-collapse:collapse;min-width:680px;">'
+    +'<div class="twrap" style="padding:0 13px 6px"><table style="width:100%;min-width:560px;">'
     +hdRow+tbody+'</table></div>'+noteHTML+'</div>'+strategyHTML;
 }
 
@@ -1560,7 +1615,7 @@ function renderKR(acc, cid) {
     var qid = cid + '_' + i;
     var row = '<tr>';
     // 순서이동 버튼
-    row += '<td style="width:22px;text-align:center;padding:2px 1px">'
+    row += '<td style="width:18px;text-align:center;padding:2px 0">'
          + '<div style="display:flex;flex-direction:column;gap:1px">'
          + '<button onclick="moveHolding(\''+id+'\','+i+',-1)" style="border:1px solid var(--brd);background:#fff;border-radius:2px;cursor:pointer;font-size:9px;padding:0 3px;line-height:1.4;color:var(--tx2)">▲</button>'
          + '<button onclick="moveHolding(\''+id+'\','+i+',1)" style="border:1px solid var(--brd);background:#fff;border-radius:2px;cursor:pointer;font-size:9px;padding:0 3px;line-height:1.4;color:var(--tx2)">▼</button>'
@@ -1636,8 +1691,8 @@ function renderKR(acc, cid) {
   if (acc.extraLabel) html += mkIE(acc.extraLabel+'(\uc6d0)', acc.extraVal||0, id, 'extraVal');
   html += '</div></div>';
   html += '<div class="twrap has-order"><table><thead><tr>';
-  html += '<th style="width:22px;text-align:center;padding:2px 1px;background:#f8fafc"></th>';
-  html += '<th style="text-align:left;min-width:130px;background:#f8fafc">\uc885\ubaa9\uba85</th>';
+  html += '<th style="width:18px;text-align:center;padding:2px 0;background:#f1f5f9"></th>';
+  html += '<th style="text-align:left;min-width:130px;background:#f1f5f9">\uc885\ubaa9\uba85</th>';
   html += '<th>\uc218\ub7c9</th>';
   html += '<th>\ubd84\ubc30\uae08</th>';
   html += '<th>\ub9e4\uc785\ub2e8\uac00</th><th>\ud604\uc7ac\uac00</th><th>\uc804\uace0\uc810</th>';
@@ -1889,7 +1944,7 @@ function renderCMA(){
       :'<input class="ed" style="width:68px" value="'+buyFX.toFixed(2)+'" onchange="setCH('+i+',\'avgFX\',this.value)" placeholder="\ub9e4\uc785\ud658\uc728">';
     if(h.isRP){
       return '<tr>'
-        +'<td style="width:22px;text-align:center;padding:2px 1px"><div style="display:flex;flex-direction:column;gap:1px">'
+        +'<td style="width:18px;text-align:center;padding:2px 0"><div style="display:flex;flex-direction:column;gap:1px">'
         +'<button onclick="moveCMAHolding('+i+',-1)" style="border:1px solid var(--brd);background:#fff;border-radius:2px;cursor:pointer;font-size:9px;padding:0 3px;line-height:1.4;color:var(--tx2)">▲</button>'
         +'<button onclick="moveCMAHolding('+i+',1)" style="border:1px solid var(--brd);background:#fff;border-radius:2px;cursor:pointer;font-size:9px;padding:0 3px;line-height:1.4;color:var(--tx2)">▼</button>'
         +'</div></td>'
@@ -1907,7 +1962,7 @@ function renderCMA(){
         +'</tr>';
     }
     return '<tr>'
-      +'<td style="width:22px;text-align:center;padding:2px 1px"><div style="display:flex;flex-direction:column;gap:1px">'
+      +'<td style="width:18px;text-align:center;padding:2px 0"><div style="display:flex;flex-direction:column;gap:1px">'
       +'<button onclick="moveCMAHolding('+i+',-1)" style="border:1px solid var(--brd);background:#fff;border-radius:2px;cursor:pointer;font-size:9px;padding:0 3px;line-height:1.4;color:var(--tx2)">▲</button>'
       +'<button onclick="moveCMAHolding('+i+',1)" style="border:1px solid var(--brd);background:#fff;border-radius:2px;cursor:pointer;font-size:9px;padding:0 3px;line-height:1.4;color:var(--tx2)">▼</button>'
       +'</div></td>'
@@ -1952,8 +2007,8 @@ function renderCMA(){
     ibox('\uc218\uc775\ub960(\uc2e4\ub0a9\uc785\ub300\ube44)',fmtPct(pnlReal),pc(pnlReal)),
     '</div></div>',
     '<div class="twrap has-order"><table><thead><tr>',
-    '<th style="width:22px;text-align:center;padding:2px 1px;background:#f8fafc"></th>',
-    '<th style="text-align:left;min-width:150px;background:#f8fafc">\uc885\ubaa9\uba85</th>',
+    '<th style="width:18px;text-align:center;padding:2px 0;background:#f1f5f9"></th>',
+    '<th style="text-align:left;min-width:150px;background:#f1f5f9">\uc885\ubaa9\uba85</th>',
     '<th>\uc218\ub7c9</th><th>\ub9e4\uc785\ub2e8\uac00(\ud604\uc9c0)</th><th>\ub9e4\uc785\ud658\uc728</th><th>\uc804\uace0\uc810</th><th>\ud604\uc7ac\uac00(\ud604\uc9c0)</th>',
     '<th>\ub9e4\uc785\ucd1d\uc561(\uc6d0)</th>',
     '<th>\ud604\uc7ac\ucd1d\uc561(\uc6d0)</th>',
@@ -2034,7 +2089,7 @@ function renderCrypto(force){
       var cfn=ex==='B'?'setCB('+i+',\'cost\',this.value)':'setCU('+i+',\'cost\',this.value)';
       var pfn=ex==='B'?'setCB('+i+',\'price\',this.value)':'setCU('+i+',\'price\',this.value)';
       return '<tr>'
-        +'<td style="width:22px;text-align:center;padding:2px 1px"><div style="display:flex;flex-direction:column;gap:1px">'
+        +'<td style="width:18px;text-align:center;padding:2px 0"><div style="display:flex;flex-direction:column;gap:1px">'
         +'<button onclick="moveCryptoHolding(\''+ex+'\','+i+',-1)" style="border:1px solid var(--brd);background:#fff;border-radius:2px;cursor:pointer;font-size:9px;padding:0 3px;line-height:1.4;color:var(--tx2)">▲</button>'
         +'<button onclick="moveCryptoHolding(\''+ex+'\','+i+',1)" style="border:1px solid var(--brd);background:#fff;border-radius:2px;cursor:pointer;font-size:9px;padding:0 3px;line-height:1.4;color:var(--tx2)">▼</button>'
         +'</div></td>'
@@ -2077,8 +2132,8 @@ function renderCrypto(force){
     '<button class="btn btn-add" style="margin-left:auto;padding:3px 9px;font-size:11px" onclick="openModal(\'add-crypto-modal\')">&plus; \ucf54\uc778 \ucd94\uac00</button>',
     '</div>',
     '<div class="twrap has-order"><table><thead><tr>',
-    '<th style="width:22px;text-align:center;padding:2px 1px;background:#f8fafc"></th>',
-    '<th style="text-align:left;min-width:160px;background:#f8fafc">\uc885\ubaa9\uba85</th>',
+    '<th style="width:18px;text-align:center;padding:2px 0;background:#f1f5f9"></th>',
+    '<th style="text-align:left;min-width:160px;background:#f1f5f9">\uc885\ubaa9\uba85</th>',
     '<th>\uc2a4\ud14c\uc774\ud0b9</th>',
     '<th>\uc218\ub7c9</th>',
     '<th>\ub9e4\uc785\ub2e8\uac00</th>',
@@ -2167,7 +2222,7 @@ function renderHoldings(){
     var wtBar='<div style="background:var(--gbg);border-radius:2px;height:4px;margin-top:3px">'
       +'<div style="background:var(--blu);width:'+Math.min(100,wt).toFixed(1)+'%;height:4px;border-radius:2px"></div></div>';
     return '<tr>'
-      +'<td style="text-align:left;position:sticky;left:0;background:#fff;z-index:2;box-shadow:2px 0 4px rgba(0,0,0,.06)">'
+      +'<td style="text-align:left;position:sticky;left:0;background:#fff;z-index:2">'
         +'<div style="font-weight:600;font-size:12px;line-height:1.4">'+r.n+'</div>'
         +(r.tk?'<div style="font-size:9px;color:var(--tx3)">'+r.tk+'</div>':'')
       +'</td>'
@@ -2204,7 +2259,7 @@ function renderHoldings(){
     '<div class="twrap" style="padding:0 8px 12px">',
     '<table style="table-layout:auto;width:100%;min-width:680px">',
     '<thead><tr>',
-    '<th style="text-align:left;min-width:130px;position:sticky;left:0;background:#f8fafc;z-index:3">\uc885\ubaa9\uba85</th>',
+    '<th style="text-align:left;min-width:130px;position:sticky;left:0;background:#f1f5f9;z-index:3">\uc885\ubaa9\uba85</th>',
     '<th style="text-align:right;width:68px">\ud569\uacc4\uc218\ub7c9</th>',
     '<th style="text-align:right;width:90px">\ud3c9\uade0\ub9e4\uc785\ub2e8\uac00</th>',
     '<th style="text-align:right;width:80px">\ud604\uc7ac\uac00</th>',
@@ -2216,7 +2271,7 @@ function renderHoldings(){
     '</tr></thead>',
     '<tbody>'+tableRows+'</tbody>',
     '<tr class="trow">',
-    '<td style="position:sticky;left:0;background:#eff6ff;z-index:2">\uc804\uccb4 \ud569\uacc4</td>',
+    '<td style="position:sticky;left:0;background:#e8f0fe;z-index:2">\uc804\uccb4 \ud569\uacc4</td>',
     '<td colspan="2"></td>',
     '<td style="text-align:right">'+fmt(Math.round(gCost))+'</td>',
     '<td style="text-align:right;font-weight:700">'+fmt(Math.round(totalCur))+'</td>',
@@ -2391,7 +2446,7 @@ async function drawHChart(){
       +'<td class="'+pc(chgAmt)+'" style="white-space:nowrap">'+(prevCur>0?(chgAmt>=0?'+':'')+Math.round(chgAmt).toLocaleString('ko-KR')+'\uc6d0':'-')+'</td>'
       +'<td class="'+pc(chgRate)+'" style="white-space:nowrap">'+(prevCur>0?(chgRate>=0?'+':'')+chgRate.toFixed(2)+'%':'-')+'</td>'
 
-      +'<td style="width:100%"><input class="ed" style="width:100%;min-width:80px;font-size:11px;box-sizing:border-box;text-align:left" value="'+noteEsc+'"'
+      +'<td style="text-align:left;width:100%"><input class="ed" style="width:100%;min-width:80px;font-size:11px;box-sizing:border-box;text-align:left" value="'+noteEsc+'"'
         +' onchange="saveSnapNote(\''+tsEsc+'\',this.value)"'
         +' onfocus="this.style.background=\'#fffbeb\'"'
         +' onblur="this.style.background=\'\'"></td>'
@@ -2407,15 +2462,13 @@ async function drawHChart(){
     '<div class="hist-card"><div class="slbl">\uae30\uac04 \ucd5c\uc800</div><div class="sval" style="font-size:13px;color:var(--red)">'+fmt(minCur)+'\uc6d0</div></div>',
     '</div>',
     '<div class="twrap" style="padding:0 13px 13px">',
-    '<table style="table-layout:fixed;width:100%">',
-    '<colgroup><col style="width:80px"><col style="width:120px"><col style="width:120px"><col style="width:75px"><col></colgroup>',
+    '<table style="table-layout:auto;width:100%">',
     '<thead><tr>'
-      +'<th style="text-align:left">\uae30\uac04</th>'
-      +'<th>\ud3c9\uac00\uc561</th>'
-      +'<th>\ubcc0\ub3d9\uc561(\uc804\uae30\ub300\ube44)</th>'
-      +'<th>\ubcc0\ub3d9\ub960</th>'
-
-      +'<th style="text-align:left">\ube44\uace0</th>'
+      +'<th style="text-align:left;white-space:nowrap">\uae30\uac04</th>'
+      +'<th style="white-space:nowrap">\ud3c9\uac00\uc561</th>'
+      +'<th style="white-space:nowrap">\ubcc0\ub3d9\uc561(\uc804\uae30\ub300\ube44)</th>'
+      +'<th style="white-space:nowrap">\ubcc0\ub3d9\ub960</th>'
+      +'<th style="text-align:left;width:100%">\ube44\uace0</th>'
     +'</tr></thead>',
     '<tbody>'+tableRows+'</tbody></table></div>'
   ].join('');
@@ -2470,9 +2523,88 @@ function delCL(id){if(!confirm('\uc0ad\uc81c\ud560\uae4c\uc694?'))return;var l=l
 function clearCL(){if(!confirm('\uc804\uccb4 \uc0ad\uc81c\ud560\uae4c\uc694?'))return;sSet(CLKEY,'[]');renderChangelog();}
 
 /* ===== 데이터 변경 ===== */
-function findAcc(id){return ACCOUNTS.find(function(a){return a.id===id;});}
+/* ── 모바일 split-table 후처리: sticky 없이 열 고정 ── */
+function splitTablesOnMobile(){
+  if(window.innerWidth > 768) return;
+  document.querySelectorAll('.twrap table, .twrap-split table').forEach(function(tbl){
+    var wrap = tbl.closest('.twrap');
+    if(!wrap || wrap.classList.contains('_split_done')) return;
+    var hasOrder = wrap.classList.contains('has-order');
+    var fixedCount = hasOrder ? 2 : 1; // 고정 열 수
+    wrap.classList.add('_split_done');
 
-/* ===== 종목 순서 이동 ===== */
+    // 이미 split된 경우 스킵
+    if(wrap.classList.contains('twrap-split')) return;
+
+    // 원본 테이블 행/열 파싱
+    var rows = tbl.querySelectorAll('tr');
+    if(!rows.length) return;
+
+    // 고정 테이블 / 스크롤 테이블 생성
+    var fTable = document.createElement('table');
+    var sTable = document.createElement('table');
+    fTable.className = tbl.className;
+    sTable.className = tbl.className;
+
+    rows.forEach(function(row){
+      var fRow = document.createElement('tr');
+      var sRow = document.createElement('tr');
+      fRow.className = row.className;
+      sRow.className = row.className;
+      var cells = row.children;
+      for(var i=0; i<cells.length; i++){
+        var cell = cells[i].cloneNode(true);
+        // colspan이 전체인 경우 양쪽에 분배
+        var span = parseInt(cell.getAttribute('colspan')||'1');
+        if(span > 1 && i === 0){
+          var fSpan = Math.min(span, fixedCount);
+          var sSpan = Math.max(1, span - fixedCount);
+          var fCell = cell.cloneNode(true);
+          var sCell = document.createElement(cell.tagName);
+          sCell.className = cell.className;
+          sCell.setAttribute('colspan', sSpan);
+          sCell.innerHTML = i===0 ? cell.innerHTML : '&nbsp;';
+          fCell.setAttribute('colspan', fSpan);
+          fRow.appendChild(fCell);
+          sRow.appendChild(sCell);
+        } else if(i < fixedCount){
+          fRow.appendChild(cell);
+        } else {
+          sRow.appendChild(cell);
+        }
+      }
+      fTable.appendChild(fRow);
+      sTable.appendChild(sRow);
+    });
+
+    // 원래 wrap을 split 구조로 교체
+    var fDiv = document.createElement('div');
+    fDiv.className = 'twrap-fixed';
+    fDiv.appendChild(fTable);
+
+    var sDiv = document.createElement('div');
+    sDiv.className = 'twrap-scroll';
+    sDiv.appendChild(sTable);
+
+    var splitDiv = document.createElement('div');
+    splitDiv.className = 'twrap-split';
+    splitDiv.appendChild(fDiv);
+    splitDiv.appendChild(sDiv);
+
+    wrap.parentNode.replaceChild(splitDiv, wrap);
+
+    // 행 높이 동기화
+    var fRows2 = fTable.querySelectorAll('tr');
+    var sRows2 = sTable.querySelectorAll('tr');
+    fRows2.forEach(function(r, i){
+      if(!sRows2[i]) return;
+      var h = Math.max(r.offsetHeight, sRows2[i].offsetHeight);
+      r.style.height = h+'px';
+      sRows2[i].style.height = h+'px';
+    });
+  });
+}
+function findAcc(id){return ACCOUNTS.find(function(a){return a.id===id;});}
 function moveHolding(accId, idx, dir){
   var a=findAcc(accId); if(!a) return;
   var newIdx=idx+dir;
@@ -2514,10 +2646,14 @@ function go(id,el){
   var pg=document.getElementById('pg-'+id);if(pg)pg.classList.add('on');
   if(el)el.classList.add('on');
   curPage=id;renderPage(id);
+  setTimeout(splitTablesOnMobile, 30);
 }
 function renderActive(){
   renderPage(curPage);
-  setTimeout(function(){ if(typeof applyCommaAll==='function') applyCommaAll(); }, 10);
+  setTimeout(function(){
+    if(typeof applyCommaAll==='function') applyCommaAll();
+    splitTablesOnMobile();
+  }, 30);
 }
 function renderPage(id){
   if(id==='overview')renderOverview();
