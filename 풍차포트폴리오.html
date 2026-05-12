@@ -105,12 +105,24 @@ tr:hover:not(.trow):not(.nrow):not(.xhdr) td{background:#f8fafc}
   #dist-dashboard table{min-width:360px !important;}
   #dist-dashboard input{font-size:9px !important;padding:1px !important;}
   #dist-dashboard th{font-size:9px !important;padding:2px 1px !important;}
+  /* 이동버튼 없는 테이블: 종목명(1번째) 고정 */
   table td:first-child, table th:first-child{
-    position:sticky;left:0;background:var(--sur);z-index:2;
+    position:sticky;left:0;background:#fff;z-index:2;
+  }
+  table th:first-child{background:#f8fafc;}
+  /* 이동버튼 있는 테이블: 버튼(1번째)+종목명(2번째) 함께 고정 */
+  .has-order table td:nth-child(2),
+  .has-order table th:nth-child(2){
+    position:sticky;left:22px;background:#fff;z-index:2;
     box-shadow:2px 0 4px rgba(0,0,0,.06);
   }
+  .has-order table th:nth-child(2){background:#f8fafc;}
+  /* trow(합계행) 배경 */
   table tr.trow td:first-child{background:#eff6ff;}
+  .has-order table tr.trow td:nth-child(2){background:#eff6ff;}
+  /* xhdr(구분행) 배경 */
   table tr.xhdr td:first-child{background:var(--gbg);}
+  .has-order table tr.xhdr td:nth-child(2){background:var(--gbg);}
   /* 하단 모바일 퀵메뉴 */
   #mob-bar{
     display:none;
@@ -1623,9 +1635,9 @@ function renderKR(acc, cid) {
   // extraLabel (이연퇴직금, 비과세원금 등)
   if (acc.extraLabel) html += mkIE(acc.extraLabel+'(\uc6d0)', acc.extraVal||0, id, 'extraVal');
   html += '</div></div>';
-  html += '<div class="twrap"><table><thead><tr>';
-  html += '<th style="width:22px;text-align:center;padding:2px 1px"></th>';
-  html += '<th style="text-align:left;min-width:130px">\uc885\ubaa9\uba85</th>';
+  html += '<div class="twrap has-order"><table><thead><tr>';
+  html += '<th style="width:22px;text-align:center;padding:2px 1px;background:#f8fafc"></th>';
+  html += '<th style="text-align:left;min-width:130px;background:#f8fafc">\uc885\ubaa9\uba85</th>';
   html += '<th>\uc218\ub7c9</th>';
   html += '<th>\ubd84\ubc30\uae08</th>';
   html += '<th>\ub9e4\uc785\ub2e8\uac00</th><th>\ud604\uc7ac\uac00</th><th>\uc804\uace0\uc810</th>';
@@ -1939,9 +1951,9 @@ function renderCMA(){
     ibox('\uc2e4\ub0a9\ub300\ube44 \ud3c9\uac00\uc190\uc775',(tCurK-realInv>=0?'+':'')+fmt(tCurK-realInv)+'\uc6d0',pc(tCurK-realInv)),
     ibox('\uc218\uc775\ub960(\uc2e4\ub0a9\uc785\ub300\ube44)',fmtPct(pnlReal),pc(pnlReal)),
     '</div></div>',
-    '<div class="twrap"><table><thead><tr>',
-    '<th style="width:22px;text-align:center;padding:2px 1px"></th>',
-    '<th style="text-align:left;min-width:150px">\uc885\ubaa9\uba85</th>',
+    '<div class="twrap has-order"><table><thead><tr>',
+    '<th style="width:22px;text-align:center;padding:2px 1px;background:#f8fafc"></th>',
+    '<th style="text-align:left;min-width:150px;background:#f8fafc">\uc885\ubaa9\uba85</th>',
     '<th>\uc218\ub7c9</th><th>\ub9e4\uc785\ub2e8\uac00(\ud604\uc9c0)</th><th>\ub9e4\uc785\ud658\uc728</th><th>\uc804\uace0\uc810</th><th>\ud604\uc7ac\uac00(\ud604\uc9c0)</th>',
     '<th>\ub9e4\uc785\ucd1d\uc561(\uc6d0)</th>',
     '<th>\ud604\uc7ac\ucd1d\uc561(\uc6d0)</th>',
@@ -2064,9 +2076,9 @@ function renderCrypto(force){
     '<div class="sec"><div class="sechdr"><span class="sectitle">\uac70\ub798\uc18c\ubcc4 \ubcf4\uc720 \ud604\ud669</span>',
     '<button class="btn btn-add" style="margin-left:auto;padding:3px 9px;font-size:11px" onclick="openModal(\'add-crypto-modal\')">&plus; \ucf54\uc778 \ucd94\uac00</button>',
     '</div>',
-    '<div class="twrap"><table><thead><tr>',
-    '<th style="width:22px;text-align:center;padding:2px 1px"></th>',
-    '<th style="text-align:left;min-width:160px">\uc885\ubaa9\uba85</th>',
+    '<div class="twrap has-order"><table><thead><tr>',
+    '<th style="width:22px;text-align:center;padding:2px 1px;background:#f8fafc"></th>',
+    '<th style="text-align:left;min-width:160px;background:#f8fafc">\uc885\ubaa9\uba85</th>',
     '<th>\uc2a4\ud14c\uc774\ud0b9</th>',
     '<th>\uc218\ub7c9</th>',
     '<th>\ub9e4\uc785\ub2e8\uac00</th>',
@@ -2155,7 +2167,7 @@ function renderHoldings(){
     var wtBar='<div style="background:var(--gbg);border-radius:2px;height:4px;margin-top:3px">'
       +'<div style="background:var(--blu);width:'+Math.min(100,wt).toFixed(1)+'%;height:4px;border-radius:2px"></div></div>';
     return '<tr>'
-      +'<td style="text-align:left;position:sticky;left:0;background:var(--sur);z-index:2;box-shadow:2px 0 4px rgba(0,0,0,.06)">'
+      +'<td style="text-align:left;position:sticky;left:0;background:#fff;z-index:2;box-shadow:2px 0 4px rgba(0,0,0,.06)">'
         +'<div style="font-weight:600;font-size:12px;line-height:1.4">'+r.n+'</div>'
         +(r.tk?'<div style="font-size:9px;color:var(--tx3)">'+r.tk+'</div>':'')
       +'</td>'
