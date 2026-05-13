@@ -2647,7 +2647,7 @@ function renderHoldings(){
   document.getElementById('pg-holdings').innerHTML=[
     '<div class="sec"><div class="sechdr">',
     '<span class="sectitle">\ud22c\uc790\uc885\ubaa9 \ucd1d\uad04</span>',
-    '<span class="secsub">\uc804\uccb4 '+rows.length+'\uac1c \uc885\ubaa9</span></div>',
+    '<span class="secsub"></span></div>',
     '<div class="sgrid" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))">',
     '<div class="scard"><div class="slbl">\uc804\uccb4 \uc885\ubaa9\uc218</div><div class="sval">'+rows.length+'\uac1c</div></div>',
     '<div class="scard"><div class="slbl">\uc804\uccb4 \ud3c9\uac00\uc561</div><div class="sval" style="color:var(--nvy)">'+fmt(Math.round(totalCur))+'\uc6d0</div></div>',
@@ -3008,19 +3008,25 @@ function splitTablesOnMobile(){
       fRow.className = row.className;
       sRow.className = row.className;
       var cells = row.children;
+      var isXhdr = row.classList.contains('xhdr');
+
       for(var i=0; i<cells.length; i++){
         var cell = cells[i].cloneNode(true);
-        // colspan이 전체인 경우 양쪽에 분배
         var span = parseInt(cell.getAttribute('colspan')||'1');
+
         if(span > 1 && i === 0){
-          var fSpan = Math.min(span, fixedCount);
-          var sSpan = Math.max(1, span - fixedCount);
-          var fCell = cell.cloneNode(true);
+          // colspan 전체인 행 (xhdr, trow 등)
+          var fCell = document.createElement(cell.tagName);
+          fCell.className = cell.className;
+          fCell.setAttribute('colspan', fixedCount);
+          // xhdr: 고정열은 비우고 스크롤열에만 텍스트
+          if(isXhdr){ fCell.innerHTML = ''; }
+          else { fCell.innerHTML = cell.innerHTML; }
+
           var sCell = document.createElement(cell.tagName);
           sCell.className = cell.className;
-          sCell.setAttribute('colspan', sSpan);
-          sCell.innerHTML = i===0 ? cell.innerHTML : '&nbsp;';
-          fCell.setAttribute('colspan', fSpan);
+          sCell.setAttribute('colspan', Math.max(1, span - fixedCount));
+          sCell.innerHTML = cell.innerHTML; // 스크롤열엔 항상 내용
           fRow.appendChild(fCell);
           sRow.appendChild(sCell);
         } else if(i < fixedCount){
