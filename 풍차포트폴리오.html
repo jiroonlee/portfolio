@@ -7,7 +7,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-:root{--bg:#f0f2f5;--sur:#fff;--brd:#d0d7de;--brd2:#e8ecf0;--tx:#1a1d23;--tx2:#6b7280;--tx3:#9ca3af;--blu:#1a56db;--blu2:#ebf3ff;--blu3:#0c3e9e;--grn:#057a55;--grn2:#e8f7f1;--red:#c81e1e;--red2:#fde8e8;--pur:#6c2bd9;--pur2:#f0ebff;--gbg:#f3f4f6;--hdr:46px;--r:8px;}
+:root{--bg:#f0f2f5;--sur:#fff;--brd:#d0d7de;--brd2:#e8ecf0;--tx:#1a1d23;--tx2:#6b7280;--tx3:#9ca3af;--blu:#1a56db;--blu2:#ebf3ff;--blu3:#0c3e9e;--grn:#057a55;--grn2:#e8f7f1;--red:#c81e1e;--red2:#fde8e8;--pur:#6c2bd9;--pur2:#f0ebff;--gbg:#f3f4f6;--nvy:#1e3a8a;--wine:#7f1d1d;--hdr:46px;--r:8px;}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Malgun Gothic',-apple-system,sans-serif;font-size:12px;background:var(--bg);color:var(--tx)}
 .hdr{background:#1a1d23;color:#fff;height:var(--hdr);display:flex;align-items:center;padding:0 14px;gap:8px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.3)}
@@ -41,7 +41,7 @@ body{font-family:'Malgun Gothic',-apple-system,sans-serif;font-size:12px;backgro
 .ibox-grn{background:var(--grn2);border-color:#b7e4cf}
 .ilbl{font-size:9px;color:var(--tx2);margin-bottom:1px;font-weight:600}
 .ival{font-size:12px;font-weight:700}
-.ival.pos{color:var(--grn)}.ival.neg{color:var(--red)}.ival.blu{color:var(--blu)}.ival.grn{color:var(--grn)}.ival.pur{color:var(--pur)}
+.ival.pos{color:var(--nvy)}.ival.neg{color:var(--wine)}.ival.blu{color:var(--blu)}.ival.nvy{color:var(--nvy)}.ival.grn{color:var(--grn)}.ival.pur{color:var(--pur)}
 .iedit{border:1px solid var(--brd);border-radius:4px;padding:3px 6px;font-size:12px;font-family:inherit;color:var(--tx);background:#fff;width:100%;margin-top:2px}
 .iedit:focus{outline:none;border-color:var(--blu)}
 .twrap{overflow-x:auto;position:relative}
@@ -99,12 +99,12 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
   color:#64748b;text-align:left;padding:5px 9px;
   border:none;box-shadow:inset 0 -1px 0 #d1d9e0;
 }
-.pos{color:var(--grn);font-weight:600}.neg{color:var(--red);font-weight:600}
+.pos{color:var(--nvy);font-weight:600}.neg{color:var(--wine);font-weight:600}
 .tname{font-weight:600;line-height:1.4}.tsub{font-size:10px;color:var(--tx2);margin-top:1px}
 .ed{background:transparent;border:1px solid transparent;border-radius:3px;padding:1px 3px;text-align:right;font-family:inherit;font-size:11px;color:inherit;cursor:text}
 .ed:hover{border-color:var(--brd);background:#fff}
 .ed:focus{border-color:var(--blu);background:#fff;outline:none;box-shadow:0 0 0 2px rgba(26,86,219,.1)}
-.auto{color:var(--blu)}
+.auto{color:var(--nvy)}
 .sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px;padding:8px}
 .scard{background:var(--gbg);border-radius:6px;padding:7px 10px;border:1px solid var(--brd2)}
 .scard-grn{background:var(--grn2);border-color:#b7e4cf}
@@ -114,7 +114,7 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
 .drow strong{color:var(--tx);font-weight:700}
 .btn{padding:4px 11px;border-radius:5px;cursor:pointer;font-size:12px;font-weight:600;border:1px solid var(--brd);font-family:inherit}
 .btn-add{background:var(--blu);color:#fff;border-color:var(--blu)}.btn-add:hover{background:var(--blu3)}
-.btn-del{background:transparent;color:var(--red);border:none;padding:2px 6px;font-size:11px;cursor:pointer}.btn-del:hover{color:#8b0000}
+.btn-del{background:transparent;color:var(--wine);border:none;padding:2px 6px;font-size:11px;cursor:pointer}.btn-del:hover{color:#8b0000}
 .tbbar{padding:5px 11px;display:flex;gap:7px;border-top:1px solid var(--brd2);background:#fafcff}
 .ccards{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:8px;padding:11px}
 .ccard{border-radius:8px;padding:11px 13px;border:1px solid var(--brd2)}
@@ -695,7 +695,7 @@ const DEF = {
     {n:'SOL 국제금',tk:'0066W0',qty:500,cost:12322,high:16900,mI:null,mM:null}
    ]},
   {id:'mf-pension',name:'미래_개인연금(비과세재원/ISA입금)',openDate:'20.3.20',note:'*25.3.20.요건 충족',pensionYr:2,pensionStart:'25.3.20',
-   accDep:190614135,depositsYr:0,accWit:64698793,withdrawalsYr:0,extraLabel:'비과세원금',extraVal:99333476,annualDistRate:0.0767,
+   accDep:190614135,depositsYr:0,accWit:64698793,withdrawalsYr:0,extraLabel:'비과세재원',extraVal:99333476,annualDistRate:0.0767,
    holdings:[
     {n:'KODEX 미국배당커버드콜액티브',tk:'441640',qty:8000,cost:11508,high:13088,mI:null,mM:792000},
     {n:'KODEX 미국성장커버드콜액티브',tk:'0144L0',qty:8000,cost:9802,high:10045,mI:744000,mM:null},
@@ -716,7 +716,7 @@ const DEF = {
     {n:'SOL 국제금',tk:'0066W0',qty:300,cost:14517,high:16900,mI:null,mM:null}
    ]},
   {id:'ss-pension',name:'삼성_개인연금(과세/적립투자)',openDate:'20.3.24',note:'*25.3.24.요건 충족',pensionYr:2,pensionStart:'25.3.24',
-   accDep:58983298,depositsYr:0,accWit:0,withdrawalsYr:0,extraLabel:'비과세원금',extraVal:27983298,annualDistRate:0.0826,
+   accDep:58983298,depositsYr:0,accWit:0,withdrawalsYr:0,extraLabel:'비과세재원',extraVal:27983298,annualDistRate:0.0826,
    holdings:[
     {n:'KODEX 미국배당커버드콜액티브',tk:'441640',qty:2750,cost:11656,high:13088,mI:null,mM:272250},
     {n:'KODEX 미국성장커버드콜액티브',tk:'0144L0',qty:2750,cost:9811,high:10045,mI:255750,mM:null},
@@ -726,7 +726,7 @@ const DEF = {
     {n:'ACE 구글밸류체인액티브',tk:'483340',qty:1,cost:20755,high:22000,mI:0,mM:0}
    ]},
   {id:'mf-irp2',name:'미래에셋 IRP(적립투자)',openDate:'25.4.29',note:'*30.4.29.요건 충족',pensionYr:null,pensionStart:null,
-   accDep:6000000,depositsYr:0,accWit:0,withdrawalsYr:0,extraLabel:'비과세원금',extraVal:0,annualDistRate:null,
+   accDep:6000000,depositsYr:0,accWit:0,withdrawalsYr:0,extraLabel:'비과세재원',extraVal:0,annualDistRate:null,
    holdings:[
     {n:'KODEX 미국나스닥100',tk:'379810',qty:168,cost:25294,high:25930,mI:null,mM:null},
     {n:'ACE미국나스닥100채권혼합',tk:'438100',qty:155,cost:14911,high:15400,mI:null,mM:null}
@@ -1333,6 +1333,7 @@ async function fetchFXApi(){
 }
 
 async function fetchAll(){
+  _lastFetch=Date.now();
   setDot('loading');
   var ok=false;
   try{
@@ -1488,30 +1489,31 @@ function renderDistDashboard(){
     }
   }
 
-  // 월 분배율 (현재달 분배금 / 현재총액)
+  // 월 분배율 (현재달 분배금 / 현재평가액)
   var curMonDist=arr[curM-1]?arr[curM-1].v:0;
   var monRate=gCurEst>0?(curMonDist/gCurEst*100).toFixed(2):'0.00';
-  // 연간 분배율 (연간 분배금 / 현재총액)
+  // 연간 분배율 (연간 분배금 / 현재평가액)
   var annRate=gCurEst>0?(annDist/gCurEst*100).toFixed(2):'0.00';
 
   var MN=['1\uc6d4','2\uc6d4','3\uc6d4','4\uc6d4','5\uc6d4','6\uc6d4','7\uc6d4','8\uc6d4','9\uc6d4','10\uc6d4','11\uc6d4','12\uc6d4'];
 
   var thCells=MN.map(function(n,i){
     var m=i+1, isCur=(selY===curY&&m===curM);
-    return '<th style="text-align:center;padding:3px 2px;font-size:10px;font-weight:'+(isCur?'700':'400')+';color:'+(isCur?'var(--blu)':'var(--tx3)')+'">'+n+'</th>';
-  }).join('')+'<th style="text-align:right;padding:3px 4px;font-size:10px;font-weight:700;color:var(--tx2)">\ud569\uacc4</th>';
+    return '<th style="text-align:center;padding:3px 2px;font-size:10px;font-weight:'+(isCur?'700':'400')+';color:'+(isCur?'#111':'var(--tx3)')+'">'+n+'</th>';
+  }).join('')+'<th style="text-align:right;padding:3px 4px;font-size:10px;font-weight:700;color:var(--tx2)">합계</th>';
 
   var tdCells=arr.map(function(d,i){
     var m=i+1, isCur=(selY===curY&&m===curM);
-    var isPast=d.type==='past', bg=isCur?'background:#e8f4fd;':'';
+    var isPast=d.type==='past';
     var border='border:1px solid var(--brd);';
-    var color=isPast?'color:#111;':(isCur?'color:var(--blu);font-weight:700;':'color:var(--tx3);');
+    // ⑧ 해당월: 흰 배경 + 검정 볼드, 나머지도 흰 배경 통일
     if(isPast||(selY<curY)){
-      return '<td style="padding:2px;'+border+'"><input style="width:100%;border:none;background:transparent;text-align:right;font-size:10px;color:#111;" value="'+fmt(Math.round(d.v))+'" onchange="distSaveMonth('+selY+','+m+',this.value)"></td>';
+      return '<td style="padding:2px;'+border+'background:#fff"><input style="width:100%;border:none;background:transparent;text-align:right;font-size:10px;color:#111;" value="'+fmt(Math.round(d.v))+'" onchange="distSaveMonth('+selY+','+m+',this.value)"></td>';
     }
-    return '<td style="padding:2px;'+border+bg+'"><div style="width:100%;text-align:right;font-size:10px;'+color+'padding:2px 3px">'+fmt(Math.round(d.v))+'</div></td>';
+    var color=isCur?'color:#111;font-weight:700;':'color:var(--tx3);';
+    return '<td style="padding:2px;'+border+'background:#fff"><div style="width:100%;text-align:right;font-size:10px;'+color+'padding:2px 3px">'+fmt(Math.round(d.v))+'</div></td>';
   }).join('');
-  var sumCell='<td style="padding:2px 4px;text-align:right;font-size:11px;font-weight:700;color:var(--blu);border:1px solid var(--brd)">'+fmt(Math.round(total))+'</td>';
+  var sumCell='<td style="padding:2px 4px;text-align:right;font-size:11px;font-weight:700;color:var(--nvy);border:1px solid var(--brd)">'+fmt(Math.round(total))+'</td>';
 
   el.innerHTML='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">'
     +'<table style="width:100%;border-collapse:collapse;table-layout:fixed;min-width:480px">'
@@ -1528,7 +1530,7 @@ function renderDistDashboard(){
     // 월 분배율
     +(gCurEst>0?'<span style="font-size:11px;border-left:1px solid var(--brd2);padding-left:10px">'
     +'<span style="color:var(--tx2)">\uc6d4 \ubd84\ubc30\uc728: </span>'
-    +'<strong style="color:var(--blu)">'+monRate+'%</strong>'
+    +'<strong style="color:var(--nvy)">'+monRate+'%</strong>'
     +'<span style="font-size:10px;color:var(--tx3)"> (\uc6d4\ubd84\ubc30\uae08/\ud3c9\uac00\uc561)</span>'
     +'</span>':'')
     // 연간 분배율
@@ -1709,13 +1711,14 @@ function renderPension(){
 
   var LIMIT15M=15000000;
 
-  // 스타일 헬퍼 — 제목셀: 연한 배경, 나머지: 흰색
+  // 스타일 헬퍼 — 제목셀: 연한 배경, 나머지: 흰색, 모든 데이터셀 오른쪽 정렬 통일
   var lblBase='font-weight:600;background:#f1f5f9;text-align:left;';
   var lblSub='font-weight:400;background:#fff;text-align:left;padding-left:18px;color:#4b5563;font-size:11px;';
   var cellN='text-align:right;background:#fff;';
-  var cellC='text-align:center;background:#fff;';
-  var hdSt='text-align:center;font-size:11px;font-weight:700;background:#f1f5f9;color:#1e293b;padding:7px 8px;'; // ④합계도 동일
-  var sumSt='text-align:right;font-weight:700;color:var(--blu);background:#fff;';
+  var cellC='text-align:right;background:#fff;';  // center→right 통일
+  var hdSt='text-align:center;font-size:11px;font-weight:700;background:#f1f5f9;color:#1e293b;padding:7px 8px;';
+  // ② 합계 열: 검정 볼드
+  var sumSt='text-align:right;font-weight:700;color:#111;background:#fff;';
 
   function n(v,extra){
     if(v==null||v===0) return '<td style="'+cellN+(extra||'')+'">' + '-</td>';
@@ -1728,7 +1731,7 @@ function renderPension(){
   function editableCell(key,id,val,bold){
     var v=val!=null?Math.round(val):'';
     return '<td style="padding:3px 6px;">'
-      +'<input class="ed" style="width:100%;text-align:right;font-size:12px;'+(bold?'font-weight:700;':'')+'color:var(--blu)"'
+      +'<input class="ed" style="width:100%;text-align:right;font-size:12px;'+(bold?'font-weight:700;':'')+'color:var(--nvy)"'
       +' value="'+v+'" placeholder="-"'
       +' onchange="pensionEdit(\''+key+'\',\''+id+'\',this.value)"></td>';
   }
@@ -1743,7 +1746,6 @@ function renderPension(){
       +' onchange="pensionEdit(\'limit\',\''+c.p.id+'\',this.value)"'
       +'></td>';
   }
-  // ⑤ 개시여부: 토글 버튼만, 나이 등 부가정보 없음
   function startedCell(c){
     if(c.started){
       return '<td style="'+cellC+'">'
@@ -1756,15 +1758,14 @@ function renderPension(){
       +' style="border:1px solid var(--brd);background:#fff;color:var(--tx2);border-radius:4px;cursor:pointer;font-size:11px;padding:3px 10px;font-family:inherit;min-width:52px">미개시</button>'
       +'</td>';
   }
-  // ⑥ 연금수령연차: 숫자 입력만, 자동/수동 텍스트 없음
+  // ⑥ 연금수령연차
   function yrCell(c){
     var yr=c.yr;
     return '<td style="'+cellC+'">'
       +(yr!=null
-        ?'<input class="ed" style="width:40px;text-align:center;font-size:11px" value="'+yr+'"'
-         +' onchange="pensionEditYr(\''+c.p.id+'\',this.value)">'
-         +'<span style="font-size:10px;color:var(--tx2)"> 년차</span>'
-        :'<span style="color:var(--tx3);font-size:10px">-</span>')
+        ?'<input class="ed" style="width:36px;text-align:right;font-size:11px" value="'+yr+'"'
+         +' onchange="pensionEditYr(\''+c.p.id+'\',this.value)">년차'
+        :'<span style="color:var(--tx3);font-size:11px">-</span>')
       +'</td>';
   }
 
@@ -1781,15 +1782,15 @@ function renderPension(){
   var tbody='<tbody>'
     +'<tr><td style="'+lblBase+'">개설일자</td>'
       +cols.map(function(c){
-        return '<td style="padding:3px 6px;background:#fff">'
-          +'<input class="ed" style="width:90px;text-align:center;font-size:11px" value="'+escH(c.p.openDateDisp)+'"'
+        return '<td style="'+cellC+'">'
+          +'<input class="ed" style="width:80px;text-align:right;font-size:11px" value="'+escH(c.p.openDateDisp)+'"'
           +' onchange="pensionEditDate(\'openDate\',\''+c.p.id+'\',this.value)">'
         +'</td>';
       }).join('')+'<td style="'+cellC+'"></td></tr>'
     +'<tr><td style="'+lblBase+'">연금개시(가능)일</td>'
       +cols.map(function(c){
-        return '<td style="padding:3px 6px;background:#fff">'
-          +'<input class="ed" style="width:90px;text-align:center;font-size:11px" value="'+escH(c.p.startDateDisp)+'"'
+        return '<td style="'+cellC+'">'
+          +'<input class="ed" style="width:80px;text-align:right;font-size:11px" value="'+escH(c.p.startDateDisp)+'"'
           +' onchange="pensionEditDate(\'startDate\',\''+c.p.id+'\',this.value)">'
         +'</td>';
       }).join('')+'<td style="'+cellC+'"></td></tr>'
@@ -1799,7 +1800,7 @@ function renderPension(){
       +cols.map(function(c){return yrCell(c);}).join('')+'<td style="'+cellC+'"></td></tr>'
     +sep()
     // ── 잔액 ──
-    +'<tr><td style="'+lblBase+'">평가잔액(현재총액)</td>'
+    +'<tr><td style="'+lblBase+'">평가잔액(현재평가액)</td>'
       +cols.map(function(c){return '<td style="'+cellN+'font-weight:700;">'+fmt(c.curTotal)+'</td>';}).join('')
       +'<td style="'+sumSt+'">'+fmt(sumCur)+'</td></tr>'
     +'<tr><td style="'+lblSub+'">ㄴ 비과세재원</td>'
@@ -1810,7 +1811,7 @@ function renderPension(){
       +cols.map(function(c){return n(c.taxable);}).join('')+nSum(sumTax)+'</tr>'
     +sep()
     // ── 한도산정 ──
-    +'<tr><td style="'+lblBase+'font-size:11px;">한도산정 기준금액<br><span style="font-size:9px;font-weight:400;color:var(--tx3)">1월1일 현재총액</span></td>'
+    +'<tr><td style="'+lblBase+'font-size:11px;">한도산정 기준금액<br><span style="font-size:9px;font-weight:400;color:var(--tx3)">1월1일 현재평가액</span></td>'
       +cols.map(function(c){return editableCell('base',c.p.id,c.baseAmt,false);}).join('')
       +'<td style="'+cellN+'"></td></tr>'
     +'<tr><td style="'+lblBase+'font-size:11px;">연금수령한도(계좌별)<br><span style="font-size:9px;font-weight:400;color:var(--tx3)">기준금액÷(11-수령연차)×1.2</span></td>'
@@ -1832,16 +1833,16 @@ function renderPension(){
     // ── 한도포함금액 ──
     +'<tr><td style="'+lblBase+'font-size:11px;">사적연금분리과세기준<br>포함금액 <span style="font-size:9px;font-weight:400">(통합 1,500만원)</span></td>'
       +cols.map(function(c){return editableCell('incl',c.p.id,c.inclLimit,true);}).join('')
-      +'<td style="text-align:right;font-size:12px;font-weight:700;background:#fff;'+(sumIncl>LIMIT15M?'color:var(--red)':'color:var(--blu)')+';">'
+      +'<td style="text-align:right;font-size:12px;font-weight:700;background:#fff;'+(sumIncl>LIMIT15M?'color:var(--wine)':'color:#111')+';">'
         +fmt(sumIncl)+(sumIncl>LIMIT15M?'<br><span style="font-size:9px;font-weight:400">⚠ 한도초과</span>':'')
       +'</td></tr>'
     +'</tbody>';
 
   var noteHTML='<div style="padding:4px 13px 8px;font-size:10px;color:var(--tx3)">'
-    +'* 한도산정 기준금액: 매년 1월1일 현재총액 기준 (없으면 가장 가까운 스냅샷 사용)<br>'
-    +'* 연금수령한도: 11년차 이상은 평가잔액이 한도 / 더블클릭 시 자동계산값으로 초기화<br>'
+    +''
+    +'* 연금수령한도: 11년차 이상은 평가잔액이 한도 '
     +'* 퇴직소득세 감면(70%) = 이연퇴직금 범위내 연금수령한도 / 미감면(100%) = 초과분<br>'
-    +'* 사적연금 통합 연간 수령한도 1,500만원 초과 시 종합과세 대상'
+    +'* 사적연금 통합 연간 수령한도 1,500만원 초과 시 종합과세 대상 또는 분리과세'
     +'</div>';
 
   var strategyHTML='<div class="sec" style="margin-top:12px">'
@@ -2079,13 +2080,13 @@ function renderKR(acc, cid) {
   // 자동계산 박스들
   html += mkIV('\uc2e4\ub0a9\uc785\uae08\uc561', fmt(real)+'\uc6d0', '', cid+'_real');
   html += mkIV('\ub9e4\uc785\ucd1d\uc561', fmt(tCost)+'\uc6d0', '', cid+'_tcost');
-  html += mkIV('\ud604\uc7ac\ucd1d\uc561', fmt(tCur)+'\uc6d0', 'blu', cid+'_tcur');
+  html += mkIV('\ud604\uc7ac\ud3c9\uac00\uc561', fmt(tCur)+'\uc6d0', 'nvy', cid+'_tcur');
   html += mkIV('\ud3c9\uac00\uc190\uc775', (tCur-tCost>=0?'+':'')+fmt(tCur-tCost)+'\uc6d0', pc(tCur-tCost), cid+'_pnl');
   html += mkIV('\uc218\uc775\ub960', fmtPct(pnlR), pc(pnlR), cid+'_pnlr');
-  html += mkIV('\uc2e4\ub0a9\ub300\ube44 \ud3c9\uac00\uc190\uc775', (tCur-real>=0?'+':'')+fmt(tCur-real)+'\uc6d0', pc(tCur-real), cid+'_pnlreal_abs');
+  html += mkIV('\ud3c9\uac00\uc190\uc775(\uc2e4\ub0a9)', (tCur-real>=0?'+':'')+fmt(tCur-real)+'\uc6d0', pc(tCur-real), cid+'_pnlreal_abs');
   html += mkIV('\uc218\uc775\ub960(\uc2e4\ub0a9)', fmtPct(pnlReal), pc(pnlReal), cid+'_pnlreal');
   html += mkIVg('\uc6d4\ubd84\ubc30\uae08', fmt(tDist)+'\uc6d0', cid+'_dist');
-  // extraLabel (이연퇴직금, 비과세원금 등)
+  // extraLabel (이연퇴직금, 비과세재원 등)
   if (acc.extraLabel) html += mkIE(acc.extraLabel+'(\uc6d0)', acc.extraVal||0, id, 'extraVal');
   html += '</div></div>';
   html += '<div class="twrap has-order"><table><thead><tr>';
@@ -2095,7 +2096,7 @@ function renderKR(acc, cid) {
   html += '<th>\ubd84\ubc30\uae08</th>';
   html += '<th>\ub9e4\uc785\ub2e8\uac00</th><th>\ud604\uc7ac\uac00</th><th>\uc804\uace0\uc810</th>';
   html += '<th>\ub9e4\uc785\ucd1d\uc561</th>';
-  html += '<th>\ud604\uc7ac\ucd1d\uc561</th>';
+  html += '<th>\ud604\uc7ac\ud3c9\uac00\uc561</th>';
   html += '<th>\uc218\uc775\ub960</th><th>\uc804\uace0\uc810\ub300\ube44</th>';
   html += '<th>\uc6d4\ubd84\ubc30\uae08</th>';
   html += '<th></th></tr></thead>';
@@ -2371,7 +2372,7 @@ function renderCMA(){
       +'<td><input class="ed" style="width:64px" value="'+(h.high||'')+'" onchange="setCH('+i+',\'high\',this.value)"></td>'
       +'<td>'+badge(h.tk&&PRICES[h.tk]!=null)+'<input class="ed" style="width:72px;color:var(--blu)" value="'+priceL+'" onchange="onCHPrice(this,'+i+')"> '+h.cur+'</td>'
       +'<td class="auto" style="font-weight:700" title="\ub9e4\uc785\ud658\uc728 '+buyFXlabel+' \uc801\uc6a9">'+fmt(costK)+'</td>'
-      +'<td class="auto" style="font-weight:600;color:var(--blu)" title="\ud604\uc7ac\ud658\uc728 '+curFXlabel+' \uc801\uc6a9">'+fmt(curK)+'</td>'
+      +'<td class="auto" style="font-weight:600;color:var(--nvy)" title="\ud604\uc7ac\ud658\uc728 '+curFXlabel+' \uc801\uc6a9">'+fmt(curK)+'</td>'
       +'<td class="'+pc(pnlR)+'">'+fmtPct(pnlR)+'</td>'
       +'<td class="'+(highR!=null?pc(highR):'')+'">'+( highR!=null?fmtPct(highR):'-')+'</td>'
       +'<td><button class="btn-del" onclick="'+delFn+'">\u2715</button></td>'
@@ -2388,7 +2389,7 @@ function renderCMA(){
     '<div class="fxbar">',
     '<div class="fxitem">\uc6d0/\ub2ec\ub7ec(USD): <input class="fxinp" value="'+FX.USD+'" onchange="FX.USD=+this.value;renderActive();autoSync()"> <span class="abadge">\uc790\ub3d9\uac31\uc2e0</span></div>',
     '<div class="fxitem">\uc6d0/\uc5d4(JPY): <input class="fxinp" value="'+FX.JPY+'" onchange="FX.JPY=+this.value;renderActive();autoSync()"> <span class="abadge">\uc790\ub3d9\uac31\uc2e0</span></div>',
-    '<span style="font-size:11px;color:var(--tx3)">\u203b \ud658\uc728 \uc790\ub3d9\ubc18\uc601, \uc9c1\uc811\uc218\uc815 \uac00\ub2a5</span></div>',
+    '<span style="font-size:11px;color:var(--tx3)"></span></div>',
     '<div class="sec"><div class="ahdr">',
     '<div class="ameta"><span class="aname">'+CMA.name+'</span></div>',
     '<div class="irow">',
@@ -2398,18 +2399,18 @@ function renderCMA(){
     mkCMAE('\ub204\uc801\uc778\ucd9c(\uc6d0)', accWit, 'accWit'),
     ibox('\uc2e4\ub0a9\uc785\uae08\uc561',fmt(realInv)+'\uc6d0'),
     ibox('\ub9e4\uc785\ucd1d\uc561(\uc6d0)',fmt(tCostK)+'\uc6d0'),
-    ibox('\ud604\uc7ac\ucd1d\uc561(\uc6d0)',fmt(tCurK)+'\uc6d0','blu'),
+    ibox('\ud604\uc7ac\ud3c9\uac00\uc561(\uc6d0)',fmt(tCurK)+'\uc6d0','nvy'),
     ibox('\ud3c9\uac00\uc190\uc775',(pnlTot>=0?'+':'')+fmt(pnlTot)+'\uc6d0',pc(pnlTot)),
     ibox('\uc218\uc775\ub960',fmtPct(pnlR),pc(pnlR)),
-    ibox('\uc2e4\ub0a9\ub300\ube44 \ud3c9\uac00\uc190\uc775',(tCurK-realInv>=0?'+':'')+fmt(tCurK-realInv)+'\uc6d0',pc(tCurK-realInv)),
-    ibox('\uc218\uc775\ub960(\uc2e4\ub0a9\uc785\ub300\ube44)',fmtPct(pnlReal),pc(pnlReal)),
+    ibox('\ud3c9\uac00\uc190\uc775(\uc2e4\ub0a9)',(tCurK-realInv>=0?'+':'')+fmt(tCurK-realInv)+'\uc6d0',pc(tCurK-realInv)),
+    ibox('\uc218\uc775\ub960(\uc2e4\ub0a9)',fmtPct(pnlReal),pc(pnlReal)),
     '</div></div>',
     '<div class="twrap has-order"><table><thead><tr>',
     '<th style="width:18px;text-align:center;padding:2px 0;background:#f1f5f9"></th>',
     '<th style="text-align:left;min-width:150px;background:#f1f5f9">\uc885\ubaa9\uba85</th>',
     '<th>\uc218\ub7c9</th><th>\ub9e4\uc785\ub2e8\uac00(\ud604\uc9c0)</th><th>\ub9e4\uc785\ud658\uc728</th><th>\uc804\uace0\uc810</th><th>\ud604\uc7ac\uac00(\ud604\uc9c0)</th>',
     '<th>\ub9e4\uc785\ucd1d\uc561(\uc6d0)</th>',
-    '<th>\ud604\uc7ac\ucd1d\uc561(\uc6d0)</th>',
+    '<th>\ud604\uc7ac\ud3c9\uac00\uc561(\uc6d0)</th>',
     '<th>\uc218\uc775\ub960</th><th>\uc804\uace0\uc810\ub300\ube44</th>',
     '<th></th></tr></thead>',
     '<tbody>',rowsArr.join(''),
@@ -2520,7 +2521,7 @@ function renderCrypto(force){
     '</div>',
     '<div class="sgrid" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr))">',
     '<div class="scard"><div class="slbl">\ub9e4\uc785\ucd1d\uc561</div><div class="sval">'+fmt(gC)+'\uc6d0</div></div>',
-    '<div class="scard"><div class="slbl">\ud604\uc7ac\ud3c9\uac00\uc561</div><div class="sval" style="color:var(--blu)">'+fmt(gV)+'\uc6d0</div></div>',
+    '<div class="scard"><div class="slbl">\ud604\uc7ac\ud3c9\uac00\uc561</div><div class="sval" style="color:var(--nvy)">'+fmt(gV)+'\uc6d0</div></div>',
     '<div class="scard"><div class="slbl">\ud3c9\uac00\uc190\uc775</div><div class="sval '+pc(gPnl)+'">'+(gPnl>=0?'+':'')+fmt(gPnl)+'\uc6d0</div></div>',
     '<div class="scard"><div class="slbl">\uc218\uc775\ub960</div><div class="sval '+pc(gPnlR)+'" style="font-size:15px">'+fmtPct(gPnlR)+'</div></div>',
     '</div>',
@@ -2537,7 +2538,7 @@ function renderCrypto(force){
     '<th>\ub9e4\uc785\ub2e8\uac00</th>',
     '<th>\ud604\uc7ac\uac00</th>',
     '<th>\ub9e4\uc785\ucd1d\uc561</th>',
-    '<th>\ud604\uc7ac\ucd1d\uc561</th>',
+    '<th>\ud604\uc7ac\ud3c9\uac00\uc561</th>',
     '<th>\uc218\uc775\ub960</th><th>\uc804\uace0\uc810\ub300\ube44</th><th>\ud3c9\uac00\uc190\uc775</th><th></th>',
     '</tr></thead><tbody>',
     '<tr class="xhdr"><td colspan="12">\ud83d\udd38 \ube57\uc12c (Bithumb)</td></tr>',bith.html,
@@ -2626,13 +2627,13 @@ function renderHoldings(){
       +'</td>'
       +'<td style="text-align:right">'+qtyStr+'</td>'
       +'<td style="text-align:right">'+avgStr+'</td>'
-      +'<td style="text-align:right;color:var(--blu)">'+fmt(Math.round(r.price))+'</td>'
+      +'<td style="text-align:right;color:var(--nvy)">'+fmt(Math.round(r.price))+'</td>'
       +'<td style="text-align:right">'+fmt(Math.round(r.totalCost))+'</td>'
       +'<td style="text-align:right;font-weight:700">'+fmt(Math.round(r.totalCur))+'</td>'
       +'<td class="'+pc(pnl)+'" style="text-align:right">'+(pnl>=0?'+':'')+fmt(Math.round(pnl))+'</td>'
       +'<td class="'+pc(pnlR)+'" style="text-align:right">'+fmtPct(pnlR)+'</td>'
       +'<td style="text-align:right">'
-        +'<span style="font-weight:700;color:var(--blu)">'+wt.toFixed(1)+'%</span>'
+        +'<span style="font-weight:700;color:var(--nvy)">'+wt.toFixed(1)+'%</span>'
         +wtBar
       +'</td>'
       +'</tr>';
@@ -2646,10 +2647,10 @@ function renderHoldings(){
   document.getElementById('pg-holdings').innerHTML=[
     '<div class="sec"><div class="sechdr">',
     '<span class="sectitle">\ud22c\uc790\uc885\ubaa9 \ucd1d\uad04</span>',
-    '<span class="secsub">\uc804\uccb4 '+rows.length+'\uac1c \uc885\ubaa9 \u22c5 \ub3d9\uc77c\uc885\ubaa9 \ud569\uc0b0</span></div>',
+    '<span class="secsub">\uc804\uccb4 '+rows.length+'\uac1c \uc885\ubaa9</span></div>',
     '<div class="sgrid" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))">',
     '<div class="scard"><div class="slbl">\uc804\uccb4 \uc885\ubaa9\uc218</div><div class="sval">'+rows.length+'\uac1c</div></div>',
-    '<div class="scard"><div class="slbl">\uc804\uccb4 \ud3c9\uac00\uc561</div><div class="sval" style="color:var(--blu)">'+fmt(Math.round(totalCur))+'\uc6d0</div></div>',
+    '<div class="scard"><div class="slbl">\uc804\uccb4 \ud3c9\uac00\uc561</div><div class="sval" style="color:var(--nvy)">'+fmt(Math.round(totalCur))+'\uc6d0</div></div>',
     '<div class="scard"><div class="slbl">\ud3c9\uac00\uc190\uc775</div><div class="sval '+pc(gPnl)+'">'+(gPnl>=0?'+':'')+fmt(Math.round(gPnl))+'\uc6d0</div></div>',
     '<div class="scard"><div class="slbl">\uc218\uc775\ub960</div><div class="sval '+pc(gPnlR)+'">'+fmtPct(gPnlR)+'</div></div>',
     '<div class="scard"><div class="slbl">\uc6d4 \ubd84\ubc30\uae08 \ud569\uacc4</div><div class="sval" style="color:var(--grn)">'+fmt(gDist)+'\uc6d0</div></div>',
@@ -2662,7 +2663,7 @@ function renderHoldings(){
     '<th style="width:86px">\ud3c9\uade0\ub9e4\uc785\ub2e8\uac00</th>',
     '<th style="width:78px">\ud604\uc7ac\uac00</th>',
     '<th style="width:94px">\ub9e4\uc785\ucd1d\uc561</th>',
-    '<th style="width:94px">\ud604\uc7ac\ucd1d\uc561</th>',
+    '<th style="width:94px">\ud604\uc7ac\ud3c9\uac00\uc561</th>',
     '<th style="width:90px">\ud3c9\uac00\uc190\uc775</th>',
     '<th style="width:58px">\uc218\uc775\ub960</th>',
     '<th style="width:60px">\ube44\uc911</th>',
@@ -2675,7 +2676,7 @@ function renderHoldings(){
     '<td style="text-align:right;font-weight:700">'+fmt(Math.round(totalCur))+'</td>',
     '<td class="'+pc(gPnl)+'" style="text-align:right">'+(gPnl>=0?'+':'')+fmt(Math.round(gPnl))+'</td>',
     '<td class="'+pc(gPnlR)+'" style="text-align:right">'+fmtPct(gPnlR)+'</td>',
-    '<td style="text-align:right;font-weight:700;color:var(--blu)">100%</td>',
+    '<td style="text-align:right;font-weight:700;color:var(--nvy)">100%</td>',
     '</tr>',
     '</table></div></div>'
   ].join('');
@@ -2696,7 +2697,7 @@ function renderHistory(){
   document.getElementById('pg-history').innerHTML=[
     '<div class="sec"><div class="sechdr">',
     '<span class="sectitle">\uc790\uc0b0 \ubcc0\ub3d9 \ud604\ud669</span>',
-    '<span class="secsub">\uc800\uc7a5 \ubc84\ud2bc\uc73c\ub85c \uae30\ub85d \u2014 \uc77c\ubcc4 \ucd5c\uc2e0 1\uac74 \uc720\uc9c0</span>',
+    '<span class="secsub"></span>',
     '<div style="display:flex;gap:6px;margin-left:auto">',
     '<button class="btn btn-add" style="padding:4px 11px;font-size:12px" onclick="snapNow()">\ud83d\udcf8 \uc9c0\uae08 \uae30\ub85d</button>',
     '<button class="btn" style="padding:4px 11px;font-size:12px;background:#fee2e2;color:#dc2626;border-color:#fca5a5" onclick="deleteAllSnaps()">\uae30\ub85d \uc804\uccb4\uc0ad\uc81c</button>',
@@ -2860,7 +2861,7 @@ async function drawHChart(){
     '<div class="hist-card"><div class="slbl">\uae30\uac04 \ubcc0\ub3d9</div><div class="sval '+pc(chg)+'" style="font-size:14px">'+(chg>=0?'+':'')+fmt(chg)+'\uc6d0</div></div>',
     '<div class="hist-card"><div class="slbl">\ubcc0\ub3d9\ub960(\uc804\uccb4)</div><div class="sval '+pc(chgPct)+'" style="font-size:15px">'+(chgPct>=0?'+':'')+chgPct.toFixed(2)+'%</div></div>',
     '<div class="hist-card"><div class="slbl">\uae30\uac04 \ucd5c\uace0</div><div class="sval" style="font-size:13px;color:var(--grn)">'+fmt(maxCur)+'\uc6d0</div></div>',
-    '<div class="hist-card"><div class="slbl">\uae30\uac04 \ucd5c\uc800</div><div class="sval" style="font-size:13px;color:var(--red)">'+fmt(minCur)+'\uc6d0</div></div>',
+    '<div class="hist-card"><div class="slbl">\uae30\uac04 \ucd5c\uc800</div><div class="sval" style="font-size:13px;color:var(--wine)">'+fmt(minCur)+'\uc6d0</div></div>',
     '</div>',
     '<div class="twrap" style="padding:0 13px 13px">',
     '<table style="table-layout:auto;width:100%">',
@@ -2960,7 +2961,7 @@ function renderChangelog(){
       return'<div class="cl-entry">'
         +'<div class="cl-time">'+new Date(e.ts).toLocaleString('ko-KR')+'</div>'
         +'<div style="background:var(--gbg);border-radius:5px;padding:5px 9px;margin-top:4px;font-size:11px">'
-        +'\ucd1d\ud3c9\uac00\uc561: <strong style="color:var(--blu)">'+fmt(e.cur)+'\uc6d0</strong>'
+        +'\ucd1d\ud3c9\uac00\uc561: <strong style="color:var(--nvy)">'+fmt(e.cur)+'\uc6d0</strong>'
         +' | \uc190\uc775: <strong class="'+(e.pnl>=0?'pos':'neg')+'">'+(e.pnl>=0?'+':'')+fmt(e.pnl)+'\uc6d0</strong>'
         +'</div>'
         +'<button class="btn-del" style="margin-top:5px" onclick="delCL('+e.id+')">\uc0ad\uc81c</button>'
@@ -3374,7 +3375,7 @@ function exportToExcel(){
 
   // ── 1. 전체현황 ──
   var ov1=[['풍차포트폴리오 전체현황','','','','','',today]];
-  ov1.push(['계좌명','납입(누적)','인출(누적)','실납입','매입총액','현재총액','평가손익','수익률','수익률(실납)','연간분배율','월분배금']);
+  ov1.push(['계좌명','납입(누적)','인출(누적)','실납입','매입총액','현재평가액','평가손익','수익률','수익률(실납)','연간분배율','월분배금']);
   ACCOUNTS.forEach(function(acc){
     var cost=0,cur=0,dist=0;
     acc.holdings.forEach(function(h){
@@ -3397,7 +3398,7 @@ function exportToExcel(){
   XLSX.utils.book_append_sheet(wb,wsOv,'전체현황');
 
   // ── 2. 종목총괄 ──
-  var h2=[['종목명','유형','계좌','매입총액','현재총액','평가손익','수익률','비중(%)','월분배금']];
+  var h2=[['종목명','유형','계좌','매입총액','현재평가액','평가손익','수익률','비중(%)','월분배금']];
   var totalCur2=0;
   var map2={};
   ACCOUNTS.forEach(function(acc){
@@ -3436,7 +3437,7 @@ function exportToExcel(){
 
   // ── 3. 계좌별 상세 ──
   ACCOUNTS.forEach(function(acc){
-    var rows=[['종목명','티커','수량','매입단가','현재가','전고점','매입총액','현재총액','수익률','전고점대비','월분배금']];
+    var rows=[['종목명','티커','수량','매입단가','현재가','전고점','매입총액','현재평가액','수익률','전고점대비','월분배금']];
     acc.holdings.forEach(function(h){
       if(h.isMMF)return;
       var qty=h.qty||0,price=liveP(h);
@@ -3453,7 +3454,7 @@ function exportToExcel(){
   });
 
   // ── 4. CMA 해외주식 ──
-  var cmR=[['종목명','통화','수량','매입단가(현지)','매입환율','현재가(현지)','현재환율','매입총액(원)','현재총액(원)','수익률','전고점대비']];
+  var cmR=[['종목명','통화','수량','매입단가(현지)','매입환율','현재가(현지)','현재환율','매입총액(원)','현재평가액(원)','수익률','전고점대비']];
   CMA.holdings.forEach(function(h){
     var curFX=cmaFX(h),buyFX=h.avgFX||curFX;
     var priceL=cmaLiveP(h);
@@ -3467,7 +3468,7 @@ function exportToExcel(){
   XLSX.utils.book_append_sheet(wb,wsCMA,'CMA 해외주식');
 
   // ── 5. 가상화폐 ──
-  var crR=[['거래소','종목명','심볼','스테이킹','수량','합산수량','매입단가','현재가','매입총액','현재총액','수익률','전고점대비']];
+  var crR=[['거래소','종목명','심볼','스테이킹','수량','합산수량','매입단가','현재가','매입총액','현재평가액','수익률','전고점대비']];
   var addCR=function(list,ex){
     list.forEach(function(h){
       var price=PRICES[h.sym]||h.cost,tq=(h.stk||0)+(h.qty||0);
@@ -3739,25 +3740,25 @@ function renderOverview(){
     '<div class="fxitem">\uc6d0/\ub2ec\ub7ec: <input class="fxinp" value="'+FX.USD+'" onchange="FX.USD=+this.value;renderActive()"></div>',
     '<div class="fxitem">\uc6d0/\uc5d4: <input class="fxinp" value="'+FX.JPY+'" onchange="FX.JPY=+this.value;renderActive()"></div>',
     '<span class="abadge">\uc790\ub3d9\uac31\uc2e0</span>',
-    '<span style="font-size:11px;color:var(--tx3)">\uc800\uc7a5 \ubc84\ud2bc\uc73c\ub85c \uc77c\ubcc4 \uc790\uc0b0\uae30\ub85d \uc800\uc7a5</span></div>',
+    '<span style="font-size:11px;color:var(--tx3)"></span></div>',
     '<div class="sec"><div class="sechdr">',
     '<span class="sectitle">\uc804\uccb4 \ud3ec\ud2b8\ud3f4\ub9ac\uc624 \ucd1d\uad04</span>',
     '<span class="secsub">'+new Date().toLocaleDateString('ko-KR')+' \uae30\uc900</span></div>',
     '<div class="sgrid">',
     '<div class="scard"><div class="slbl">\ucd1d \ub0a9\uc785\uae08\uc561</div><div class="sval">'+fmt(gDep)+'\uc6d0</div></div>',
     '<div class="scard"><div class="slbl">\ucd1d \uc778\ucd9c\uae08\uc561</div><div class="sval neg">'+fmt(Math.abs(gWit))+'\uc6d0</div></div>',
-    '<div class="scard"><div class="slbl">\uc2e4\ud22c\uc790\uae08</div><div class="sval">'+fmt(gReal)+'\uc6d0</div></div>',
+    '<div class="scard"><div class="slbl">\uc2e4 \ub0a9\uc785\uae08\uc561</div><div class="sval">'+fmt(gReal)+'\uc6d0</div></div>',
     '<div class="scard"><div class="slbl">\ub9e4\uc785\ucd1d\uc561</div><div class="sval">'+fmt(gCost)+'\uc6d0</div></div>',
-    '<div class="scard"><div class="slbl">\ud604\uc7ac\ud3c9\uac00\uc561</div><div class="sval" style="color:var(--blu)">'+fmt(gCur)+'\uc6d0</div></div>',
+    '<div class="scard"><div class="slbl">\ud604\uc7ac\ud3c9\uac00\uc561</div><div class="sval" style="color:var(--nvy)">'+fmt(gCur)+'\uc6d0</div></div>',
     '<div class="scard"><div class="slbl">\ud3c9\uac00\uc190\uc775</div><div class="sval '+pc(gPnl)+'">'+(gPnl>=0?'+':'')+fmt(gPnl)+'\uc6d0</div></div>',
-    '<div class="scard"><div class="slbl">\uc218\uc775\ub960(\ub9e4\uc785\ub300\ube44)</div><div class="sval '+pc(gPnlR)+'" style="font-size:14px">'+fmtPct(gPnlR)+'</div></div>',
-    '<div class="scard"><div class="slbl">\uc2e4\ub0a9\ub300\ube44 \ud3c9\uac00\uc190\uc775</div><div class="sval '+pc(gCur-gReal)+'" style="font-size:14px">'+(gCur-gReal>=0?'+':'')+fmt(gCur-gReal)+'\uc6d0</div></div>',
-    '<div class="scard"><div class="slbl">\uc218\uc775\ub960(\uc2e4\ub0a9\uc785\ub300\ube44)</div><div class="sval '+pc(gPnlRL)+'" style="font-size:14px">'+fmtPct(gPnlRL)+'</div></div>',
-    '<div class="scard scard-grn"><div class="slbl">\uc6d4 \ubd84\ubc30\uae08\ud569\uacc4</div><div class="sval" style="color:var(--grn)">'+fmt(gDist)+'\uc6d0</div>'+
+    '<div class="scard"><div class="slbl">\uc218\uc775\ub960</div><div class="sval '+pc(gPnlR)+'" style="font-size:14px">'+fmtPct(gPnlR)+'</div></div>',
+    '<div class="scard"><div class="slbl">\ud3c9\uac00\uc190\uc775(\uc2e4\ub0a9)</div><div class="sval '+pc(gCur-gReal)+'" style="font-size:14px">'+(gCur-gReal>=0?'+':'')+fmt(gCur-gReal)+'\uc6d0</div></div>',
+    '<div class="scard"><div class="slbl">\uc218\uc775\ub960(\uc2e4\ub0a9)</div><div class="sval '+pc(gPnlRL)+'" style="font-size:14px">'+fmtPct(gPnlRL)+'</div></div>',
+    '<div class="scard scard-grn"><div class="slbl">\uc6d4 \ubd84\ubc30\uae08</div><div class="sval" style="color:var(--grn)">'+fmt(gDist)+'\uc6d0</div>'+
       '</div>',
-    '<div class="scard"><div class="slbl">\ube44\uacfc\uc138\uc7ac\uc6d0</div><div class="ival pur">'+fmt(gExtraTax)+'\uc6d0</div></div>',
-    '<div class="scard"><div class="slbl">\uc774\uc5f0\ud1f4\uc9c1\uae08</div><div class="ival blu">'+fmt(gExtraRet)+'\uc6d0</div></div>',
-    '<div class="scard scard-grn"><div class="slbl">\ube44\uacfc\uc138/\uc774\uc5f0\ud1f4\uc9c1\uae08 \ud569\uacc4</div><div class="ival grn" style="font-weight:700">'+fmt(gExtra)+'\uc6d0</div></div>',
+    '<div class="scard"><div class="slbl">\ube44\uacfc\uc138\uc7ac\uc6d0</div><div class="ival" style="color:#111;font-weight:600">'+fmt(gExtraTax)+'\uc6d0</div></div>',
+    '<div class="scard"><div class="slbl">\uc774\uc5f0\ud1f4\uc9c1\uae08</div><div class="ival" style="color:#111;font-weight:600">'+fmt(gExtraRet)+'\uc6d0</div></div>',
+    '<div class="scard scard-grn"><div class="slbl">\ube44\uacfc\uc138/\ud1f4\uc9c1\uae08(\ud569\uacc4)</div><div class="ival grn" style="font-weight:700">'+fmt(gExtra)+'\uc6d0</div></div>',
     ,
     '</div></div>',
     '<div class="sec" style="margin-top:10px;border:2px solid var(--brd);border-radius:12px">'
@@ -3774,7 +3775,7 @@ function renderOverview(){
     '<div class="twrap"><table style="table-layout:fixed;width:100%;min-width:680px"><thead><tr>',
     '<th style="text-align:left;width:170px">\uacc4\uc88c\uba85</th>',
     '<th style="width:95px">\ub0a9\uc785(\ub204\uc801)</th><th style="width:90px">\uc778\ucd9c(\ub204\uc801)</th><th style="width:95px">\uc2e4\ub0a9\uc785\uae08\uc561</th>',
-    '<th style="width:95px">\ub9e4\uc785\ucd1d\uc561</th><th style="width:100px">\ud604\uc7ac\ucd1d\uc561</th><th style="width:90px">\uc190\uc775\uae08\uc561</th>',
+    '<th style="width:95px">\ub9e4\uc785\ucd1d\uc561</th><th style="width:100px">\ud604\uc7ac\ud3c9\uac00\uc561</th><th style="width:90px">\uc190\uc775\uae08\uc561</th>',
     '<th style="width:66px">\uc218\uc775\ub960</th><th style="width:74px">\uc218\uc775(\uc2e4\ub0a9)</th>',
     '<th style="width:84px">\uc6d4\ubd84\ubc30\uae08</th>',
     '</tr></thead><tbody>',rows.join(''),
@@ -3819,7 +3820,7 @@ function renderChangelog(){
       return'<div class="cl-entry">'
         +'<div class="cl-time">'+new Date(e.ts).toLocaleString('ko-KR')+'</div>'
         +'<div style="background:var(--gbg);border-radius:5px;padding:5px 9px;margin-top:4px;font-size:11px">'
-        +'\ucd1d\ud3c9\uac00\uc561: <strong style="color:var(--blu)">'+fmt(e.cur)+'\uc6d0</strong>'
+        +'\ucd1d\ud3c9\uac00\uc561: <strong style="color:var(--nvy)">'+fmt(e.cur)+'\uc6d0</strong>'
         +' | \uc190\uc775: <strong class="'+(e.pnl>=0?'pos':'neg')+'">'+(e.pnl>=0?'+':'')+fmt(e.pnl)+'\uc6d0</strong>'
         +'</div>'
         +'<button class="btn-del" style="margin-top:5px" onclick="delCL('+e.id+')">\uc0ad\uc81c</button>'
@@ -4348,15 +4349,22 @@ function startApp(){
 
   function _boot(){
     setDot('fail');
-    setTimeout(function(){fetchAll();setInterval(fetchAll,60000);},300);
+    setTimeout(function(){fetchAll();setInterval(fetchAll,30000);},300);
   }
 
-  // 다른 기기/탭에서 변경 후 돌아왔을 때 자동 pull
+  // 다른 기기/탭에서 변경 후 돌아왔을 때 자동 pull + 시세 갱신
+  var _lastFetch=0;
   document.addEventListener('visibilitychange',function(){
-    if(document.visibilityState==='visible'&&ghGetToken()){
-      ghPull(false).then(function(ok){
-        if(ok){try{loadData();}catch(e){}try{migrateTickers();}catch(e){}renderAppHeader();try{renderNav();}catch(e){}renderActive();}
-      });
+    if(document.visibilityState==='visible'){
+      // 시세 갱신 (마지막 갱신 후 30초 이상 지났으면)
+      var now=Date.now();
+      if(now-_lastFetch>30000){_lastFetch=now;fetchAll();}
+      // GitHub pull
+      if(ghGetToken()){
+        ghPull(false).then(function(ok){
+          if(ok){try{loadData();}catch(e){}try{migrateTickers();}catch(e){}renderAppHeader();try{renderNav();}catch(e){}renderActive();}
+        });
+      }
     }
   });
 
