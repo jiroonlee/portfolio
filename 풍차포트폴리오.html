@@ -3120,6 +3120,23 @@ function hdmDelete(){
   renderActive(); autoSync();
 }
 
+/* ===== 가상화폐 코인 추가 ===== */
+function doAddCrypto(){
+  var ex=document.getElementById('acr-ex').value;
+  var n=(document.getElementById('acr-name').value||'').trim();
+  var sym=(document.getElementById('acr-sym').value||'').trim().toUpperCase();
+  if(!n||!sym){alert('종목명과 심볼을 입력하세요.');return;}
+  var qty=parseFloat(document.getElementById('acr-qty').value)||0;
+  var cost=parseFloat(document.getElementById('acr-cost').value)||0;
+  var high=parseFloat(document.getElementById('acr-high').value)||0;
+  var entry={n:n,sym:sym,sr:'',stk:0,qty:qty,cost:cost,high:high};
+  if(ex==='B') CRYPTO.bithumb.push(entry);
+  else CRYPTO.upbit.push(entry);
+  closeModal('add-crypto-modal');
+  renderActive();
+  autoSync();
+}
+
 /* ===== CMA 종목 추가 ===== */
 function doAddCMA(){
   var n=(document.getElementById('cm-name').value||'').trim();
