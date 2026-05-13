@@ -288,7 +288,9 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
     <h3>🎯 연금 개시 설정</h3>
     <p id="pension-age-acc-name" style="font-size:12px;color:var(--tx2);margin:4px 0 14px;font-weight:600"></p>
     <div class="mrow">
-      <div class="mlbl">현재 만 나이</div>
+      <div class="mlbl">현재 만 나이
+        <span id="pension-age-auto-badge" style="display:none;font-size:10px;background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:3px;margin-left:4px">생년월일 자동계산</span>
+      </div>
       <input class="minp" id="pension-age-inp" type="number" min="1" max="100" placeholder="예: 57" oninput="pensionAgeInput()">
     </div>
     <div id="pension-age-warn" style="display:none;font-size:11px;color:#dc2626;margin:4px 0 8px;padding:6px 10px;background:#fef2f2;border-radius:5px">
@@ -521,6 +523,10 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
         <div class="mrow">
           <div class="mlbl">부제목</div>
           <input id="meta-sub" class="minp" type="text" placeholder="연금계좌 풍차계획 포트폴리오">
+        </div>
+        <div class="mrow">
+          <div class="mlbl">생년월일 <span style="font-size:10px;color:var(--tx3)">(연금 만 나이 자동계산용 · 예: 1968-12-10)</span></div>
+          <input id="meta-birthdate" class="minp" type="date" placeholder="1968-12-10">
         </div>
       </div>
 
@@ -761,8 +767,9 @@ var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
   sub: '연금계좌 풍차계획 포트폴리오',
-  accMeta: {}, // { [accId]: {name, openDate, note} }
-  accOrder: [] // account id 순서 배열 (비어있으면 DEF 순서 그대로)
+  birthdate: '', // 생년월일 (YYYY-MM-DD 또는 YY.M.D 형식)
+  accMeta: {},
+  accOrder: []
 };
 
 /* ===== 저장소 ===== */
@@ -776,6 +783,7 @@ function loadMeta(){
     if(m){
       if(m.title) APP_META.title=m.title;
       if(m.sub) APP_META.sub=m.sub;
+      if(m.birthdate) APP_META.birthdate=m.birthdate;
       if(m.accMeta) APP_META.accMeta=m.accMeta;
       if(m.accOrder&&m.accOrder.length) APP_META.accOrder=m.accOrder;
     }
@@ -1855,6 +1863,18 @@ function pensionEdit(type,id,val){
   pensionSet(saved);
   renderPension();
 }
+/* ===== 생년월일로 만 나이 계산 ===== */
+function calcAgeFromBirthdate(birthdateStr){
+  if(!birthdateStr) return null;
+  var bd=new Date(birthdateStr);
+  if(isNaN(bd.getTime())) return null;
+  var today=new Date();
+  var age=today.getFullYear()-bd.getFullYear();
+  var m=today.getMonth()-bd.getMonth();
+  if(m<0||(m===0&&today.getDate()<bd.getDate())) age--;
+  return age>=0?age:null;
+}
+
 /* ===== 연금 개시 나이 모달 ===== */
 function openPensionAgeModal(id, label){
   var saved=pensionGet();
@@ -1865,8 +1885,22 @@ function openPensionAgeModal(id, label){
   document.getElementById('pension-age-id').value=id;
   document.getElementById('pension-age-acc-name').textContent=
     label+' ('+(isRetireAcc?'퇴직연금':'개인연금')+')';
-  var age=saved['age_'+id]||0;
-  document.getElementById('pension-age-inp').value=age||'';
+
+  // 나이: 저장값 > 생년월일 자동계산 > 빈칸
+  var savedAge=saved['age_'+id]||0;
+  var autoAge=calcAgeFromBirthdate(APP_META.birthdate);
+  var badge=document.getElementById('pension-age-auto-badge');
+  if(savedAge){
+    document.getElementById('pension-age-inp').value=savedAge;
+    if(badge) badge.style.display='none';
+  } else if(autoAge!==null){
+    document.getElementById('pension-age-inp').value=autoAge;
+    if(badge) badge.style.display='inline';
+  } else {
+    document.getElementById('pension-age-inp').value='';
+    if(badge) badge.style.display='none';
+  }
+
   document.getElementById('pension-age-warn').style.display='none';
   var started=saved['started_'+id]!=null?saved['started_'+id]:false;
   var sYes=document.getElementById('pension-started-yes');
@@ -1876,6 +1910,8 @@ function openPensionAgeModal(id, label){
   setTimeout(function(){document.getElementById('pension-age-inp').focus();},100);
 }
 function pensionAgeInput(){
+  var badge=document.getElementById('pension-age-auto-badge');
+  if(badge) badge.style.display='none'; // 수동 입력 시 자동 뱃지 숨김
   var id=document.getElementById('pension-age-id').value;
   var age=parseInt(document.getElementById('pension-age-inp').value)||0;
   var acc=ACCOUNTS.find(function(a){return a.id===id;});
@@ -4012,6 +4048,7 @@ function metaTab(tab){
 function openMetaEditor(){
   document.getElementById('meta-title').value = APP_META.title;
   document.getElementById('meta-sub').value = APP_META.sub;
+  document.getElementById('meta-birthdate').value = APP_META.birthdate||'';
   _renderMetaAccList();
   _renderMetaOrderList();
   _renderMetaDelList();
@@ -4232,8 +4269,10 @@ function saveMetaEditor(){
   // 1. 앱 제목/부제목 저장
   var newTitle = document.getElementById('meta-title').value.trim();
   var newSub = document.getElementById('meta-sub').value.trim();
+  var newBirth = document.getElementById('meta-birthdate').value.trim();
   if(newTitle) APP_META.title = newTitle;
   if(newSub) APP_META.sub = newSub;
+  APP_META.birthdate = newBirth;
 
   // 2. 계좌 메타(이름/날짜/메모) 저장
   var inputs = document.querySelectorAll('#meta-acc-list input[data-mid]');
