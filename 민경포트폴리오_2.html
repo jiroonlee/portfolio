@@ -643,7 +643,7 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
 </div>
 
 <div class="hdr">
-  <div><div class="hdr-title" id="hdr-title-el">🌸 수익은 길게, 손실은 짧게!!! <span style="font-size:10px;color:#9ca3af;font-weight:400">v5.0</span> <span style="font-size:10px;background:#2563eb;color:#fff;padding:1px 6px;border-radius:4px;font-weight:700">#1</span></div><div class="hdr-sub" id="hdr-sub-el">연금계좌 풍차계획 포트폴리오</div></div>
+  <div><div class="hdr-title" id="hdr-title-el">🌸 수익은 길게, 손실은 짧게!!! <span style="font-size:10px;color:#9ca3af;font-weight:400">v5.0</span> <span style="font-size:10px;background:#059669;color:#fff;padding:1px 6px;border-radius:4px;font-weight:700">#2</span></div><div class="hdr-sub" id="hdr-sub-el">연금계좌 풍차계획 포트폴리오</div></div>
   <div class="hdr-sp"></div>
   <div class="upd" id="upd">종전가</div>
   <div class="dot" id="dot"></div>
@@ -862,7 +862,7 @@ function applyMetaToAccounts(){
 function renderAppHeader(){
   var te=document.getElementById('hdr-title-el');
   var se=document.getElementById('hdr-sub-el');
-  if(te) te.innerHTML=APP_META.title+' <span style="font-size:10px;color:#9ca3af;font-weight:400">v5.0</span> <span style="font-size:10px;background:#2563eb;color:#fff;padding:1px 6px;border-radius:4px;font-weight:700">#1</span>';
+  if(te) te.innerHTML=APP_META.title+' <span style="font-size:10px;color:#9ca3af;font-weight:400">v5.0</span> <span style="font-size:10px;background:#059669;color:#fff;padding:1px 6px;border-radius:4px;font-weight:700">#2</span>';
   if(se) se.textContent=APP_META.sub;
   document.title=APP_META.title.replace(/[\u{1F300}-\u{1FFFF}\u2600-\u27FF]/gu,'').trim()||'풍차계획 포트폴리오';
 }
@@ -931,7 +931,7 @@ function saveData(){
   sSet(SKEY,JSON.stringify({accounts:ACCOUNTS,cma:CMA,crypto:CRYPTO,fx:{usd:FX.USD,jpy:FX.JPY},prices:PRICES}));
   saveMeta();
   addCL(today,t);
-  sSet('fp_last_save',now);
+  sSet('fp2_last_save',now);
   if(ghGetToken()){
     ghPush();
     alert('\u2705 저장 완료 ('+today+')\n총평가액: '+fmt(t.cur)+'원\n\n\u2601\ufe0f GitHub \uc5c5\ub85c\ub4dc \uc911...');
@@ -940,7 +940,7 @@ function saveData(){
   }
 }
 var HIST_SNAPS=[];
-var SNAP_DEL_KEY='fp_snap_del';
+var SNAP_DEL_KEY='fp2_snap_del';
 function loadSnaps(){
   var stored;
   try{stored=JSON.parse(sGet(SNAPKEY)||'[]');}catch(e){stored=[];}
@@ -1441,7 +1441,7 @@ function renderDistDashboard(){
 
 /* ===== 사적연금 통합관리 ===== */
 var PENSION_KEY='fp2_pension_v1';
-var PENSION_STRATEGY_KEY='fp_pension_strategy';
+var PENSION_STRATEGY_KEY='fp2_pension_strategy';
 
 function pensionGet(){try{return JSON.parse(sGet(PENSION_KEY)||'{}');}catch(e){return {};}}
 function pensionSet(obj){sSet(PENSION_KEY,JSON.stringify(obj));}
@@ -3999,7 +3999,7 @@ function ghSaveAndSync(){
   ghSetToken(t);closeModal('gh-modal');ghPush();
 }
 function ghForcePull(){
-  closeModal('gh-modal');sSet('fp_last_save','0');
+  closeModal('gh-modal');sSet('fp2_last_save','0');
   var btn=document.getElementById('gh-btn');
   if(btn){btn.textContent='\ub85c\ub529...';btn.className='hbtn hbtn-sync syncing';}
   ghPull(true).then(function(ok){
@@ -4015,7 +4015,7 @@ async function ghPush(silent){
   if(btn&&!silent){btn.textContent='\uc5c5\ub85c\ub4dc...';btn.className='hbtn hbtn-sync syncing';}
   try{
     var snaps=loadSnaps();
-    var cl=[];try{cl=JSON.parse(sGet('fp_cl')||'[]');}catch(e){}
+    var cl=[];try{cl=JSON.parse(sGet('fp2_cl')||'[]');}catch(e){}
     var distData=distGet();
     var payload={v:7,saved:new Date().toISOString(),
       data:{accounts:ACCOUNTS,cma:CMA,crypto:CRYPTO,fx:{usd:FX.USD,jpy:FX.JPY},prices:PRICES},
@@ -4032,7 +4032,7 @@ async function ghPush(silent){
     if(sha) body.sha=sha;
     var r=await fetch(apiBase,{method:'PUT',headers:hdrs,body:JSON.stringify(body)});
     if(!r.ok){var err=await r.json();throw new Error(err.message||r.status);}
-    sSet('fp_last_save',payload.saved);
+    sSet('fp2_last_save',payload.saved);
     // 동기화 성공 시간 저장
     var syncEl=document.getElementById('upd');
     if(syncEl&&silent) syncEl.dataset.lastSync=new Date().toLocaleTimeString('ko-KR');
@@ -4061,7 +4061,7 @@ async function ghPull(force){
     }catch(de){decoded=decodeURIComponent(escape(atob(raw)));}
     var obj=JSON.parse(decoded);
     if(!obj||!obj.data||!obj.data.accounts) return false;
-    var localSaved=sGet('fp_last_save')||'0';
+    var localSaved=sGet('fp2_last_save')||'0';
     if(!force&&obj.saved&&obj.saved<=localSaved) return false;
     ACCOUNTS=obj.data.accounts;CMA=obj.data.cma;CRYPTO=obj.data.crypto;
     if(!CRYPTO.exchanges) CRYPTO.exchanges=[];
@@ -4072,14 +4072,14 @@ async function ghPull(force){
       obj.snaps.forEach(function(s){map[s.date]=s;});
       sSet(SNAPKEY,JSON.stringify(Object.values(map).sort(function(a,b){return a.date<b.date?-1:1;})));
     }
-    if(obj.changelog&&obj.changelog.length) sSet('fp_cl',JSON.stringify(obj.changelog));
+    if(obj.changelog&&obj.changelog.length) sSet('fp2_cl',JSON.stringify(obj.changelog));
     sSet(SKEY,JSON.stringify({accounts:ACCOUNTS,cma:CMA,crypto:CRYPTO,fx:{usd:FX.USD,jpy:FX.JPY},prices:PRICES}));
-    if(obj.distData){sSet(DIST_KEY,JSON.stringify(obj.distData));sSet('fp_dist_ver','v3');}
+    if(obj.distData){sSet(DIST_KEY,JSON.stringify(obj.distData));sSet('fp2_dist_ver','v3');}
     if(obj.pensionData) sSet(PENSION_KEY,JSON.stringify(obj.pensionData));
     if(obj.pensionStrategy) sSet(PENSION_STRATEGY_KEY,obj.pensionStrategy);
     if(obj.snapDel&&obj.snapDel.length) sSet(SNAP_DEL_KEY,JSON.stringify(obj.snapDel));
     if(obj.appMeta){ sSet(META_KEY,JSON.stringify(obj.appMeta)); }
-    sSet('fp_last_save',obj.saved||new Date().toISOString());
+    sSet('fp2_last_save',obj.saved||new Date().toISOString());
     return true;
   }catch(e){return false;}
 }
@@ -4391,9 +4391,9 @@ function startApp(){
   try{migrateTickers();}catch(e){}
   // 월별 분배금 데이터 (버전 v3 강제 업데이트)
   (function(){
-    if(sGet('fp_dist_ver')!=='v3'){
+    if(sGet('fp2_dist_ver')!=='v3'){
       sSet(DIST_KEY,"{\"y2023\":{\"m1\":0,\"m2\":2550,\"m3\":105014,\"m4\":87014,\"m5\":170537,\"m6\":289496,\"m7\":1071701,\"m8\":641299,\"m9\":1566065,\"m10\":1584347,\"m11\":1773076,\"m12\":2200277},\"y2024\":{\"m1\":6103826,\"m2\":5310958,\"m3\":4728500,\"m4\":4704000,\"m5\":4851000,\"m6\":4851000,\"m7\":4851000,\"m8\":4851000,\"m9\":4851000,\"m10\":4851000,\"m11\":4851000,\"m12\":4851000},\"y2025\":{\"m1\":3791571,\"m2\":5539175,\"m3\":4925236,\"m4\":4608313,\"m5\":4345458,\"m6\":5311764,\"m7\":5601346,\"m8\":5548515,\"m9\":5260115,\"m10\":5458915,\"m11\":5757331,\"m12\":5404500},\"y2026\":{\"m1\":6103826,\"m2\":5310958,\"m3\":4728500,\"m4\":4704000}}");
-      sSet('fp_dist_ver','v3');
+      sSet('fp2_dist_ver','v3');
     }
   })();
 
