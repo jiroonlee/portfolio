@@ -503,10 +503,7 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
   <div class="modal">
     <h3>+ 가상화폐 종목 추가</h3>
     <div class="mrow"><div class="mlbl">거래소</div>
-      <select class="msel" id="acr-ex">
-        <option value="B">빗썸 (Bithumb)</option>
-        <option value="U">업비트 (Upbit)</option>
-      </select>
+      <select class="msel" id="acr-ex"></select>
     </div>
     <div class="mgrid2">
       <div class="mrow"><div class="mlbl">종목명</div><input class="minp" id="acr-name" placeholder="예: 리플(XRP)"></div>
@@ -1960,10 +1957,15 @@ function renderKR(acc, cid) {
   var pnlReal  = real > 0 ? (tCur - real) / real : 0;  // 실납입금대비 수익률
 
   var html = '';
-  html += '<div class="sec"><div class="ahdr">';
-  html += '<div class="ameta"><span class="aname">' + acc.name + '</span>';
-  html += '<span class="adate">(' + acc.openDate + ')</span>';
-  html += '<span class="anote">' + acc.note + '</span></div>';
+  html += '<div class="sec">';
+  html += '<div class="sechdr">';
+  html += '<span class="sectitle">'+acc.name+'</span>';
+  html += '<span style="font-size:11px;color:var(--tx3);margin-left:6px">('+acc.openDate+')</span>';
+  html += '<span style="font-size:11px;color:var(--tx3);margin-left:8px">'+acc.note+'</span>';
+  html += '<button class="btn btn-add" style="margin-left:auto;padding:3px 10px;font-size:11px" '
+    +'onclick="openAddModal(\''+id+'\')">&plus; 종목 추가</button>';
+  html += '</div>';
+  html += '<div class="ahdr" style="border-top:none">';
   html += '<div class="irow">';
   // 당해납입
   html += mkIE('\ub2f9\ud574\ub0a9\uc785(\uc6d0)', depYr, id, 'depYr');
@@ -2006,7 +2008,7 @@ function renderKR(acc, cid) {
   html += '<td class="auto" style="color:var(--grn)" id="' + cid + '_tot_dist">' + fmt(tDist) + '</td>';
   html += '<td></td></tr>';
   html += '</tbody></table></div>';
-  html += '<div class="tbbar"><button class="btn btn-add" onclick="openAddModal(\'' + id + '\')">+ \uc885\ubaa9 \ucd94\uac00</button></div>';
+
   html += '</div>';
 
   document.getElementById(cid).innerHTML = html;
@@ -2286,8 +2288,13 @@ function renderCMA(){
     '<div class="fxitem">\uc6d0/\ub2ec\ub7ec(USD): <input class="fxinp" value="'+FX.USD+'" onchange="FX.USD=+this.value;renderActive();autoSync()"> <span class="abadge">\uc790\ub3d9\uac31\uc2e0</span></div>',
     '<div class="fxitem">\uc6d0/\uc5d4(JPY): <input class="fxinp" value="'+FX.JPY+'" onchange="FX.JPY=+this.value;renderActive();autoSync()"> <span class="abadge">\uc790\ub3d9\uac31\uc2e0</span></div>',
     '<span style="font-size:11px;color:var(--tx3)"></span></div>',
-    '<div class="sec"><div class="ahdr">',
-    '<div class="ameta"><span class="aname">'+CMA.name+'</span></div>',
+    '<div class="sec">',
+    '<div class="sechdr">',
+    '<span class="sectitle">'+CMA.name+'</span>',
+    '<button class="btn btn-add" style="margin-left:auto;padding:3px 10px;font-size:11px" onclick="openModal(\'cma-modal\')">'
+      +'&plus; 종목 추가</button>',
+    '</div>',
+    '<div class="ahdr" style="border-top:none">',
     '<div class="irow">',
     mkCMAE('\ub2f9\ud574\ub0a9\uc785(\uc6d0)', depYr,  'depYr'),
     mkCMAE('\ub204\uc801\ub0a9\uc785(\uc6d0)', accDep, 'accDep'),
@@ -2316,7 +2323,7 @@ function renderCMA(){
     '<td class="'+pc(pnlR)+'">'+fmtPct(pnlR)+'</td>',
     '<td></td><td></td>',
     '</tr></tbody></table></div>',
-    '<div class="tbbar"><button class="btn btn-add" onclick="openModal(\'cma-modal\')">&plus; \uc885\ubaa9 \ucd94\uac00</button></div>',
+
     '</div>'
   ].join('');
 }
@@ -2438,12 +2445,7 @@ function renderCrypto(force){
     var er=exRows(ex.holdings,ex.id);
     extraBlocks+=exBlock(er,ex.emoji||'🔷',ex.name,'#f5f3ff',true);  // 추가거래소: 빈 경우 헤더 유지
   });
-  var sel=document.getElementById('acr-ex');
-  if(sel){
-    var opts='<option value="B">\ube57\uc12c (Bithumb)</option><option value="U">\uc5c5\ube44\ud2b8 (Upbit)</option>';
-    (CRYPTO.exchanges||[]).forEach(function(ex){opts+='<option value="'+ex.id+'">'+(ex.emoji||'')+' '+escH(ex.name)+'</option>';});
-    sel.innerHTML=opts;
-  }
+
   var pg=document.getElementById('pg-crypto');if(!pg)return;
   pg.innerHTML=
     '<div class="sec"><div class="sechdr">'
@@ -2889,14 +2891,16 @@ function renderChangelog(){
         +'\ucd1d\ud3c9\uac00\uc561: <strong style="color:var(--nvy)">'+fmt(e.cur)+'\uc6d0</strong>'
         +' | \uc190\uc775: <strong class="'+(e.pnl>=0?'pos':'neg')+'">'+(e.pnl>=0?'+':'')+fmt(e.pnl)+'\uc6d0</strong>'
         +'</div>'
-        +'<button class="btn-del" style="margin-top:5px" onclick="delCL('+e.id+')">\uc0ad\uc81c</button>'
+        +'<button onclick="delCL('+e.id+')" '
+        +'style="border:none;background:none;color:#dc2626;cursor:pointer;font-size:13px;padding:2px 6px;line-height:1" '
+        +'title="\uc0ad\uc81c">\u00d7</button>'
         +'</div>';
     }).join('');
   document.getElementById('pg-changelog').innerHTML=[
     '<div class="sec"><div class="sechdr">',
     '<span class="sectitle">\ud83d\udcdd \uc800\uc7a5\uc774\ub825</span>',
     '<span class="secsub">\ucd1d '+list.length+'\uac74 (\uc77c\ubcc4 \ucd5c\uc2e0 1\uac74)</span>',
-    (list.length?'<button class="btn-del" style="margin-left:auto" onclick="clearCL()">\uc804\uccb4\uc0ad\uc81c</button>':''),
+    (list.length?'<button class="btn" style="margin-left:auto;padding:4px 11px;font-size:12px;background:#fee2e2;color:#dc2626;border-color:#fca5a5" onclick="clearCL()">\uae30\ub85d \uc804\uccb4\uc0ad\uc81c</button>':''),
     '</div><div style="padding:12px">'+rows+'</div></div>'
   ].join('');
 }
@@ -3056,24 +3060,26 @@ function hdmDelete(){
 /* ===== 가상화폐 코인 추가 ===== */
 function openAddCryptoModal(){
   var sel=document.getElementById('acr-ex');
-  if(sel){
-    var prevVal=sel.value;
-    var opts='';
-    // 빗썸/업비트: 코인이 있는 경우만 선택지 포함
-    if(CRYPTO.bithumb.length>0) opts+='<option value="B">빗썸 (Bithumb)</option>';
-    if(CRYPTO.upbit.length>0)   opts+='<option value="U">업비트 (Upbit)</option>';
-    // 추가 거래소: 항상 포함
-    (CRYPTO.exchanges||[]).forEach(function(ex){
-      opts+='<option value="'+ex.id+'">'+escH((ex.emoji||'')+' '+ex.name)+'</option>';
-    });
-    if(!opts){
-      alert('코인을 추가할 거래소가 없습니다. 먼저 거래소를 추가해주세요.');
-      return;
-    }
-    sel.innerHTML=opts;
-    // 이전 선택 유지 (선택지에 있으면)
-    if(prevVal && sel.querySelector('option[value="'+prevVal+'"]')) sel.value=prevVal;
+  if(!sel) return;
+  var prevVal=sel.value;
+  var opts='';
+  if((CRYPTO.bithumb||[]).length>0)
+    opts+='<option value="B">빗썸 (Bithumb)</option>';
+  if((CRYPTO.upbit||[]).length>0)
+    opts+='<option value="U">업비트 (Upbit)</option>';
+  (CRYPTO.exchanges||[]).forEach(function(ex){
+    opts+='<option value="'+ex.id+'">'+(ex.emoji||'')+' '+escH(ex.name)+'</option>';
+  });
+  if(!opts){
+    alert('코인을 추가할 거래소가 없습니다.\n거래소 관리에서 먼저 거래소를 추가해주세요.');
+    return;
   }
+  sel.innerHTML=opts;
+  var prevOpt=prevVal?sel.querySelector('option[value="'+prevVal+'"]'):null;
+  sel.selectedIndex=prevOpt?Array.from(sel.options).indexOf(prevOpt):0;
+  ['acr-name','acr-sym','acr-qty','acr-cost','acr-high'].forEach(function(eid){
+    var e=document.getElementById(eid); if(e) e.value='';
+  });
   openModal('add-crypto-modal');
 }
 
@@ -3132,21 +3138,29 @@ function _renderExMgmtList(){
   if(!el) return;
   var rows='';
   function exRow(emj,name,cnt,id){
+    var delBtnStyle='border:1px solid #fca5a5;background:#fee2e2;'
+      +'color:#dc2626;border-radius:4px;cursor:pointer;font-size:10px;padding:2px 8px';
     return '<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;'
       +'border:1px solid var(--brd2);border-radius:6px;margin-bottom:5px;background:#fff">'
       +'<span style="font-size:14px">'+emj+'</span>'
       +'<span style="flex:1;font-size:12px;font-weight:600">'+escH(name)+'</span>'
       +'<span style="font-size:10px;color:var(--tx3)">'+cnt+'개</span>'
-      +'<button data-exid="'+escH(id)+'" style="border:1px solid #fca5a5;background:#fee2e2;'
-      +'color:#dc2626;border-radius:4px;cursor:pointer;font-size:10px;padding:2px 8px">'
-      +'삭제</button>'
+      +'<button data-exid="'+escH(id)+'" style="'+delBtnStyle+'">삭제</button>'
       +'</div>';
   }
-  if(CRYPTO.bithumb.length>0) rows+=exRow('🔸','빗썸 (Bithumb)',CRYPTO.bithumb.length,'B');
-  if(CRYPTO.upbit.length>0) rows+=exRow('🔹','업비트 (Upbit)',CRYPTO.upbit.length,'U');
+  // 빗썸/업비트: 코인 있을 때만 표시 (비어있으면 삭제 불필요)
+  if((CRYPTO.bithumb||[]).length>0)
+    rows+=exRow('🔸','빗썸 (Bithumb)',CRYPTO.bithumb.length,'B');
+  if((CRYPTO.upbit||[]).length>0)
+    rows+=exRow('🔹','업비트 (Upbit)',CRYPTO.upbit.length,'U');
+  // 추가 거래소: 코인 유무 관계없이 항상 표시 (거래소 자체를 삭제 가능해야 함)
   (CRYPTO.exchanges||[]).forEach(function(ex){
     rows+=exRow(ex.emoji||'🔷',ex.name,(ex.holdings||[]).length,ex.id);
   });
+  if(!rows){
+    rows='<div style="font-size:12px;color:var(--tx3);padding:8px 4px;text-align:center">'
+      +'코인이 있는 거래소가 없습니다.</div>';
+  }
   el.innerHTML=rows;
   el.querySelectorAll('button[data-exid]').forEach(function(btn){
     btn.addEventListener('click',function(){confirmDelEx(btn.getAttribute('data-exid'));});
@@ -3339,7 +3353,7 @@ function moveCMAHolding(idx, dir){
 
 /* ===== 모달/내비게이션 ===== */
 function openModal(id){var el=document.getElementById(id);if(el)el.classList.add('show');}
-function closeModal(id){var el=document.getElementById(id);if(el){el.classList.remove('show');el.querySelectorAll('input').forEach(function(e){e.value='';});}}
+function closeModal(id){var el=document.getElementById(id);if(el){el.classList.remove('show');el.querySelectorAll('input:not([type=hidden])').forEach(function(e){e.value='';});}}
 var curPage='overview';
 function go(id,el){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on');});
@@ -3905,14 +3919,16 @@ function renderChangelog(){
         +'\ucd1d\ud3c9\uac00\uc561: <strong style="color:var(--nvy)">'+fmt(e.cur)+'\uc6d0</strong>'
         +' | \uc190\uc775: <strong class="'+(e.pnl>=0?'pos':'neg')+'">'+(e.pnl>=0?'+':'')+fmt(e.pnl)+'\uc6d0</strong>'
         +'</div>'
-        +'<button class="btn-del" style="margin-top:5px" onclick="delCL('+e.id+')">\uc0ad\uc81c</button>'
+        +'<button onclick="delCL('+e.id+')" '
+        +'style="border:none;background:none;color:#dc2626;cursor:pointer;font-size:13px;padding:2px 6px;line-height:1" '
+        +'title="\uc0ad\uc81c">\u00d7</button>'
         +'</div>';
     }).join('');
   document.getElementById('pg-changelog').innerHTML=[
     '<div class="sec"><div class="sechdr">',
     '<span class="sectitle">\uc800\uc7a5\uc774\ub825</span>',
     '<span class="secsub">\ucd1d '+list.length+'\uac74 (\uc77c\ubcc4 \ucd5c\uc2e0 1\uac74)</span>',
-    (list.length?'<button class="btn-del" style="margin-left:auto" onclick="clearCL()">\uc804\uccb4\uc0ad\uc81c</button>':''),
+    (list.length?'<button class="btn" style="margin-left:auto;padding:4px 11px;font-size:12px;background:#fee2e2;color:#dc2626;border-color:#fca5a5" onclick="clearCL()">\uae30\ub85d \uc804\uccb4\uc0ad\uc81c</button>':''),
     '</div><div style="padding:12px">'+rows+'</div></div>'
   ].join('');
 }
