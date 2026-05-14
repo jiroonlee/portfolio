@@ -2420,20 +2420,23 @@ function renderCrypto(force){
     +'<th>\ub9e4\uc785\ucd1d\uc561</th><th>\ud604\uc7ac\ud3c9\uac00\uc561</th>'
     +'<th>\uc218\uc775\ub960</th><th>\uc804\uace0\uc810\ub300\ube44</th>'
     +'<th>\ud3c9\uac00\uc190\uc775</th><th></th></tr>';
-  function exBlock(er,emj,label,bg){
-    if(!er.visible) return '';
-    return '<div style="display:flex;align-items:center;padding:5px 12px 4px;'
+  function exBlock(er,emj,label,bg,isExtra){
+    // 추가거래소(isExtra=true): 빈 경우 헤더만 표시(코인 추가 가능)
+    // 빗썸/업비트: 빈 경우 완전 숨김
+    if(!er.visible && !isExtra) return '';
+    var hdr='<div style="display:flex;align-items:center;padding:5px 12px 4px;'
       +'background:'+bg+';border-bottom:1px solid #e8ecf0">'
       +'<span style="font-size:13px;margin-right:5px">'+emj+'</span>'
       +'<span style="font-size:12px;font-weight:700">'+label+'</span>'
-      +'</div>'
-      +'<div class="twrap has-order"><table><thead>'+thRow+'</thead><tbody>'+er.html+'</tbody></table></div>';
+      +'</div>';
+    if(!er.visible) return hdr;
+    return hdr+'<div class="twrap has-order"><table><thead>'+thRow+'</thead><tbody>'+er.html+'</tbody></table></div>';
   }
   var bith=exRows(CRYPTO.bithumb,'B'), ubit=exRows(CRYPTO.upbit,'U');
   var extraBlocks='';
   (CRYPTO.exchanges||[]).forEach(function(ex){
     var er=exRows(ex.holdings,ex.id);
-    if(er.visible) extraBlocks+=exBlock(er,ex.emoji||'🔷',ex.name,'#f5f3ff');
+    extraBlocks+=exBlock(er,ex.emoji||'🔷',ex.name,'#f5f3ff',true);  // 추가거래소: 빈 경우 헤더 유지
   });
   var sel=document.getElementById('acr-ex');
   if(sel){
@@ -2463,7 +2466,7 @@ function renderCrypto(force){
           +'<button class="btn" style="padding:3px 9px;font-size:11px;background:#f0fdf4;color:#057a55;border-color:#a7f3d0" '
             +'onclick="openExchangeMgmt()">\uac70\ub798\uc18c \uad00\ub9ac</button>'
           +'<button class="btn btn-add" style="padding:3px 9px;font-size:11px" '
-            +'onclick="openModal(\'add-crypto-modal\')">&plus; \ucf54\uc778 \ucd94\uac00</button>'
+            +'onclick="openAddCryptoModal()">&plus; \ucf54\uc778 \ucd94\uac00</button>'
         +'</div>'
       +'</div>'
       +exBlock(bith,'🔸','\ube57\uc12c (Bithumb)','#fffbeb')
@@ -3051,6 +3054,29 @@ function hdmDelete(){
 /* ===== 거래소 추가/삭제 ===== */
 
 /* ===== 가상화폐 코인 추가 ===== */
+function openAddCryptoModal(){
+  var sel=document.getElementById('acr-ex');
+  if(sel){
+    var prevVal=sel.value;
+    var opts='';
+    // 빗썸/업비트: 코인이 있는 경우만 선택지 포함
+    if(CRYPTO.bithumb.length>0) opts+='<option value="B">빗썸 (Bithumb)</option>';
+    if(CRYPTO.upbit.length>0)   opts+='<option value="U">업비트 (Upbit)</option>';
+    // 추가 거래소: 항상 포함
+    (CRYPTO.exchanges||[]).forEach(function(ex){
+      opts+='<option value="'+ex.id+'">'+escH((ex.emoji||'')+' '+ex.name)+'</option>';
+    });
+    if(!opts){
+      alert('코인을 추가할 거래소가 없습니다. 먼저 거래소를 추가해주세요.');
+      return;
+    }
+    sel.innerHTML=opts;
+    // 이전 선택 유지 (선택지에 있으면)
+    if(prevVal && sel.querySelector('option[value="'+prevVal+'"]')) sel.value=prevVal;
+  }
+  openModal('add-crypto-modal');
+}
+
 function doAddCrypto(){
   var ex=document.getElementById('acr-ex').value;
   var n=(document.getElementById('acr-name').value||'').trim();
@@ -3116,8 +3142,8 @@ function _renderExMgmtList(){
       +'삭제</button>'
       +'</div>';
   }
-  rows+=exRow('🔸','빗섬 (Bithumb)',CRYPTO.bithumb.length,'B');
-  rows+=exRow('🔹','업비트 (Upbit)',CRYPTO.upbit.length,'U');
+  if(CRYPTO.bithumb.length>0) rows+=exRow('🔸','빗썸 (Bithumb)',CRYPTO.bithumb.length,'B');
+  if(CRYPTO.upbit.length>0) rows+=exRow('🔹','업비트 (Upbit)',CRYPTO.upbit.length,'U');
   (CRYPTO.exchanges||[]).forEach(function(ex){
     rows+=exRow(ex.emoji||'🔷',ex.name,(ex.holdings||[]).length,ex.id);
   });
