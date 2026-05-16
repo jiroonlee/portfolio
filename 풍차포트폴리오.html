@@ -642,7 +642,7 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
 </div>
 
 <div class="hdr">
-  <div><div class="hdr-title" id="hdr-title-el">🌸 수익은 길게, 손실은 짧게!!! <span style="font-size:10px;color:#9ca3af;font-weight:400">v5.15</span> <span style="font-size:10px;background:#2563eb;color:#fff;padding:1px 6px;border-radius:4px;font-weight:700">#1</span></div><div class="hdr-sub" id="hdr-sub-el">연금계좌 풍차계획 포트폴리오</div></div>
+  <div><div class="hdr-title" id="hdr-title-el">🌸 수익은 길게, 손실은 짧게!!! <span style="font-size:10px;color:#9ca3af;font-weight:400">v5.18</span> <span style="font-size:10px;background:#2563eb;color:#fff;padding:1px 6px;border-radius:4px;font-weight:700">#1</span></div><div class="hdr-sub" id="hdr-sub-el">연금계좌 풍차계획 포트폴리오</div></div>
   <div class="hdr-sp"></div>
   <div class="upd" id="upd">종전가</div>
   <div class="dot" id="dot"></div>
@@ -796,7 +796,7 @@ var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
   sub: '연금계좌 풍차계획 포트폴리오',
-  version: 'v5.15',   // 버전 — 여기만 수정
+  version: 'v5.18',   // 버전 — 여기만 수정
   birthdate: '', // 생년월일 (YYYY-MM-DD 또는 YY.M.D 형식)
   accMeta: {},
   accOrder: []
@@ -813,7 +813,7 @@ function loadMeta(){
     if(m){
       if(m.title) APP_META.title=m.title;
       if(m.sub) APP_META.sub=m.sub;
-      if(m.version) APP_META.version=m.version;
+      // version은 파일 내장값 우선 — 토큰 복원 안 함
       if(m.birthdate) APP_META.birthdate=m.birthdate;
       if(m.accMeta) APP_META.accMeta=m.accMeta;
       if(m.accOrder&&m.accOrder.length) APP_META.accOrder=m.accOrder;
@@ -860,8 +860,8 @@ function applyMetaToAccounts(){
 function renderAppHeader(){
   var te=document.getElementById('hdr-title-el');
   var se=document.getElementById('hdr-sub-el');
-  var ver=APP_META.version||'v5.9.1';
-  if(te) te.innerHTML=APP_META.title+' <span style="font-size:10px;color:#9ca3af;font-weight:400">'+ver+'</span> <span style="font-size:10px;background:#2563eb;color:#fff;padding:1px 6px;border-radius:4px;font-weight:700">#1</span>';
+  var ver=APP_META.version||'';
+  if(te) te.innerHTML=APP_META.title+(ver?' <span style="font-size:10px;color:#9ca3af;font-weight:400">'+ver+'</span>':'')+' <span style="font-size:10px;background:#2563eb;color:#fff;padding:1px 6px;border-radius:4px;font-weight:700">#1</span>';
   if(se) se.textContent=APP_META.sub;
   document.title=APP_META.title.replace(/[\u{1F300}-\u{1FFFF}\u2600-\u27FF]/gu,'').trim()||'풍차계획 포트폴리오';
 }
@@ -1546,7 +1546,7 @@ function renderDistDashboard(){
   var sumCell='<td style="padding:2px 4px;text-align:right;font-size:11px;font-weight:700;color:var(--nvy);border:1px solid var(--brd)">'+fmt(Math.round(total))+'</td>';
 
   el.innerHTML='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">'
-    +'<table style="width:100%;border-collapse:collapse;table-layout:fixed;min-width:480px">'
+    +'<table style="width:100%;border-collapse:collapse;table-layout:fixed">'
     +'<thead><tr>'+thCells+'</tr></thead>'
     +'<tbody><tr>'+tdCells+sumCell+'</tr></tbody>'
     +'</table></div>'
@@ -1883,7 +1883,7 @@ function renderPension(){
     +pensionStrategyGet()+'</textarea></div></div>';
 
   pg.innerHTML='<div class="sec"><div class="sechdr"><span class="sectitle">사적연금 통합관리</span></div>'
-    +'<div class="twrap" style="padding:0 13px 6px"><table style="width:100%;min-width:480px;table-layout:fixed;">'
+    +'<div class="twrap" style="padding:0 13px 6px"><table style="width:100%;table-layout:fixed;">'
     +'<colgroup><col style="width:110px">'+cols.map(function(){return '<col>';}).join('')+'<col></colgroup>'
     +hdRow+tbody+'</table></div>'+noteHTML+'</div>'+strategyHTML;
 }
@@ -4206,7 +4206,11 @@ async function ghPull(force){
     if(obj.pensionData) sSet(PENSION_KEY,JSON.stringify(obj.pensionData));
     if(obj.pensionStrategy) sSet(PENSION_STRATEGY_KEY,obj.pensionStrategy);
     if(obj.snapDel&&obj.snapDel.length) sSet(SNAP_DEL_KEY,JSON.stringify(obj.snapDel));
-    if(obj.appMeta){ sSet(META_KEY,JSON.stringify(obj.appMeta)); }
+    if(obj.appMeta){
+      var _am=JSON.parse(JSON.stringify(obj.appMeta));
+      delete _am.version; // version은 파일 내장값 우선
+      sSet(META_KEY,JSON.stringify(_am));
+    }
     sSet('fp_last_save',obj.saved||new Date().toISOString());
     return true;
   }catch(e){return false;}
