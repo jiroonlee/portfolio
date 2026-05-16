@@ -92,7 +92,7 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
   background:#e8f0fe;font-weight:700;
   color:#1e3a8a;border:none;
   box-shadow:inset 0 2px 0 #93c5fd;
-  padding:4px 8px;
+  padding:4px 4px;
 }
 .nrow td{background:#fffbf0;color:#92400e;font-size:11px;text-align:left;padding:5px 9px;border:none;box-shadow:none}
 .xhdr td{
@@ -643,7 +643,7 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
 </div>
 
 <div class="hdr">
-  <div><div class="hdr-title" id="hdr-title-el">🌸 수익은 길게, 손실은 짧게!!! <span style="font-size:10px;color:#9ca3af;font-weight:400">v5.22</span> <span style="font-size:10px;background:#059669;color:#fff;padding:1px 6px;border-radius:4px;font-weight:700">#2</span></div><div class="hdr-sub" id="hdr-sub-el">연금계좌 풍차계획 포트폴리오</div></div>
+  <div><div class="hdr-title" id="hdr-title-el">🌸 수익은 길게, 손실은 짧게!!! <span style="font-size:10px;color:#9ca3af;font-weight:400">v5.23</span> <span style="font-size:10px;background:#059669;color:#fff;padding:1px 6px;border-radius:4px;font-weight:700">#2</span></div><div class="hdr-sub" id="hdr-sub-el">연금계좌 풍차계획 포트폴리오</div></div>
   <div class="hdr-sp"></div>
   <div class="upd" id="upd">종전가</div>
   <div class="dot" id="dot"></div>
@@ -798,7 +798,7 @@ var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
   sub: '연금계좌 풍차계획 포트폴리오',
-  version: 'v5.22',   // 버전 — 여기만 수정
+  version: 'v5.23',   // 버전 — 여기만 수정
   birthdate: '', // 생년월일 (YYYY-MM-DD 또는 YY.M.D 형식)
   accMeta: {},
   accOrder: []
@@ -1601,11 +1601,11 @@ function renderPension(){
   var LIMIT15M=15000000;
 
   // 스타일 헬퍼 — 제목셀: 연한 배경, 나머지: 흰색, 모든 데이터셀 오른쪽 정렬 통일
-  var lblBase='font-weight:600;background:#fff;text-align:left;padding:4px 6px;';
+  var lblBase='font-weight:600;background:#fff;text-align:left;padding:4px 4px;overflow:hidden;';
   var lblSub='font-weight:400;background:#fff;text-align:left;padding:4px 8px 4px 22px;color:#4b5563;font-size:11px;';
   var cellN='text-align:right;background:#fff;padding:4px 4px;';
   var cellC='text-align:right;background:#fff;padding:4px 4px;overflow:hidden;';  // center→right 통일
-  var hdSt='text-align:right;font-size:11px;font-weight:700;background:#f1f5f9;color:#1e293b;padding:7px 8px;';
+  var hdSt='text-align:right;font-size:11px;font-weight:700;background:#f1f5f9;color:#1e293b;padding:4px 4px;overflow:hidden;';
   // ② 합계 열: 검정 볼드
   var sumSt='text-align:right;font-weight:700;color:#111;background:#fff;padding:4px 4px;';
 
@@ -1659,7 +1659,7 @@ function renderPension(){
   }
 
   var hdRow='<thead><tr>'
-    +'<th style="text-align:left;font-size:11px;font-weight:700;background:#f1f5f9;color:#1e293b;padding:7px 8px;">구분</th>'
+    +'<th style="text-align:left;font-size:11px;font-weight:700;background:#f1f5f9;color:#1e293b;padding:4px 4px;overflow:hidden;">구분</th>'
     +cols.map(function(c){return '<th style="'+hdSt+'">'+escH(c.p.label)+'</th>';}).join('')
     +'<th style="'+hdSt+'">합계</th>'
     +'</tr></thead>';
@@ -1722,7 +1722,7 @@ function renderPension(){
     // ── 한도포함금액 ──
     +'<tr class="trow"><td style="background:#e8f0fe;font-weight:700;font-size:11px;text-align:left;color:#1e3a8a;">사적연금분리과세기준<br>포함금액 <span style="font-size:9px;font-weight:400">(통합 1,500만원)</span></td>'
       +cols.map(function(c){return editableCell('incl',c.p.id,c.inclLimit,true);}).join('')
-      +'<td style="text-align:right;font-size:12px;font-weight:700;background:#e8f0fe;'+(sumIncl>LIMIT15M?'color:var(--wine)':'color:#1e3a8a')+';">'
+      +'<td style="text-align:right;font-size:12px;font-weight:700;background:#e8f0fe;padding:4px 4px;'+(sumIncl>LIMIT15M?'color:var(--wine)':'color:#1e3a8a')+';">'
         +fmt(sumIncl)+(sumIncl>LIMIT15M?'<br><span style="font-size:9px;font-weight:400">⚠ 한도초과</span>':'')
       +'</td></tr>'
     +'</tbody>';
@@ -1742,7 +1742,7 @@ function renderPension(){
     +pensionStrategyGet()+'</textarea></div></div>';
 
   pg.innerHTML='<div class="sec"><div class="sechdr"><span class="sectitle">사적연금 통합관리</span></div>'
-    +'<div class="twrap" style="padding:0 13px 6px"><table style="width:100%;table-layout:fixed;">'
+    +'<div class="twrap" style="padding:0 13px 6px;overflow-x:hidden"><table style="width:100%;table-layout:fixed;">'
     +(function(){var lw=Math.round(75/(cols.length+1)*10)/10;return '<colgroup>'+'<col style="width:25%">'+cols.map(function(){return '<col style="width:'+lw+'%">';}).join('')+'<col style="width:'+lw+'%"></colgroup>';})()
     +hdRow+tbody+'</table></div>'+noteHTML+'</div>'+strategyHTML;
 }
