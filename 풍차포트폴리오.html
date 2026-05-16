@@ -146,7 +146,7 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
 .mgrid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 /* ── 테이블 첫 열 고정 (모바일) ── */
 @media(max-width:768px){
-  #dist-dashboard table{min-width:360px !important;}
+  #dist-dashboard table{min-width:320px !important;}
   #dist-dashboard input{font-size:9px !important;padding:1px !important;}
   #dist-dashboard th{font-size:9px !important;padding:2px 1px !important;}
   /* 하단 모바일 퀵메뉴 */
@@ -456,13 +456,13 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
 <div id="pw-screen" style="display:none">
   <div class="pw-box">
     <div class="pw-icon">🌸</div>
-    <div class="pw-title">풍차계획 포트폴리오</div>
+    <div class="pw-title" id="pw-main-title">풍차계획 포트폴리오</div>
     <div class="pw-sub" id="pw-sub">수익은 길게, 손실은 짧게!!!</div>
     <div class="pw-err" id="pw-err"></div>
     <label class="pw-lbl" id="pw-lbl">비밀번호</label>
     <input type="password" class="pw-inp" id="pw-inp" placeholder="비밀번호를 입력하세요">
     <button class="pw-btn" id="pw-btn">확인</button>
-    <div class="pw-info" id="pw-info">30일간 자동 로그인 유지</div>
+    <div class="pw-info" id="pw-info">비밀번호로 데이터를 보호합니다</div>
   </div>
 </div>
 
@@ -662,7 +662,6 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
   <div class="ntab" onclick="go('cma',this)">CMA 해외주식</div>
   <div class="ntab" onclick="go('crypto',this)">가상화폐</div>
   <div class="ntab" onclick="go('history',this)">자산변동</div>
-  <div class="ntab" onclick="go('changelog',this)">변경이력</div>
 </div>
 
 <!-- 모바일 하단 퀵 메뉴 -->
@@ -706,7 +705,6 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
 <div class="page" id="pg-cma"></div>
 <div class="page" id="pg-crypto"></div>
 <div class="page" id="pg-history"></div>
-<div class="page" id="pg-changelog"></div>
 <script>
 
 const DEF = {
@@ -878,7 +876,6 @@ function renderNav(){
     {id:'cma',   label: (CMA&&CMA.name?CMA.name:'CMA 해외주식')},
     {id:'crypto',label:'가상화폐'},
     {id:'history',label:'자산변동'},
-    {id:'changelog',label:'변경이력'}
   ];
   var all=fixed.concat(accTabs).concat(extra);
   navEl.innerHTML=all.map(function(t){
@@ -1170,13 +1167,6 @@ function iChange(el) {
   autoSync();
 }
 
-function iboxE(lbl,val,fn){
-  // 천원단위 콤마 표시 (1000 이상)
-  var dv=(val&&Math.abs(val)>=1000)?Math.round(val).toLocaleString('ko-KR'):(val||0);
-  // fn을 data 속성에 저장하고 공통 핸들러로 실행 (따옴표 충돌 방지)
-  return '<div class="ibox"><div class="ilbl">'+lbl+'</div>'
-    +'<input class="iedit" data-fn="'+fn.replace(/"/g,'&quot;')+'" value="'+dv+'" onchange="runFn(this)"></div>';
-}
 function badge(live){
   return live
     ?'<span style="font-size:9px;background:var(--blu2);color:var(--blu);padding:1px 3px;border-radius:3px;margin-right:2px">실시간</span>'
@@ -1747,11 +1737,11 @@ function renderPension(){
   var LIMIT15M=15000000;
 
   // 스타일 헬퍼 — 제목셀: 연한 배경, 나머지: 흰색, 모든 데이터셀 오른쪽 정렬 통일
-  var lblBase='font-weight:600;background:#f1f5f9;text-align:left;';
+  var lblBase='font-weight:600;background:#fff;text-align:left;';
   var lblSub='font-weight:400;background:#fff;text-align:left;padding-left:18px;color:#4b5563;font-size:11px;';
   var cellN='text-align:right;background:#fff;';
   var cellC='text-align:right;background:#fff;';  // center→right 통일
-  var hdSt='text-align:center;font-size:11px;font-weight:700;background:#f1f5f9;color:#1e293b;padding:7px 8px;';
+  var hdSt='text-align:right;font-size:11px;font-weight:700;background:#f1f5f9;color:#1e293b;padding:7px 8px;';
   // ② 합계 열: 검정 볼드
   var sumSt='text-align:right;font-weight:700;color:#111;background:#fff;';
 
@@ -1805,7 +1795,7 @@ function renderPension(){
   }
 
   var hdRow='<thead><tr>'
-    +'<th style="'+hdSt+'width:100px;">구분</th>'
+    +'<th style="text-align:left;font-size:11px;font-weight:700;background:#f1f5f9;color:#1e293b;padding:7px 8px;width:100px;">구분</th>'
     +cols.map(function(c){return '<th style="'+hdSt+'">'+escH(c.p.label)+'</th>';}).join('')
     +'<th style="'+hdSt+'">합계</th>'
     +'</tr></thead>';
@@ -1866,9 +1856,9 @@ function renderPension(){
       +cols.map(function(c){return n(c.tax100);}).join('')+nSum(sumTax100)+'</tr>'
     +sep()
     // ── 한도포함금액 ──
-    +'<tr style="border-bottom:1px solid #e2e8f0"><td style="'+lblBase+'font-size:11px;">사적연금분리과세기준<br>포함금액 <span style="font-size:9px;font-weight:400">(통합 1,500만원)</span></td>'
+    +'<tr class="trow"><td style="background:#e8f0fe;font-weight:700;font-size:11px;text-align:left;color:#1e3a8a;">사적연금분리과세기준<br>포함금액 <span style="font-size:9px;font-weight:400">(통합 1,500만원)</span></td>'
       +cols.map(function(c){return editableCell('incl',c.p.id,c.inclLimit,true);}).join('')
-      +'<td style="text-align:right;font-size:12px;font-weight:700;background:#fff;'+(sumIncl>LIMIT15M?'color:var(--wine)':'color:#111')+';">'
+      +'<td style="text-align:right;font-size:12px;font-weight:700;background:#e8f0fe;'+(sumIncl>LIMIT15M?'color:var(--wine)':'color:#1e3a8a')+';">'
         +fmt(sumIncl)+(sumIncl>LIMIT15M?'<br><span style="font-size:9px;font-weight:400">⚠ 한도초과</span>':'')
       +'</td></tr>'
     +'</tbody>';
@@ -1888,7 +1878,7 @@ function renderPension(){
     +pensionStrategyGet()+'</textarea></div></div>';
 
   pg.innerHTML='<div class="sec"><div class="sechdr"><span class="sectitle">사적연금 통합관리</span></div>'
-    +'<div class="twrap" style="padding:0 13px 6px"><table style="width:100%;min-width:560px;">'
+    +'<div class="twrap" style="padding:0 13px 6px"><table style="width:100%;min-width:480px;">'
     +hdRow+tbody+'</table></div>'+noteHTML+'</div>'+strategyHTML;
 }
 
@@ -2129,7 +2119,7 @@ function renderKR(acc, cid) {
   // extraLabel (이연퇴직금, 비과세재원 등)
   if (acc.extraLabel) html += mkIE(acc.extraLabel+'(\uc6d0)', acc.extraVal||0, id, 'extraVal');
   html += '</div></div>';
-  html += '<div class="twrap has-order"><table><thead><tr>';
+  html += '<div class="twrap has-order"><table style="min-width:520px"><thead><tr>';
   html += '<th style="width:18px;text-align:center;padding:2px 0;background:#f1f5f9"></th>';
   html += '<th style="text-align:left;min-width:130px;background:#f1f5f9">\uc885\ubaa9\uba85</th>';
   html += '<th>\uc218\ub7c9</th>';
@@ -2330,9 +2320,6 @@ function onCMAWitYr(v) {
   CMA.accWit=(CMA.accWit||0)-ov+nv;
   CMA.withdrawalsYr=nv;
   renderCMA(); if(curPage!=='overview') renderOverview();
-}
-function runFn(el) {
-  // 더 이상 사용하지 않음 (iChange/cmaChange로 대체)
 }
 
 function onExtraVal(el) {
@@ -2542,10 +2529,9 @@ function renderCrypto(force){
         +'<td style="text-align:left;cursor:pointer" '
           +'ondblclick="openCryptoDetail(\''+ex+'\','+i+')" '
           +'title="\ub354\ube14\ud074\ub9ad \uc0c1\uc138\ud3b8\uc9d1">'
-          +'<div class="tname">'+h.n
-          +(h.sr?'<br><span style="font-size:9px;background:var(--pur2);color:var(--pur);'
-            +'padding:1px 3px;border-radius:3px">'+h.sr+' \uc2a4\ud14c\uc774\ud0b9</span>':'')
-          +'</div></td>'
+          +'<div class="tname">'+h.n+'</div>'
+          +(h.sr?'<div style="font-size:9px;color:var(--tx3);font-weight:400">'+h.sr+' \uc2a4\ud14c\uc774\ud0b9</div>':'')
+          +'</td>'
         +'<td><input class="ed" style="width:80px" value="'+(h.stk||'')+'" onchange="'+fn(i,'stk')+'"></td>'
         +'<td><input class="ed" style="width:95px" value="'+h.qty+'" onchange="'+fn(i,'qty')+'"></td>'
         +'<td><input class="ed" style="width:78px" value="'+h.cost+'" onchange="'+fn(i,'cost')+'"></td>'
@@ -2725,7 +2711,7 @@ function renderHoldings(){
     '<div class="scard"><div class="slbl">\uc6d4 \ubd84\ubc30\uae08 \ud569\uacc4</div><div class="sval" style="color:var(--grn)">'+fmt(gDist)+'\uc6d0</div></div>',
     '</div>',
     '<div class="twrap" style="padding:0 8px 12px">',
-    '<table style="table-layout:fixed;width:100%;min-width:660px">',
+    '<table style="table-layout:fixed;width:100%;min-width:560px">',
     '<thead><tr>',
     '<th style="text-align:left;width:160px">\uc885\ubaa9\uba85</th>',
     '<th style="width:60px">\uc218\ub7c9</th>',
@@ -2740,7 +2726,7 @@ function renderHoldings(){
     '<tbody>'+tableRows+'</tbody>',
     '<tr class="trow">',
     '<td>\uc804\uccb4 \ud569\uacc4</td>',
-    '<td colspan="2"></td>',
+    '<td colspan="3"></td>',
     '<td style="text-align:right">'+fmt(Math.round(gCost))+'</td>',
     '<td style="text-align:right;font-weight:700">'+fmt(Math.round(totalCur))+'</td>',
     '<td class="'+pc(gPnl)+'" style="text-align:right">'+(gPnl>=0?'+':'')+fmt(Math.round(gPnl))+'</td>',
@@ -3526,7 +3512,6 @@ function renderPage(id){
   else if(id==='cma')renderCMA();
   else if(id==='crypto')renderCrypto();
   else if(id==='history')renderHistory();
-  else if(id==='changelog')renderChangelog();
   else{var a=findAcc(id);if(a)renderKR(a,'pg-'+id);}
 }
 
@@ -3544,6 +3529,18 @@ function initPW(){
   var inp=document.getElementById('pw-inp');
   var btn=document.getElementById('pw-btn');
   if(!screen)return;
+  // 저장된 APP_META 제목/부제목을 로그인 화면에 반영
+  (function(){
+    try{
+      var _m=JSON.parse(localStorage.getItem('fp_meta')||'null');
+      if(_m){
+        var _t=document.getElementById('pw-main-title');
+        var _s=document.getElementById('pw-sub');
+        if(_t&&_m.title) _t.textContent=_m.title;
+        if(_s&&_m.sub)   _s.textContent=_m.sub;
+      }
+    }catch(_e){}
+  })();
   if(pwValid()){startApp();return;}
   if(!pwStored()){
     document.getElementById('pw-lbl').textContent='초기 비밀번호 설정 (4자 이상)';
@@ -3592,15 +3589,6 @@ function metaChangePW(){
   alert('✅ 비밀번호가 변경되었습니다.');
   metaTab('title');
 }
-function changePW(){
-  var oldV=prompt('현재 비밀번호:');if(!oldV)return;
-  var stored=pwGet(PW_STORE);
-  if(stored&&pwHash(oldV)!==stored){alert('현재 비밀번호가 틀렸습니다.');return;}
-  var newV=prompt('새 비밀번호 (4자 이상):');
-  if(!newV||newV.length<4){alert('4자 이상 입력해 주세요.');return;}
-  if(newV!==prompt('새 비밀번호 확인:')){alert('비밀번호가 일치하지 않습니다.');return;}
-  pwSet(PW_STORE,pwHash(newV));alert('✅ 비밀번호가 변경되었습니다.');
-}
 
 /* ===== 엑셀 내보내기 ===== */
 function exportToExcel(){
@@ -3608,14 +3596,8 @@ function exportToExcel(){
   var wb=XLSX.utils.book_new();
   var today=new Date().toLocaleDateString('ko-KR');
 
-  // ── 스타일 헬퍼 ──
-  function hdr(v){return {v:v,t:'s',s:{font:{bold:true},fill:{fgColor:{rgb:'1A56DB'}},font:{bold:true,color:{rgb:'FFFFFF'}},alignment:{horizontal:'center'}}};}
-  function num(v){return {v:Math.round(v)||0,t:'n',z:'#,##0'};}
-  function pct(v){return {v:v||0,t:'n',z:'0.00%'};}
-  function str(v){return {v:(v==null?'':String(v)),t:'s'};}
-
   // ── 1. 전체현황 ──
-  var ov1=[['풍차포트폴리오 전체현황','','','','','',today]];
+  var ov1=[['풍차포트폴리오  전체현황','','','','','','','','','',today]];
   ov1.push(['계좌명','납입(누적)','인출(누적)','실납입','매입총액','현재평가액','평가손익','수익률','수익률(실납)','연간분배율','월분배금']);
   ACCOUNTS.forEach(function(acc){
     var cost=0,cur=0,dist=0;
@@ -3627,10 +3609,13 @@ function exportToExcel(){
     var real=(acc.accDep||0)-(acc.accWit||0);
     ov1.push([acc.name,acc.accDep||0,acc.accWit||0,real,Math.round(cost),Math.round(cur),Math.round(cur-cost),(cost>0?(cur-cost)/cost:0),(real>0?(cur-real)/real:0),(acc.annualDistRate||0),dist]);
   });
-  var cmaCT=0,cmaCR=0;
-  CMA.holdings.forEach(function(h){cmaCT+=cmaCostKRW(h);cmaCR+=cmaCurKRW(h);});
+  var cmaCT=0,cmaCR=0,cmaDist=0;
+  CMA.holdings.forEach(function(h){
+    cmaCT+=cmaCostKRW(h);cmaCR+=cmaCurKRW(h);
+    if(h.distAnn){var fx=cmaFX(h);cmaDist+=Math.round(h.distAnn*fx/12);}
+  });
   var cmaReal=(CMA.accDep||0)-(CMA.accWit||0);
-  ov1.push([CMA.name,CMA.accDep||0,CMA.accWit||0,cmaReal,Math.round(cmaCT),Math.round(cmaCR),Math.round(cmaCR-cmaCT),(cmaCT>0?(cmaCR-cmaCT)/cmaCT:0),(cmaReal>0?(cmaCR-cmaReal)/cmaReal:0),0,0]);
+  ov1.push([CMA.name,CMA.accDep||0,CMA.accWit||0,cmaReal,Math.round(cmaCT),Math.round(cmaCR),Math.round(cmaCR-cmaCT),(cmaCT>0?(cmaCR-cmaCT)/cmaCT:0),(cmaReal>0?(cmaCR-cmaReal)/cmaReal:0),0,cmaDist]);
   var crC=0,crV=0;
   [].concat(CRYPTO.bithumb,CRYPTO.upbit).concat((CRYPTO.exchanges||[]).reduce(function(a,e){return a.concat(e.holdings||[]);},[])).forEach(function(h){var p=PRICES[h.sym]||h.cost;var tq=(h.stk||0)+(h.qty||0);crC+=h.cost*tq;crV+=p*tq;});
   ov1.push(['가상화폐',0,0,Math.round(crC),Math.round(crC),Math.round(crV),Math.round(crV-crC),(crC>0?(crV-crC)/crC:0),0,0,0]);
@@ -3639,7 +3624,7 @@ function exportToExcel(){
   XLSX.utils.book_append_sheet(wb,wsOv,'전체현황');
 
   // ── 2. 종목총괄 ──
-  var h2=[['종목명','유형','계좌','매입총액','현재평가액','평가손익','수익률','비중(%)','월분배금']];
+  var h2=[['종목명','유형','계좌','평균매입단가','총수량','매입총액','현재평가액','평가손익','수익률','비중(%)','월분배금']];
   var totalCur2=0;
   var map2={};
   ACCOUNTS.forEach(function(acc){
@@ -3657,28 +3642,31 @@ function exportToExcel(){
   });
   CMA.holdings.forEach(function(h){
     var costK=cmaCostKRW(h),curK=cmaCurKRW(h);
-    map2['__cma__'+h.n]={n:h.n,type:'해외/RP('+h.cur+')',cost:costK,cur:curK,qty:h.qty||1,dpu:null,accs:[CMA.name]};
+    var qty=h.qty||1;
+    var distM=h.distAnn?(Math.round(h.distAnn*cmaFX(h)/12)):0;
+    map2['__cma__'+h.n]={n:h.n,type:'해외/RP('+h.cur+')',cost:costK,cur:curK,qty:qty,dpu:null,distM:distM,accs:[CMA.name]};
     totalCur2+=curK;
   });
   [].concat(CRYPTO.bithumb,CRYPTO.upbit).concat((CRYPTO.exchanges||[]).reduce(function(a,e){return a.concat(e.holdings||[]);},[])).forEach(function(h){
     var p=PRICES[h.sym]||h.cost,tq=(h.stk||0)+(h.qty||0);
     var cost=h.cost*tq,cur=p*tq;
     if(!map2['__cr_'+h.sym]){map2['__cr_'+h.sym]={n:h.n,type:'가상화폐',cost:0,cur:0,qty:tq,dpu:null,accs:['빗썸/업비트']};}
-    map2['__cr_'+h.sym].cost+=cost;map2['__cr_'+h.sym].cur+=cur;
+    map2['__cr_'+h.sym].cost+=cost;map2['__cr_'+h.sym].cur+=cur;map2['__cr_'+h.sym].qty+=tq;
     totalCur2+=cur;
   });
   Object.values(map2).sort(function(a,b){return b.cur-a.cur;}).forEach(function(r){
-    var wt=totalCur2>0?r.cur/totalCur2*100:0;
-    var dist=r.dpu&&r.qty?Math.round(r.dpu*r.qty):0;
-    h2.push([r.n,r.type,r.accs.join(', '),Math.round(r.cost),Math.round(r.cur),Math.round(r.cur-r.cost),(r.cost>0?(r.cur-r.cost)/r.cost:0),Math.round(wt*10)/10,dist||0]);
+    var wt=totalCur2>0?Math.round(r.cur/totalCur2*1000)/10:0;
+    var avgCost=r.qty>0?Math.round(r.cost/r.qty):0;
+    var dist=r.dpu&&r.qty?Math.round(r.dpu*r.qty):(r.distM||0);
+    h2.push([r.n,r.type,r.accs.join(', '),avgCost,r.qty,Math.round(r.cost),Math.round(r.cur),Math.round(r.cur-r.cost),(r.cost>0?(r.cur-r.cost)/r.cost:0),wt,dist||0]);
   });
   var wsH=XLSX.utils.aoa_to_sheet(h2);
-  wsH['!cols']=[{wch:30},{wch:12},{wch:30},{wch:14},{wch:14},{wch:14},{wch:10},{wch:8},{wch:12}];
+  wsH['!cols']=[{wch:30},{wch:12},{wch:30},{wch:14},{wch:10},{wch:14},{wch:14},{wch:14},{wch:10},{wch:8},{wch:12}];
   XLSX.utils.book_append_sheet(wb,wsH,'종목총괄');
 
-  // ── 3. 계좌별 상세 ──
+  // ── 3. 계좌별 상세 (신규 추가 계좌 포함) ──
   ACCOUNTS.forEach(function(acc){
-    var rows=[['종목명','티커','수량','매입단가','현재가','전고점','매입총액','현재평가액','수익률','전고점대비','월분배금']];
+    var rows=[['종목명','티커','수량','매입단가','현재가','전고점','매입총액','현재평가액','평가손익','수익률','전고점대비','월분배금']];
     acc.holdings.forEach(function(h){
       if(h.isMMF)return;
       var qty=h.qty||0,price=liveP(h);
@@ -3686,58 +3674,79 @@ function exportToExcel(){
       var pnlR=cost>0?(cur-cost)/cost:0;
       var highR=(h.high&&price>0)?(price-h.high)/h.high:0;
       var dist=h.dpu!=null?Math.round(h.dpu*qty):((h.mI||0)+(h.mM||0));
-      rows.push([h.n,h.tk||'',qty,h.cost,price,h.high||0,Math.round(cost),Math.round(cur),pnlR,highR,dist]);
+      rows.push([h.n,h.tk||'',qty,h.cost,price,h.high||0,Math.round(cost),Math.round(cur),Math.round(cur-cost),pnlR,highR,dist]);
     });
-    var ws=XLSX.utils.aoa_to_sheet(rows);
-    ws['!cols']=[{wch:28},{wch:8},{wch:7},{wch:10},{wch:10},{wch:10},{wch:14},{wch:14},{wch:9},{wch:9},{wch:12}];
     var shName=acc.name.replace(/[:\\/?\[\]*]/g,'').substring(0,31);
+    var ws=XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols']=[{wch:28},{wch:8},{wch:7},{wch:10},{wch:10},{wch:10},{wch:14},{wch:14},{wch:14},{wch:9},{wch:9},{wch:12}];
     XLSX.utils.book_append_sheet(wb,ws,shName);
   });
 
-  // ── 4. CMA 해외주식 ──
-  var cmR=[['종목명','통화','수량','매입단가(현지)','매입환율','현재가(현지)','현재환율','매입총액(원)','현재평가액(원)','수익률','전고점대비']];
+  // ── 4. CMA 해외주식 (연간배당 포함) ──
+  var cmR=[['종목명','통화','유형','수량','매입단가(현지)','매입환율','전고점','현재가(현지)','현재환율','매입총액(원)','현재평가액(원)','평가손익','수익률','전고점대비','연간배당(현지)','월분배금(원)']];
   CMA.holdings.forEach(function(h){
     var curFX=cmaFX(h),buyFX=h.avgFX||curFX;
     var priceL=cmaLiveP(h);
     var costK=cmaCostKRW(h),curK=cmaCurKRW(h);
     var pnlR=costK>0?(curK-costK)/costK:0;
     var highR=(h.high&&priceL>0)?(priceL-h.high)/h.high:null;
-    cmR.push([h.n,h.cur,h.qty||1,h.cost,buyFX,priceL,curFX,Math.round(costK),Math.round(curK),pnlR,highR!=null?highR:'']);
+    var distM=h.distAnn?Math.round(h.distAnn*curFX/12):0;
+    cmR.push([h.n,h.cur,h.isRP?'RP/현금':'일반',h.isRP?1:(h.qty||0),h.cost,buyFX,h.high||0,priceL,curFX,Math.round(costK),Math.round(curK),Math.round(curK-costK),pnlR,highR!=null?highR:'',h.distAnn||0,distM]);
   });
   var wsCMA=XLSX.utils.aoa_to_sheet(cmR);
-  wsCMA['!cols']=[{wch:25},{wch:5},{wch:7},{wch:12},{wch:10},{wch:12},{wch:10},{wch:14},{wch:14},{wch:9},{wch:9}];
+  wsCMA['!cols']=[{wch:25},{wch:5},{wch:8},{wch:7},{wch:12},{wch:10},{wch:10},{wch:12},{wch:10},{wch:14},{wch:14},{wch:14},{wch:9},{wch:9},{wch:12},{wch:12}];
   XLSX.utils.book_append_sheet(wb,wsCMA,'CMA 해외주식');
 
-  // ── 5. 가상화폐 ──
-  var crR=[['거래소','종목명','심볼','스테이킹','수량','합산수량','매입단가','현재가','매입총액','현재평가액','수익률','전고점대비']];
-  var addCR=function(list,ex){
+  // ── 5. 가상화폐 (모든 거래소 포함) ──
+  var crR=[['거래소','종목명','심볼','스테이킹','보유수량','합산수량','매입단가','현재가','매입총액','현재평가액','평가손익','수익률','52주고점대비','스테이킹이율']];
+  function addCR(list,ex){
     list.forEach(function(h){
       var price=PRICES[h.sym]||h.cost,tq=(h.stk||0)+(h.qty||0);
       var high52=HIGH52[h.sym]||h.high;
       var cost=h.cost*tq,cur=price*tq;
       var pnlR=cost>0?(cur-cost)/cost:0;
       var highR=high52>0?(price-high52)/high52:0;
-      crR.push([ex,h.n,h.sym,h.stk||0,h.qty,tq,h.cost,price,Math.round(cost),Math.round(cur),pnlR,highR]);
+      crR.push([ex,h.n,h.sym,h.stk||0,h.qty||0,tq,h.cost,price,Math.round(cost),Math.round(cur),Math.round(cur-cost),pnlR,highR,h.sr||'']);
     });
-  };
-  addCR(CRYPTO.bithumb,'빗썸');addCR(CRYPTO.upbit,'업비트');
+  }
+  addCR(CRYPTO.bithumb,'빗썸');
+  addCR(CRYPTO.upbit,'업비트');
+  (CRYPTO.exchanges||[]).forEach(function(ex){addCR(ex.holdings||[],ex.name);});
   var wsCR=XLSX.utils.aoa_to_sheet(crR);
-  wsCR['!cols']=[{wch:7},{wch:14},{wch:6},{wch:14},{wch:14},{wch:12},{wch:14},{wch:14},{wch:14},{wch:14},{wch:9},{wch:9}];
+  wsCR['!cols']=[{wch:8},{wch:14},{wch:6},{wch:12},{wch:12},{wch:12},{wch:14},{wch:14},{wch:14},{wch:14},{wch:14},{wch:9},{wch:9},{wch:12}];
   XLSX.utils.book_append_sheet(wb,wsCR,'가상화폐');
 
   // ── 6. 자산변동 ──
   var snaps=loadSnaps();
-  var snapR=[['날짜','평가액(원)','변동액(전기대비)','변동률(전기대비)','비고']];
+  var snapR=[['날짜','평가액(원)','억원','변동액(전기대비)','변동률(전기대비)','비고']];
   var rev=snaps.slice().reverse();
   rev.forEach(function(d,idx){
     var prev=idx<rev.length-1?rev[idx+1].cur:0;
     var chgAmt=prev>0?d.cur-prev:0;
     var chgRate=prev>0?(d.cur-prev)/prev:0;
-    snapR.push([d.date,d.cur,prev>0?chgAmt:'',prev>0?chgRate:'',d.note||'']);
+    snapR.push([d.date,d.cur,Math.round(d.cur/100000000*10)/10,prev>0?chgAmt:'',prev>0?chgRate:'',d.note||'']);
   });
   var wsSnap=XLSX.utils.aoa_to_sheet(snapR);
-  wsSnap['!cols']=[{wch:14},{wch:16},{wch:16},{wch:12},{wch:40}];
+  wsSnap['!cols']=[{wch:14},{wch:16},{wch:8},{wch:16},{wch:12},{wch:40}];
   XLSX.utils.book_append_sheet(wb,wsSnap,'자산변동');
+
+  // ── 7. 월별 분배금 ──
+  var distR=[['연도','1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월','합계']];
+  var allDist=distGet();
+  var curY=new Date().getFullYear();
+  var yKeys=[];
+  for(var y=curY-3;y<=curY+1;y++) yKeys.push(y);
+  yKeys.forEach(function(y){
+    var arr=distGetYear(y);
+    var total=arr.reduce(function(s,d){return s+d.v;},0);
+    var row=[y+'년'];
+    arr.forEach(function(d){row.push(Math.round(d.v));});
+    row.push(Math.round(total));
+    distR.push(row);
+  });
+  var wsDist=XLSX.utils.aoa_to_sheet(distR);
+  wsDist['!cols']=[{wch:8},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10},{wch:12}];
+  XLSX.utils.book_append_sheet(wb,wsDist,'월별분배금');
 
   // ── 다운로드 ──
   var dateStr=new Date().toLocaleDateString('ko-KR').replace(/\. /g,'-').replace('.','');
@@ -3757,7 +3766,6 @@ function mobShowAccMenu(){
   // 계좌 목록: ACCOUNTS 순서 기반으로 동적 생성
   var items=ACCOUNTS.map(function(acc){return {id:acc.id,name:acc.name};});
   items.push({id:'cma',name:(CMA&&CMA.name?CMA.name:'CMA 해외주식')});
-  items.push({id:'changelog',name:'📝 변경이력'});
   list.innerHTML=items.map(function(it){
     return '<button onclick="go(\''+it.id+'\',null);mobSel(\'mob-ac\');document.getElementById(\'mob-acc-sheet\').style.display=\'none\';document.getElementById(\'mob-acc-overlay\').style.display=\'none\'" '
       +'style="display:block;width:100%;text-align:left;padding:13px 20px;border:none;background:none;font-size:14px;font-family:inherit;cursor:pointer;border-bottom:1px solid var(--brd2);color:var(--tx)">'
@@ -3898,14 +3906,6 @@ function renderOverview(){
     '<div class="sec"><div class="sechdr">',
     '<span class="sectitle">\uc790\uc0b0\uad6c\uc131 \ud604\ud669</span>',
     '<span class="secsub">\ud604\uc7ac\ud3c9\uac00\uc561 \uae30\uc900</span></div>',
-    /* 스택 바 */
-    '<div style="padding:10px 12px 4px">',
-    '<div style="display:flex;height:22px;border-radius:6px;overflow:hidden;gap:1px">',
-    (pCC>0?'<div style="flex:'+pCC+';background:#6c2bd9;display:flex;align-items:center;justify-content:center"><span style="font-size:9px;color:#fff;font-weight:700">'+pCC+'%</span></div>':''),
-    (pMain>0?'<div style="flex:'+pMain+';background:#1a56db;display:flex;align-items:center;justify-content:center"><span style="font-size:9px;color:#fff;font-weight:700">'+pMain+'%</span></div>':''),
-    (pCrypto>0?'<div style="flex:'+pCrypto+';background:#f59e0b;display:flex;align-items:center;justify-content:center"><span style="font-size:9px;color:#fff;font-weight:700">'+pCrypto+'%</span></div>':''),
-    (pCash>0?'<div style="flex:'+pCash+';background:#057a55;display:flex;align-items:center;justify-content:center"><span style="font-size:9px;color:#fff;font-weight:700">'+pCash+'%</span></div>':''),
-    '</div></div>',
     /* 범례 + 카드 */
     '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:6px;padding:8px 12px 12px">',
     /* 커버드콜 */
@@ -3913,66 +3913,50 @@ function renderOverview(){
     '<div style="display:flex;align-items:center;gap:5px;margin-bottom:4px">',
     '<div style="width:10px;height:10px;border-radius:2px;background:#6c2bd9;flex-shrink:0"></div>',
     '<span style="font-size:10px;font-weight:700;color:#6c2bd9">\ucee4\ubc84\ub4dc\ucf5c ETF</span></div>',
-    '<div style="font-size:14px;font-weight:700;color:#6c2bd9">'+pCC+'%</div>',
-    '<div style="font-size:11px;color:#6b7280;margin-top:2px">'+fmt(catCC)+'\uc6d0</div>',
+    '<div style="font-size:14px;font-weight:700;color:#6c2bd9">'+fmt(catCC)+'\uc6d0 ('+pCC+'%)</div>',
     '</div>',
     /* 본주 ETF */
     '<div style="background:#ebf3ff;border:1px solid #93c5fd;border-radius:6px;padding:8px 10px">',
     '<div style="display:flex;align-items:center;gap:5px;margin-bottom:4px">',
     '<div style="width:10px;height:10px;border-radius:2px;background:#1a56db;flex-shrink:0"></div>',
     '<span style="font-size:10px;font-weight:700;color:#1a56db">\ubcf8\uc8fc ETF</span></div>',
-    '<div style="font-size:14px;font-weight:700;color:#1a56db">'+pMain+'%</div>',
-    '<div style="font-size:11px;color:#6b7280;margin-top:2px">'+fmt(catMain)+'\uc6d0</div>',
+    '<div style="font-size:14px;font-weight:700;color:#1a56db">'+fmt(catMain)+'\uc6d0 ('+pMain+'%)</div>',
     '</div>',
     /* 가상화폐 */
     '<div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:6px;padding:8px 10px">',
     '<div style="display:flex;align-items:center;gap:5px;margin-bottom:4px">',
     '<div style="width:10px;height:10px;border-radius:2px;background:#f59e0b;flex-shrink:0"></div>',
     '<span style="font-size:10px;font-weight:700;color:#b45309">\uac00\uc0c1\ud654\ud3d0</span></div>',
-    '<div style="font-size:14px;font-weight:700;color:#b45309">'+pCrypto+'%</div>',
-    '<div style="font-size:11px;color:#6b7280;margin-top:2px">'+fmt(catCrypto)+'\uc6d0</div>',
+    '<div style="font-size:14px;font-weight:700;color:#b45309">'+fmt(catCrypto)+'\uc6d0 ('+pCrypto+'%)</div>',
     '</div>',
     /* 현금성 */
     '<div style="background:#e8f7f1;border:1px solid #6ee7b7;border-radius:6px;padding:8px 10px">',
     '<div style="display:flex;align-items:center;gap:5px;margin-bottom:4px">',
     '<div style="width:10px;height:10px;border-radius:2px;background:#057a55;flex-shrink:0"></div>',
     '<span style="font-size:10px;font-weight:700;color:#057a55">\ud604\uae08\uc131(RP/\uc678\ud654 \ub4f1)</span></div>',
-    '<div style="font-size:14px;font-weight:700;color:#057a55">'+pCash+'%</div>',
-    '<div style="font-size:11px;color:#6b7280;margin-top:2px">'+fmt(catCash)+'\uc6d0</div>',
+    '<div style="font-size:14px;font-weight:700;color:#057a55">'+fmt(catCash)+'\uc6d0 ('+pCash+'%)</div>',
     '</div>',
     '</div></div>'
   ].join('');
 
   /* ── 통화별 자산현황 섹션 ── */
-  function _cBar(p,bg){
-    return p>0?'<div style="flex:'+p+';background:'+bg+';display:flex;align-items:center;justify-content:center"><span style="font-size:9px;color:#fff;font-weight:700">'+p+'%</span></div>':'';
-  }
-  function _cCard(dot,label,color,bg,border,pct,val,sub){
+    function _cCard(dot,label,color,bg,border,pct,val,sub){
     return '<div style="background:'+bg+';border:1px solid '+border+';border-radius:6px;padding:8px 10px">'
       +'<div style="display:flex;align-items:center;gap:5px;margin-bottom:4px">'
       +'<div style="width:10px;height:10px;border-radius:2px;background:'+dot+';flex-shrink:0"></div>'
       +'<span style="font-size:10px;font-weight:700;color:'+color+'">'+label+'</span></div>'
-      +'<div style="font-size:14px;font-weight:700;color:'+color+'">'+pct+'%</div>'
-      +'<div style="font-size:11px;color:#6b7280;margin-top:2px">'+val+'</div>'
-      +(sub?'<div style="font-size:10px;color:#9ca3af;margin-top:1px">'+sub+'</div>':'')
+      +'<div style="font-size:14px;font-weight:700;color:'+color+'">'+val+'</div>'
       +'</div>';
   }
   var curSection=[
     '<div class="sec"><div class="sechdr">',
     '<span class="sectitle">\ud1b5\ud654\ubcc4 \uc790\uc0b0\ud604\ud669</span>',
     '<span class="secsub">\ud604\uc7ac\ud3c9\uac00\uc561 \uae30\uc900(\uc6d0\ud654\ud658\uc0b0)</span></div>',
-    '<div style="padding:10px 12px 4px">',
-    '<div style="display:flex;height:22px;border-radius:6px;overflow:hidden;gap:1px">',
-    _cBar(pUSD,'#16a34a'),
-    _cBar(pJPY,'#d97706'),
-    _cBar(pKRW,'#1a56db'),
-    _cBar(pCrypto2,'#f59e0b'),
-    '</div></div>',
     '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:6px;padding:8px 12px 12px">',
-    _cCard('#16a34a','\uB2EC\uB7EC\uC790\uC0B0(USD)','#15803d','#f0fdf4','#86efac',pUSD,fmt(curUSD)+'\uc6d0','\u2248$'+Math.round(curUSD/(FX.USD||1500)).toLocaleString('ko-KR')),
-    _cCard('#d97706','\uc5d4\ud654\uc790\uc0b0(JPY)','#92400e','#fffbeb','#fcd34d',pJPY,fmt(curJPY)+'\uc6d0','\u2248\xa5'+Math.round(curJPY/(FX.JPY||9.5)).toLocaleString('ko-KR')),
-    _cCard('#1a56db','\uc6d0\ud654\uc790\uc0b0(KRW)','#1e3a8a','#eff6ff','#93c5fd',pKRW,fmt(curKRW)+'\uc6d0',''),
-    _cCard('#f59e0b','\uac00\uc0c1\ud654\ud3d0','#92400e','#fffbeb','#fcd34d',pCrypto2,fmt(curCrypto)+'\uc6d0',''),
+    _cCard('#16a34a','\uB2EC\uB7EC\uC790\uC0B0(USD)','#15803d','#f0fdf4','#86efac',pUSD,fmt(curUSD)+'\uc6d0 ('+pUSD+'%)',''),
+    _cCard('#d97706','\uc5d4\ud654\uc790\uc0b0(JPY)','#92400e','#fffbeb','#fcd34d',pJPY,fmt(curJPY)+'\uc6d0 ('+pJPY+'%)',''),
+    _cCard('#1a56db','\uc6d0\ud654\uc790\uc0b0(KRW)','#1e3a8a','#eff6ff','#93c5fd',pKRW,fmt(curKRW)+'\uc6d0 ('+pKRW+'%)',''),
+    _cCard('#f59e0b','\uac00\uc0c1\ud654\ud3d0','#92400e','#fffbeb','#fcd34d',pCrypto2,fmt(curCrypto)+'\uc6d0 ('+pCrypto2+'%)',''),
     '</div></div>'
   ].join('');
 
@@ -3999,7 +3983,7 @@ function renderOverview(){
       '</div>',
     '<div class="scard"><div class="slbl">\ube44\uacfc\uc138\uc7ac\uc6d0</div><div class="ival" style="color:#111;font-weight:600">'+fmt(gExtraTax)+'\uc6d0</div></div>',
     '<div class="scard"><div class="slbl">\uc774\uc5f0\ud1f4\uc9c1\uae08</div><div class="ival" style="color:#111;font-weight:600">'+fmt(gExtraRet)+'\uc6d0</div></div>',
-    '<div class="scard scard-grn"><div class="slbl">\ube44\uacfc\uc138/\ud1f4\uc9c1\uae08(\ud569\uacc4)</div><div class="ival grn" style="font-weight:700">'+fmt(gExtra)+'\uc6d0</div></div>',
+    '<div class="scard" style="background:#ebf3ff;border-color:#93c5fd"><div class="slbl" style="color:#1e3a8a">\ube44\uacfc\uc138+\ud1f4\uc9c1\uae08</div><div class="ival" style="color:#1a56db;font-weight:700">'+fmt(gExtra)+'\uc6d0</div></div>',
     ,
     '</div></div>',
     '<div class="sec" style="margin-top:10px;border:2px solid var(--brd);border-radius:12px">'
@@ -4013,7 +3997,7 @@ function renderOverview(){
     compSection,
     curSection,
     '<div class="sec"><div class="sechdr"><span class="sectitle">\uacc4\uc88c\ubcc4 \ud604\ud669</span></div>',
-    '<div class="twrap"><table style="table-layout:fixed;width:100%;min-width:700px"><thead><tr>',
+    '<div class="twrap"><table style="table-layout:fixed;width:100%;min-width:600px"><thead><tr>',
     '<th style="text-align:left;width:110px">\uacc4\uc88c\uba85</th>',
     '<th style="width:95px">\ub0a9\uc785(\ub204\uc801)</th><th style="width:90px">\uc778\ucd9c(\ub204\uc801)</th><th style="width:95px">\uc2e4\ub0a9\uc785\uae08\uc561</th>',
     '<th style="width:95px">\ub9e4\uc785\ucd1d\uc561</th><th style="width:100px">\ud604\uc7ac\ud3c9\uac00\uc561</th><th style="width:90px">\uc190\uc775\uae08\uc561</th>',
@@ -4033,7 +4017,6 @@ function renderOverview(){
 }
 
 /* ===== 변경이력 ===== */
-function loadCL(){try{return JSON.parse(sGet(CLKEY)||'[]');}catch(e){return[];}}
 function addCL(today,t){
   var list=loadCL();
   var entry={id:Date.now(),date:today,ts:new Date().toISOString(),cur:t.cur,pnl:t.pnl};
@@ -4041,47 +4024,10 @@ function addCL(today,t){
   if(idx>=0)list[idx]=entry;else list.unshift(entry);
   sSet(CLKEY,JSON.stringify(list));
 }
-function saveSnapNote(ts,noteVal){
-  var stored;try{stored=JSON.parse(sGet(SNAPKEY)||'[]');}catch(e){stored=[];}
-  var idx=stored.findIndex(function(s){return s.ts===ts;});
-  if(idx>=0){stored[idx].note=noteVal;}
-  else{
-    var hist=HIST_SNAPS.find(function(h){return h.ts===ts;});
-    if(hist){var ns=JSON.parse(JSON.stringify(hist));ns.note=noteVal;stored.push(ns);}
-    else{stored.push({date:'',ts:ts,cur:0,cost:0,pnl:0,note:noteVal});}
-  }
-  stored.sort(function(a,b){return a.ts<b.ts?-1:1;});
-  sSet(SNAPKEY,JSON.stringify(stored));
-}
-function renderChangelog(){
-  var list=loadCL();
-  var rows=list.length===0
-    ?'<div style="text-align:center;padding:30px;color:var(--tx3)">\uc800\uc7a5\uc774\ub825\uc774 \uc5c6\uc2b5\ub2c8\ub2e4.</div>'
-    :list.map(function(e){
-      return'<div class="cl-entry">'
-        +'<div class="cl-time">'+new Date(e.ts).toLocaleString('ko-KR')+'</div>'
-        +'<div style="background:var(--gbg);border-radius:5px;padding:5px 9px;margin-top:4px;font-size:11px">'
-        +'\ucd1d\ud3c9\uac00\uc561: <strong style="color:var(--nvy)">'+fmt(e.cur)+'\uc6d0</strong>'
-        +' | \uc190\uc775: <strong class="'+(e.pnl>=0?'pos':'neg')+'">'+(e.pnl>=0?'+':'')+fmt(e.pnl)+'\uc6d0</strong>'
-        +'</div>'
-        +'<button onclick="delCL('+e.id+')" '
-        +'style="border:none;background:none;color:#dc2626;cursor:pointer;font-size:13px;padding:2px 6px;line-height:1" '
-        +'title="\uc0ad\uc81c">\u00d7</button>'
-        +'</div>';
-    }).join('');
-  document.getElementById('pg-changelog').innerHTML=[
-    '<div class="sec"><div class="sechdr">',
-    '<span class="sectitle">\uc800\uc7a5\uc774\ub825</span>',
-    '<span class="secsub">\ucd1d '+list.length+'\uac74 (\uc77c\ubcc4 \ucd5c\uc2e0 1\uac74)</span>',
-    (list.length?'<button class="btn" style="margin-left:auto;padding:4px 11px;font-size:12px;background:#fee2e2;color:#dc2626;border-color:#fca5a5" onclick="clearCL()">\uae30\ub85d \uc804\uccb4\uc0ad\uc81c</button>':''),
-    '</div><div style="padding:12px">'+rows+'</div></div>'
-  ].join('');
-}
 function delCL(id){if(!confirm('\uc0ad\uc81c\ud560\uae4c\uc694?'))return;var l=loadCL().filter(function(e){return e.id!==id;});sSet(CLKEY,JSON.stringify(l));renderChangelog();}
 function clearCL(){if(!confirm('\uc804\uccb4 \uc0ad\uc81c\ud560\uae4c\uc694?'))return;sSet(CLKEY,'[]');renderChangelog();}
 
-/* ===== 데이터 변경 ===== */
-function findAcc(id){return ACCOUNTS.find(function(a){return a.id===id;});}
+
 
 
 
@@ -4136,25 +4082,6 @@ function delCH(i){if(!confirm('"'+CMA.holdings[i].n+'" \uc885\ubaa9\uc744 \uc0ad
 
 
 /* ===== 모바일 퀵메뉴 ===== */
-function mobSel(id){
-  document.querySelectorAll('.mob-btn').forEach(function(b){b.classList.remove('on');});
-  var el=document.getElementById(id);if(el)el.classList.add('on');
-}
-function mobShowAccMenu(){
-  var sheet=document.getElementById('mob-acc-sheet');
-  var overlay=document.getElementById('mob-acc-overlay');
-  var list=document.getElementById('mob-acc-list');
-  var items=ACCOUNTS.map(function(acc){return {id:acc.id,name:acc.name};});
-  items.push({id:'cma',name:(CMA&&CMA.name?CMA.name:'CMA 해외주식')});
-  items.push({id:'changelog',name:'📝 변경이력'});
-  list.innerHTML=items.map(function(it){
-    return '<button onclick="go(\''+it.id+'\',null);mobSel(\'mob-ac\');document.getElementById(\'mob-acc-sheet\').style.display=\'none\';document.getElementById(\'mob-acc-overlay\').style.display=\'none\'" '
-      +'style="display:block;width:100%;text-align:left;padding:13px 20px;border:none;background:none;font-size:14px;font-family:inherit;cursor:pointer;border-bottom:1px solid var(--brd2);color:var(--tx)">'
-      +escH(it.name)+'</button>';
-  }).join('');
-  overlay.style.display='block';
-  sheet.style.display='block';
-}
 
 
 
@@ -4202,11 +4129,10 @@ async function ghPush(silent){
   if(btn&&!silent){btn.textContent='\uc5c5\ub85c\ub4dc...';btn.className='hbtn hbtn-sync syncing';}
   try{
     var snaps=loadSnaps();
-    var cl=[];try{cl=JSON.parse(sGet('fp_cl')||'[]');}catch(e){}
     var distData=distGet();
-    var payload={v:7,saved:new Date().toISOString(),
+    var payload={v:8,saved:new Date().toISOString(),
       data:{accounts:ACCOUNTS,cma:CMA,crypto:CRYPTO,fx:{usd:FX.USD,jpy:FX.JPY},prices:PRICES},
-      snaps:snaps,changelog:cl,distData:distData,
+      snaps:snaps,distData:distData,
       pensionData:pensionGet(),pensionStrategy:pensionStrategyGet(),
       snapDel:JSON.parse(sGet(SNAP_DEL_KEY)||'[]'),
       appMeta:JSON.parse(JSON.stringify(APP_META))};
@@ -4259,7 +4185,6 @@ async function ghPull(force){
       obj.snaps.forEach(function(s){map[s.date]=s;});
       sSet(SNAPKEY,JSON.stringify(Object.values(map).sort(function(a,b){return a.date<b.date?-1:1;})));
     }
-    if(obj.changelog&&obj.changelog.length) sSet('fp_cl',JSON.stringify(obj.changelog));
     sSet(SKEY,JSON.stringify({accounts:ACCOUNTS,cma:CMA,crypto:CRYPTO,fx:{usd:FX.USD,jpy:FX.JPY},prices:PRICES}));
     if(obj.distData){sSet(DIST_KEY,JSON.stringify(obj.distData));sSet('fp_dist_ver','v3');}
     if(obj.pensionData) sSet(PENSION_KEY,JSON.stringify(obj.pensionData));
