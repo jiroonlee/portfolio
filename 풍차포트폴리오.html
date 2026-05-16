@@ -643,7 +643,7 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
 </div>
 
 <div class="hdr">
-  <div><div class="hdr-title" id="hdr-title-el">🌸 수익은 길게, 손실은 짧게!!! <span style="font-size:10px;color:#9ca3af;font-weight:400">v5.25</span> <span style="font-size:10px;background:#2563eb;color:#fff;padding:1px 6px;border-radius:4px;font-weight:700">#1</span></div><div class="hdr-sub" id="hdr-sub-el">연금계좌 풍차계획 포트폴리오</div></div>
+  <div><div class="hdr-title" id="hdr-title-el">🌸 수익은 길게, 손실은 짧게!!! <span style="font-size:10px;color:#9ca3af;font-weight:400">v5.28</span> <span style="font-size:10px;background:#2563eb;color:#fff;padding:1px 6px;border-radius:4px;font-weight:700">#1</span></div><div class="hdr-sub" id="hdr-sub-el">연금계좌 풍차계획 포트폴리오</div></div>
   <div class="hdr-sp"></div>
   <div class="upd" id="upd">종전가</div>
   <div class="dot" id="dot"></div>
@@ -712,7 +712,7 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
 
 const DEF = {
  accounts:[
-  {id:'mf-ira',name:'미래_퇴직개인연금(퇴직금)',openDate:'23.2.15',note:'*23.12.20.개시',pensionYr:4,pensionStart:'23.12.20',
+  {id:'mf-ira',name:'퇴직연금(M)',openDate:'23.2.15',note:'*23.12.20.개시',pensionYr:4,pensionStart:'23.12.20',
    accDep:186882881,depositsYr:0,accWit:100000,withdrawalsYr:0,extraLabel:'이연퇴직금',extraVal:0,annualDistRate:0.0738,
    holdings:[
     {n:'KODEX 미국배당커버드콜액티브',tk:'441640',qty:10000,cost:11646,high:13088,mI:null,mM:990000},
@@ -723,7 +723,7 @@ const DEF = {
     {n:'ACE 구글밸류체인액티브',tk:'483340',qty:1000,cost:16868,high:22000,mI:null,mM:null},
     {n:'SOL 국제금',tk:'0066W0',qty:500,cost:12322,high:16900,mI:null,mM:null}
    ]},
-  {id:'mf-pension',name:'미래_개인연금(비과세재원/ISA입금)',openDate:'20.3.20',note:'*25.3.20.요건 충족',pensionYr:2,pensionStart:'25.3.20',
+  {id:'mf-pension',name:'개인연금(M)',openDate:'20.3.20',note:'*25.3.20.요건 충족',pensionYr:2,pensionStart:'25.3.20',
    accDep:190614135,depositsYr:0,accWit:64698793,withdrawalsYr:0,extraLabel:'비과세재원',extraVal:99333476,annualDistRate:0.0767,
    holdings:[
     {n:'KODEX 미국배당커버드콜액티브',tk:'441640',qty:8000,cost:11508,high:13088,mI:null,mM:792000},
@@ -734,7 +734,7 @@ const DEF = {
     {n:'ACE 구글밸류체인액티브',tk:'483340',qty:500,cost:16732,high:22000,mI:null,mM:null},
     {n:'SOL 국제금',tk:'0066W0',qty:300,cost:13935,high:16900,mI:null,mM:null}
    ]},
-  {id:'mf-isa',name:'미래_ISA(만기후,삼성ISA신규)',openDate:'23.8.22',note:'*26.8.22.요건 충족',
+  {id:'mf-isa',name:'ISA(M)',openDate:'23.8.22',note:'*26.8.22.요건 충족',
    accDep:80000000,depositsYr:0,accWit:-15101360,withdrawalsYr:0,extraLabel:null,extraVal:0,annualDistRate:0.0821,
    holdings:[
     {n:'KODEX 미국배당커버드콜액티브',tk:'441640',qty:3750,cost:11967,high:13088,mI:null,mM:371250},
@@ -744,7 +744,7 @@ const DEF = {
     {n:'ACE 구글밸류체인액티브',tk:'483340',qty:500,cost:16855,high:22000,mI:null,mM:null},
     {n:'SOL 국제금',tk:'0066W0',qty:300,cost:14517,high:16900,mI:null,mM:null}
    ]},
-  {id:'ss-pension',name:'삼성_개인연금(과세/적립투자)',openDate:'20.3.24',note:'*25.3.24.요건 충족',pensionYr:2,pensionStart:'25.3.24',
+  {id:'ss-pension',name:'개인연금(S)',openDate:'20.3.24',note:'*25.3.24.요건 충족',pensionYr:2,pensionStart:'25.3.24',
    accDep:58983298,depositsYr:0,accWit:0,withdrawalsYr:0,extraLabel:'비과세재원',extraVal:27983298,annualDistRate:0.0826,
    holdings:[
     {n:'KODEX 미국배당커버드콜액티브',tk:'441640',qty:2750,cost:11656,high:13088,mI:null,mM:272250},
@@ -754,7 +754,7 @@ const DEF = {
     {n:'ACE 테슬라밸류체인액티브',tk:'457480',qty:500,cost:21394,high:23435,mI:null,mM:null},
     {n:'ACE 구글밸류체인액티브',tk:'483340',qty:1,cost:20755,high:22000,mI:0,mM:0}
    ]},
-  {id:'mf-irp2',name:'미래에셋 IRP(적립투자)',openDate:'25.4.29',note:'*30.4.29.요건 충족',pensionYr:null,pensionStart:null,
+  {id:'mf-irp2',name:'IRP(M)',openDate:'25.4.29',note:'*30.4.29.요건 충족',pensionYr:null,pensionStart:null,
    accDep:6000000,depositsYr:0,accWit:0,withdrawalsYr:0,extraLabel:'비과세재원',extraVal:0,annualDistRate:null,
    holdings:[
     {n:'KODEX 미국나스닥100',tk:'379810',qty:168,cost:25294,high:25930,mI:null,mM:null},
@@ -762,7 +762,7 @@ const DEF = {
    ]}
  ],
  cma:{
-  name:'미래_CMA 계좌(해외주식)',accDep:46991907,depositsYr:0,accWit:-7310401,withdrawalsYr:0,
+  name:'CMA(종합)',accDep:46991907,depositsYr:0,accWit:-7310401,withdrawalsYr:0,
   holdings:[
    {n:'TOPIX-17(1632)',tk:'1632',sub:'연2.05%배당(7월)',cur:'JPY',qty:100,cost:27681.1,avgFX:981.19,high:39440,distAnn:0},
    {n:'Japan Physical Gold(1540)',tk:'1540',sub:'',cur:'JPY',qty:150,cost:19765.17,avgFX:931.94,high:26585,distAnn:0},
@@ -797,7 +797,7 @@ var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
   sub: '연금계좌 풍차계획 포트폴리오',
-  version: 'v5.25',   // 버전 — 여기만 수정
+  version: 'v5.28',   // 버전 — 여기만 수정
   birthdate: '', // 생년월일 (YYYY-MM-DD 또는 YY.M.D 형식)
   accMeta: {},
   accOrder: []
@@ -879,7 +879,7 @@ function renderNav(){
     return {id:acc.id, label:acc.name};
   });
   var extra=[
-    {id:'cma',   label: (CMA&&CMA.name?CMA.name:'CMA 해외주식')},
+    {id:'cma',   label: (CMA&&CMA.name?CMA.name:'CMA')},
     {id:'crypto',label:'가상화폐'},
     {id:'history',label:'자산변동'},
   ];
@@ -1617,14 +1617,8 @@ function renderPension(){
     var acc=ACCOUNTS.find(function(a){return a.id===p.id;});
     var metaName=(APP_META.accMeta[p.id]&&APP_META.accMeta[p.id].name)||null;
     p.label=metaName||(acc?acc.name:p.id);
-    // 헤더 표시용 약칭: 편집명 있으면 우선(8자 이내), 없으면 자동 약칭
-    if(metaName){
-      p.shortLabel=metaName.substring(0,8);
-    } else {
-      var _fl=p.label.replace(/\(.*$/,'').trim();
-      var _parts=_fl.split(/[_\s]+/);
-      p.shortLabel=_parts[_parts.length-1].substring(0,6)||p.label.substring(0,6);
-    }
+    // 헤더 표시용: 계좌명 그대로 사용 (8자 이내)
+    p.shortLabel=p.label.substring(0,8);
     // 개설일: 저장값 > 계좌 openDate > 기본값
     p.openDateDisp=saved['openDate_'+p.id]||(acc&&acc.openDate?acc.openDate:p.openDate);
     // 개시가능일: 저장값 > 계좌 note > 기본값
@@ -1893,7 +1887,7 @@ function renderPension(){
 
   pg.innerHTML='<div class="sec"><div class="sechdr"><span class="sectitle">사적연금 통합관리</span></div>'
     +'<div class="twrap" style="padding:0 13px 6px;overflow-x:hidden"><table style="width:100%;table-layout:fixed;border-collapse:collapse;">'
-    +(function(){var lw=Math.round(70/(cols.length+1)*10)/10;return '<colgroup>'+'<col style="width:30%">'+cols.map(function(){return '<col style="width:'+lw+'%">';}).join('')+'<col style="width:'+lw+'%"></colgroup>';})()
+    +(function(){var _isMob=window.innerWidth<=768;var _fw=_isMob?28:17;var lw=Math.round((100-_fw)/(cols.length+1)*10)/10;return '<colgroup>'+'<col style="width:'+_fw+'%">'+cols.map(function(){return '<col style="width:'+lw+'%">';}).join('')+'<col style="width:'+lw+'%"></colgroup>';})()
     +hdRow+tbody+'</table></div>'+noteHTML+'</div>'+strategyHTML;
 }
 
@@ -3790,7 +3784,7 @@ function mobShowAccMenu(){
   var list=document.getElementById('mob-acc-list');
   // 계좌 목록: ACCOUNTS 순서 기반으로 동적 생성
   var items=ACCOUNTS.map(function(acc){return {id:acc.id,name:acc.name};});
-  items.push({id:'cma',name:(CMA&&CMA.name?CMA.name:'CMA 해외주식')});
+  items.push({id:'cma',name:(CMA&&CMA.name?CMA.name:'CMA')});
   list.innerHTML=items.map(function(it){
     return '<button onclick="go(\''+it.id+'\',null);mobSel(\'mob-ac\');document.getElementById(\'mob-acc-sheet\').style.display=\'none\';document.getElementById(\'mob-acc-overlay\').style.display=\'none\'" '
       +'style="display:block;width:100%;text-align:left;padding:13px 20px;border:none;background:none;font-size:14px;font-family:inherit;cursor:pointer;border-bottom:1px solid var(--brd2);color:var(--tx)">'
