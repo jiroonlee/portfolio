@@ -640,7 +640,7 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
 </div>
 
 <div class="hdr">
-  <div><div class="hdr-title" id="hdr-title-el">🌸 수익은 길게, 손실은 짧게!!! <span style="font-size:10px;color:#9ca3af;font-weight:400">v5.0</span> <span style="font-size:10px;background:#059669;color:#fff;padding:1px 6px;border-radius:4px;font-weight:700">#2</span></div><div class="hdr-sub" id="hdr-sub-el">연금계좌 풍차계획 포트폴리오</div></div>
+  <div><div class="hdr-title" id="hdr-title-el">🌸 수익은 길게, 손실은 짧게!!! <span style="font-size:10px;color:#9ca3af;font-weight:400">v5.10</span> <span style="font-size:10px;background:#059669;color:#fff;padding:1px 6px;border-radius:4px;font-weight:700">#2</span></div><div class="hdr-sub" id="hdr-sub-el">연금계좌 풍차계획 포트폴리오</div></div>
   <div class="hdr-sp"></div>
   <div class="upd" id="upd">종전가</div>
   <div class="dot" id="dot"></div>
@@ -795,6 +795,7 @@ var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
   sub: '연금계좌 풍차계획 포트폴리오',
+  version: 'v5.10',   // 버전 — 여기만 수정
   birthdate: '', // 생년월일 (YYYY-MM-DD 또는 YY.M.D 형식)
   accMeta: {},
   accOrder: []
@@ -811,6 +812,7 @@ function loadMeta(){
     if(m){
       if(m.title) APP_META.title=m.title;
       if(m.sub) APP_META.sub=m.sub;
+      if(m.version) APP_META.version=m.version;
       if(m.birthdate) APP_META.birthdate=m.birthdate;
       if(m.accMeta) APP_META.accMeta=m.accMeta;
       if(m.accOrder&&m.accOrder.length) APP_META.accOrder=m.accOrder;
@@ -857,7 +859,8 @@ function applyMetaToAccounts(){
 function renderAppHeader(){
   var te=document.getElementById('hdr-title-el');
   var se=document.getElementById('hdr-sub-el');
-  if(te) te.innerHTML=APP_META.title+' <span style="font-size:10px;color:#9ca3af;font-weight:400">v5.0</span> <span style="font-size:10px;background:#059669;color:#fff;padding:1px 6px;border-radius:4px;font-weight:700">#2</span>';
+  var ver=APP_META.version||'v5.9.1';
+  if(te) te.innerHTML=APP_META.title+' <span style="font-size:10px;color:#9ca3af;font-weight:400">'+ver+'</span> <span style="font-size:10px;background:#059669;color:#fff;padding:1px 6px;border-radius:4px;font-weight:700">#2</span>';
   if(se) se.textContent=APP_META.sub;
   document.title=APP_META.title.replace(/[\u{1F300}-\u{1FFFF}\u2600-\u27FF]/gu,'').trim()||'풍차계획 포트폴리오';
 }
