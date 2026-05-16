@@ -68,7 +68,8 @@ body{font-family:'Malgun Gothic',-apple-system,sans-serif;font-size:12px;backgro
   .twrap table tr.trow td:first-child{background:#e8f0fe;}
   /* pension-table은 별도 처리 (위에서 이미 정의) */
   /* 모바일 테이블 최소 너비 (스크롤 허용) */
-  .twrap table{min-width:420px;}
+  .twrap table{min-width:480px;}
+  .twrap.has-order table{min-width:500px;}
   .twrap.has-order table{min-width:460px;}
   #dist-dashboard table{min-width:320px !important;}
   /* 자산변동 비고열 표시 */
@@ -669,7 +670,7 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
 </div>
 
 <div class="hdr">
-  <div><div class="hdr-title" id="hdr-title-el">🌸 수익은 길게, 손실은 짧게!!! <span style="font-size:10px;color:#9ca3af;font-weight:400">v5.42</span> <span style="font-size:10px;background:#059669;color:#fff;padding:1px 6px;border-radius:4px;font-weight:700">#2</span></div><div class="hdr-sub" id="hdr-sub-el">연금계좌 풍차계획 포트폴리오</div></div>
+  <div><div class="hdr-title" id="hdr-title-el">🌸 수익은 길게, 손실은 짧게!!! <span style="font-size:10px;color:#9ca3af;font-weight:400">v5.43</span> <span style="font-size:10px;background:#059669;color:#fff;padding:1px 6px;border-radius:4px;font-weight:700">#2</span></div><div class="hdr-sub" id="hdr-sub-el">연금계좌 풍차계획 포트폴리오</div></div>
   <div class="hdr-sp"></div>
   <div class="upd" id="upd">종전가</div>
   <div class="dot" id="dot"></div>
@@ -824,7 +825,7 @@ var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
   sub: '연금계좌 풍차계획 포트폴리오',
-  version: 'v5.42',   // 버전 — 여기만 수정
+  version: 'v5.43',   // 버전 — 여기만 수정
   birthdate: '', // 생년월일 (YYYY-MM-DD 또는 YY.M.D 형식)
   accMeta: {},
   accOrder: []
@@ -1634,7 +1635,7 @@ function renderPension(){
     if(c.started){
       return '<td style="'+cellC+'">'
         +'<button onclick="pensionCancelStart(\''+c.p.id+'\')"'
-        +' style="border:1px solid var(--grn);background:#f0fdf4;color:var(--grn);border-radius:4px;cursor:pointer;font-size:11px;font-weight:700;padding:3px 4px;font-family:inherit;min-width:52px">개시</button>'
+        +' style="border:1px solid var(--blu);background:#eff6ff;color:var(--nvy);border-radius:4px;cursor:pointer;font-size:11px;font-weight:700;padding:3px 4px;font-family:inherit;min-width:52px">개시</button>'
         +'</td>';
     }
     return '<td style="'+cellC+'">'
@@ -1970,8 +1971,8 @@ function renderKR(acc, cid) {
   html += '<table style="table-layout:fixed;width:100%">';
   html += '<colgroup>';
   html += '<col style="width:18px">';
-  html += '<col style="width:20%">';
-  var _krw=Math.round((100-20)/10*10)/10;
+  html += '<col style="width:22%">';
+  var _krw=Math.round((78)/10*10)/10;
   for(var _k=0;_k<10;_k++) html += '<col style="width:'+_krw+'%">';
   html += '</colgroup>';
   html += '<thead><tr>';
@@ -1987,13 +1988,13 @@ function renderKR(acc, cid) {
   html += '</tr></thead>';
   html += '<tbody>' + rowsHtml;
   html += '<tr class="trow">';
-  html += '<td></td><td>\ud569 \uacc4</td><td colspan="5"></td>';
+  html += '<td></td><td>\ud569 \uacc4</td><td colspan="4"></td>';
   html += '<td class="auto" id="' + cid + '_tot_cost">' + fmt(tCost) + '</td>';
   html += '<td class="auto" id="' + cid + '_tot_cur">'  + fmt(tCur)  + '</td>';
   html += '<td class="' + pc(pnlR) + '" id="' + cid + '_tot_pnlr">' + fmtPct(pnlR) + '</td>';
   html += '<td></td>';
   html += '<td class="auto" style="color:var(--grn)" id="' + cid + '_tot_dist">' + fmt(tDist) + '</td>';
-  html += '<td></td></tr>';
+  html += '</tr>';
   html += '</tbody></table></div>';
 
   html += '</div>';
@@ -2239,7 +2240,7 @@ function renderCMA(){
     '</div></div>',
     '<div class="twrap has-order">',
     '<table style="table-layout:fixed;width:100%">',
-    '<colgroup><col style="width:18px"><col style="width:15%">'+(function(){var w=Math.round((100-15)/9*10)/10;var r='';for(var i=0;i<9;i++)r+='<col style="width:'+w+'%">';return r;})()+'</colgroup>',
+    '<colgroup><col style="width:18px"><col style="width:18%">'+(function(){var w=Math.round(82/9*10)/10;var r='';for(var i=0;i<9;i++)r+='<col style="width:'+w+'%">';return r;})()+'</colgroup>',
     '<thead><tr>',
     '<th style="width:18px;text-align:center;padding:2px 0;background:#f1f5f9"></th>',
     '<th style="text-align:left;background:#f1f5f9">\uc885\ubaa9\uba85</th>',
@@ -2369,7 +2370,7 @@ function renderCrypto(force){
     if(!er.visible) return hdr;
     return hdr+'<div class="twrap has-order">'
     +'<table style="table-layout:fixed;width:100%">'
-    +'<colgroup><col style="width:18px"><col style="width:15%">'+(function(){var w=Math.round((100-15)/9*10)/10;var r='';for(var i=0;i<9;i++)r+='<col style="width:'+w+'%">';return r;})()+'</colgroup>'
+    +'<colgroup><col style="width:18px"><col style="width:18%">'+(function(){var w=Math.round(82/10*10)/10;var r='';for(var i=0;i<10;i++)r+='<col style="width:'+w+'%">';return r;})()+'</colgroup>'
     +'<thead>'+thRow+'</thead><tbody>'+er.html+'</tbody></table></div>';
   }
   var bith=exRows(CRYPTO.bithumb,'B'), ubit=exRows(CRYPTO.upbit,'U');
