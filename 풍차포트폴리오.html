@@ -67,9 +67,7 @@ body{font-family:'Malgun Gothic',-apple-system,sans-serif;font-size:12px;backgro
   /* trow 합계행 */
   .twrap table tr.trow td:first-child{background:#e8f0fe;}
   /* pension-table은 별도 처리 (위에서 이미 정의) */
-  /* 모바일 테이블 최소 너비 (스크롤 허용) */
-  .twrap table{min-width:480px;}
-  .twrap.has-order table{min-width:500px;}
+  /* 모바일: auto layout에서 min-width 불필요 */
   .twrap.has-order table{min-width:460px;}
   #dist-dashboard table{min-width:320px !important;}
   /* 자산변동 비고열 표시 */
@@ -251,16 +249,28 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
   .has-order table th:first-child{padding-right:0;}
   .has-order table td:nth-child(2),
   .has-order table th:nth-child(2){padding-left:2px;}
-  table{border-collapse:separate;border-spacing:0;}
+  /* 모바일 테이블: 내용에 맞게 자동 크기, 줄바꿈 없음 */
+  .twrap table{
+    table-layout:auto !important;
+    width:auto !important;
+    border-collapse:collapse;
+  }
+  .twrap table td,
+  .twrap table th{
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
   table td{
     background:#fff;border:none;
     box-shadow:inset 0 -1px 0 #f0f2f5;
-    padding:5px 6px;
+    padding:4px 5px;
+    font-size:11px;
   }
   table th{
     background:#f1f5f9;border:none;
     box-shadow:inset 0 -2px 0 #d1d9e0;
-    padding:5px 6px;font-size:10px;
+    padding:4px 5px;font-size:10px;
   }
   tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{background:#f0f6ff;}
   tr.trow td{
@@ -552,7 +562,7 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
 </div>
 <!-- ✏️ 앱 정보 편집 모달 -->
 <div class="moverlay" id="meta-modal">
-  <div class="modal" style="width:560px;max-width:97vw;padding:18px 18px 14px">
+  <div class="modal" style="width:660px;max-width:98vw;padding:18px 18px 14px">
 
     <!-- 헤더 -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
@@ -670,7 +680,7 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
 </div>
 
 <div class="hdr">
-  <div><div class="hdr-title" id="hdr-title-el">🌸 수익은 길게, 손실은 짧게!!! <span style="font-size:10px;color:#9ca3af;font-weight:400">v5.43</span> <span style="font-size:10px;background:#2563eb;color:#fff;padding:1px 6px;border-radius:4px;font-weight:700">#1</span></div><div class="hdr-sub" id="hdr-sub-el">연금계좌 풍차계획 포트폴리오</div></div>
+  <div><div class="hdr-title" id="hdr-title-el">🌸 수익은 길게, 손실은 짧게!!! <span style="font-size:10px;color:#9ca3af;font-weight:400">v5.46</span> <span style="font-size:10px;background:#2563eb;color:#fff;padding:1px 6px;border-radius:4px;font-weight:700">#1</span></div><div class="hdr-sub" id="hdr-sub-el">연금계좌 풍차계획 포트폴리오</div></div>
   <div class="hdr-sp"></div>
   <div class="upd" id="upd">종전가</div>
   <div class="dot" id="dot"></div>
@@ -824,7 +834,7 @@ var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
   sub: '연금계좌 풍차계획 포트폴리오',
-  version: 'v5.43',   // 버전 — 여기만 수정
+  version: 'v5.46',   // 버전 — 여기만 수정
   birthdate: '', // 생년월일 (YYYY-MM-DD 또는 YY.M.D 형식)
   accMeta: {},
   accOrder: []
@@ -2039,13 +2049,13 @@ function renderKR(acc, cid) {
     row += '<td style="text-align:left;cursor:pointer" ondblclick="openHoldingDetail(\''+id+'\','+i+')" title="더블클릭으로 상세편집"><div class="tname">' + h.n + '</div>'
          + (h.tk ? '<div style="font-size:9px;color:var(--tx3)">' + h.tk + '</div>' : '')
          + '</td>';
-    row += '<td><input class="ed" id="' + qid + '_qty" style="width:55px"'
+    row += '<td><input class="ed" id="' + qid + '_qty" style="width:100%"'
          + ' value="' + (h.qty != null ? h.qty : '') + '"'
          + ' onchange="onQty(this,\'' + id + '\',' + i + ')"></td>';
-    row += '<td><input class="ed" id="' + qid + '_dpu" style="width:58px"'
+    row += '<td><input class="ed" id="' + qid + '_dpu" style="width:100%"'
          + ' value="' + (dpu != null ? dpu : '') + '"'
          + ' onchange="onDpu(this,\'' + id + '\',' + i + ')" placeholder="-"></td>';
-    row += '<td><input class="ed" id="' + qid + '_cost" style="width:70px"'
+    row += '<td><input class="ed" id="' + qid + '_cost" style="width:100%"'
          + ' value="' + (h.cost != null ? h.cost : '') + '"'
          + ' onchange="onCost(this,\'' + id + '\',' + i + ')"></td>';
     row += '<td>'
@@ -2053,7 +2063,7 @@ function renderKR(acc, cid) {
          + ' style="width:100%;color:' + (live ? 'var(--nvy)' : '#666') + ';font-weight:' + (live ? '700' : '400') + '"'
          + ' value="' + price + '"'
          + ' onchange="onPrice(this,\'' + id + '\',' + i + ')"></td>';
-    row += '<td><input class="ed" id="' + qid + '_high" style="width:68px"'
+    row += '<td><input class="ed" id="' + qid + '_high" style="width:100%"'
          + ' value="' + (h.high != null ? h.high : '') + '"'
          + ' onchange="onHigh(this,\'' + id + '\',' + i + ')"></td>';
     row += '<td id="' + qid + '_costV">' + fmt(costV) + '</td>';
@@ -2063,7 +2073,7 @@ function renderKR(acc, cid) {
     if (dpu != null) {
       row += '<td style="color:var(--grn)" id="' + qid + '_dist">' + (mDist ? fmt(mDist) : '-') + '</td>';
     } else {
-      row += '<td><input class="ed" id="' + qid + '_dist" style="width:68px;color:var(--grn)"'
+      row += '<td><input class="ed" id="' + qid + '_dist" style="width:100%;color:var(--grn)"'
            + ' value="' + (mDist || '') + '"'
            + ' onchange="onDist(this,\'' + id + '\',' + i + ')"></td>';
     }
@@ -2084,8 +2094,6 @@ function renderKR(acc, cid) {
   html += '<span class="sectitle">'+acc.name+'</span>';
   html += '<span style="font-size:11px;color:var(--tx3);margin-left:6px">('+acc.openDate+')</span>';
   html += '<span style="font-size:11px;color:var(--tx3);margin-left:8px">'+acc.note+'</span>';
-  html += '<button class="btn btn-add" style="margin-left:auto;padding:3px 10px;font-size:11px" '
-    +'onclick="openAddModal(\''+id+'\')">&plus; 종목 추가</button>';
   html += '</div>';
   html += '<div class="ahdr" style="border-top:none">';
   html += '<div class="irow">';
@@ -2109,6 +2117,10 @@ function renderKR(acc, cid) {
   // extraLabel (이연퇴직금, 비과세재원 등)
   if (acc.extraLabel) html += mkIE(acc.extraLabel+'(\uc6d0)', acc.extraVal||0, id, 'extraVal');
   html += '</div></div>';
+  html += '<div style="display:flex;justify-content:flex-end;padding:4px 0 2px">';
+  html += '<button class="btn btn-add" style="padding:3px 10px;font-size:11px" '
+    +'onclick="openAddModal(\\\''+id+'\\\')">&plus; 종목 추가</button>';
+  html += '</div>';
   html += '<div class="twrap has-order">';
   html += '<table style="table-layout:fixed;width:100%">';
   html += '<colgroup>';
@@ -2363,8 +2375,6 @@ function renderCMA(){
     '<div class="sec">',
     '<div class="sechdr">',
     '<span class="sectitle">'+CMA.name+'</span>',
-    '<button class="btn btn-add" style="margin-left:auto;padding:3px 10px;font-size:11px" onclick="openModal(\'cma-modal\')">'
-      +'&plus; 종목 추가</button>',
     '</div>',
     '<div class="ahdr" style="border-top:none">',
     '<div class="irow">',
@@ -2380,6 +2390,10 @@ function renderCMA(){
     ibox('\ud3c9\uac00\uc190\uc775(\uc2e4\ub0a9)',(tCurK-realInv>=0?'+':'')+fmt(tCurK-realInv)+'\uc6d0',pc(tCurK-realInv)),
     ibox('\uc218\uc775\ub960(\uc2e4\ub0a9)',fmtPct(pnlReal),pc(pnlReal)),
     '</div></div>',
+    '<div style="display:flex;justify-content:flex-end;padding:4px 0 2px">',
+    '<button class="btn btn-add" style="padding:3px 10px;font-size:11px" onclick="openModal(\'cma-modal\')">'
+      +'&plus; 종목 추가</button>',
+    '</div>',
     '<div class="twrap has-order">',
     '<table style="table-layout:fixed;width:100%">',
     '<colgroup><col style="width:18px"><col style="width:18%">'+(function(){var w=Math.round(82/9*10)/10;var r='';for(var i=0;i<9;i++)r+='<col style="width:'+w+'%">';return r;})()+'</colgroup>',
@@ -2540,12 +2554,11 @@ function renderCrypto(force){
     +'<div class="sec">'
       +'<div class="sechdr">'
         +'<span class="sectitle">\uac70\ub798\uc18c\ubcc4 \ubcf4\uc720 \ud604\ud669</span>'
-        +'<div style="display:flex;gap:6px;margin-left:auto">'
-          +'<button class="btn" style="padding:3px 9px;font-size:11px;background:#f0fdf4;color:#057a55;border-color:#a7f3d0" '
-            +'onclick="openExchangeMgmt()">\uac70\ub798\uc18c \uad00\ub9ac</button>'
-          +'<button class="btn btn-add" style="padding:3px 9px;font-size:11px" '
-            +'onclick="openAddCryptoModal()">&plus; \ucf54\uc778 \ucd94\uac00</button>'
-        +'</div>'
+      +'<div style="display:flex;justify-content:flex-end;gap:6px;padding:4px 0 2px">'
+      +'<button class="btn" style="padding:3px 9px;font-size:11px;background:#f0fdf4;color:#057a55;border-color:#a7f3d0" '
+        +'onclick="openExchangeMgmt()">거래소 관리</button>'
+      +'<button class="btn btn-add" style="padding:3px 9px;font-size:11px" '
+        +'onclick="openAddCryptoModal()">&plus; 코인 추가</button>'
       +'</div>'
       +exBlock(bith,'🔸','\ube57\uc12c (Bithumb)','#fffbeb')
       +exBlock(ubit,'🔹','\uc5c5\ube44\ud2b8 (Upbit)','#eff6ff')
@@ -2701,10 +2714,6 @@ function renderHistory(){
     '<div class="sec"><div class="sechdr">',
     '<span class="sectitle">\uc790\uc0b0 \ubcc0\ub3d9 \ud604\ud669</span>',
     '<span class="secsub"></span>',
-    '<div style="display:flex;gap:6px;margin-left:auto">',
-    '<button class="btn btn-add" style="padding:4px 11px;font-size:12px" onclick="snapNow()">\ud83d\udcf8 \uc9c0\uae08 \uae30\ub85d</button>',
-    '<button class="btn" style="padding:4px 11px;font-size:12px;background:#fee2e2;color:#dc2626;border-color:#fca5a5" onclick="deleteAllSnaps()">\uae30\ub85d \uc804\uccb4\uc0ad\uc81c</button>',
-    '</div>',
     '</div>',
     '<div class="ptabs">'+ptabs+'</div>',
     '<div class="chart-wrap"><canvas id="hchart"></canvas></div>',
@@ -2867,6 +2876,10 @@ async function drawHChart(){
     '<div class="hist-card"><div class="slbl">\uae30\uac04 \ucd5c\uc800</div><div class="sval" style="font-size:13px;color:var(--wine)">'+fmt(minCur)+'\uc6d0</div></div>',
     '</div>',
     '<div class="twrap" style="padding:0 13px 13px">',
+    '<div style="display:flex;justify-content:flex-end;gap:6px;padding:4px 0 2px">',
+    '<button class="btn btn-add" style="padding:3px 10px;font-size:11px" onclick="snapNow()">📸 지금 기록</button>',
+    '<button class="btn" style="padding:3px 10px;font-size:11px;background:#fee2e2;color:#dc2626;border-color:#fca5a5" onclick="deleteAllSnaps()">기록 전체삭제</button>',
+    '</div>',
     '<table style="table-layout:fixed;width:100%;border-collapse:collapse">',
     '<colgroup><col style="width:13%"><col style="width:17%"><col style="width:20%"><col style="width:10%"><col><col style="width:30px"></colgroup>',
     '<thead><tr>'
