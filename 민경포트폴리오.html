@@ -251,7 +251,7 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
 /* ── 로그인 ── */
 #pw-screen{position:fixed;inset:0;background:linear-gradient(135deg,#1a1d23,#1a3a5c);z-index:9999;display:flex;align-items:center;justify-content:center}
 .pw-box{background:#fff;border-radius:16px;padding:36px 30px;width:340px;max-width:92vw;box-shadow:0 20px 60px rgba(0,0,0,.4);text-align:center}
-.pw-icon{font-size:42px;margin-bottom:10px}
+.pw-icon{margin-bottom:8px;display:flex;justify-content:center}
 .pw-title{font-size:18px;font-weight:700;color:#1a1d23;margin-bottom:4px}
 .pw-sub{font-size:12px;color:#6b7280;margin-bottom:22px}
 .pw-lbl{font-size:12px;font-weight:700;color:#374151;text-align:left;margin-bottom:5px;display:block}
@@ -458,7 +458,7 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
 <!-- ── 비밀번호 화면 ── -->
 <div id="pw-screen" style="display:none">
   <div class="pw-box">
-    <div class="pw-icon">🌸</div>
+    <div class="pw-icon"><img src="data:image/jpeg;base64,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" style="width:64px;height:64px;object-fit:contain;border-radius:12px"></div>
     <div class="pw-title" id="pw-main-title">풍차계획 포트폴리오</div>
     <div class="pw-sub" id="pw-sub">수익은 길게, 손실은 짧게!!!</div>
     <div class="pw-err" id="pw-err"></div>
@@ -643,7 +643,7 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
 </div>
 
 <div class="hdr">
-  <div><div class="hdr-title" id="hdr-title-el">🌸 수익은 길게, 손실은 짧게!!! <span style="font-size:10px;color:#9ca3af;font-weight:400">v5.20</span> <span style="font-size:10px;background:#059669;color:#fff;padding:1px 6px;border-radius:4px;font-weight:700">#2</span></div><div class="hdr-sub" id="hdr-sub-el">연금계좌 풍차계획 포트폴리오</div></div>
+  <div><div class="hdr-title" id="hdr-title-el">🌸 수익은 길게, 손실은 짧게!!! <span style="font-size:10px;color:#9ca3af;font-weight:400">v5.22</span> <span style="font-size:10px;background:#059669;color:#fff;padding:1px 6px;border-radius:4px;font-weight:700">#2</span></div><div class="hdr-sub" id="hdr-sub-el">연금계좌 풍차계획 포트폴리오</div></div>
   <div class="hdr-sp"></div>
   <div class="upd" id="upd">종전가</div>
   <div class="dot" id="dot"></div>
@@ -798,7 +798,7 @@ var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
   sub: '연금계좌 풍차계획 포트폴리오',
-  version: 'v5.20',   // 버전 — 여기만 수정
+  version: 'v5.22',   // 버전 — 여기만 수정
   birthdate: '', // 생년월일 (YYYY-MM-DD 또는 YY.M.D 형식)
   accMeta: {},
   accOrder: []
@@ -1601,13 +1601,13 @@ function renderPension(){
   var LIMIT15M=15000000;
 
   // 스타일 헬퍼 — 제목셀: 연한 배경, 나머지: 흰색, 모든 데이터셀 오른쪽 정렬 통일
-  var lblBase='font-weight:600;background:#fff;text-align:left;padding:4px 8px;';
+  var lblBase='font-weight:600;background:#fff;text-align:left;padding:4px 6px;';
   var lblSub='font-weight:400;background:#fff;text-align:left;padding:4px 8px 4px 22px;color:#4b5563;font-size:11px;';
-  var cellN='text-align:right;background:#fff;padding:4px 8px;';
-  var cellC='text-align:right;background:#fff;padding:4px 8px;';  // center→right 통일
+  var cellN='text-align:right;background:#fff;padding:4px 4px;';
+  var cellC='text-align:right;background:#fff;padding:4px 4px;overflow:hidden;';  // center→right 통일
   var hdSt='text-align:right;font-size:11px;font-weight:700;background:#f1f5f9;color:#1e293b;padding:7px 8px;';
   // ② 합계 열: 검정 볼드
-  var sumSt='text-align:right;font-weight:700;color:#111;background:#fff;padding:4px 8px;';
+  var sumSt='text-align:right;font-weight:700;color:#111;background:#fff;padding:4px 4px;';
 
   function n(v,extra){
     if(v==null||v===0) return '<td style="'+cellN+(extra||'')+'">' + '-</td>';
@@ -1619,7 +1619,7 @@ function renderPension(){
   }
   function editableCell(key,id,val,bold){
     var v=val!=null?Math.round(val):'';
-    return '<td style="padding:3px 6px;">'
+    return '<td style="padding:3px 4px;">'
       +'<input class="ed" style="width:100%;text-align:right;font-size:12px;'+(bold?'font-weight:700;':'')+'color:var(--nvy)"'
       +' value="'+v+'" placeholder="-"'
       +' onchange="pensionEdit(\''+key+'\',\''+id+'\',this.value)"></td>';
@@ -1628,7 +1628,7 @@ function renderPension(){
     if(c.yr==null) return '<td style="'+cellC+'color:var(--tx3)">-</td>';
     var isCustom=saved['limit_'+c.p.id]!=null;
     var v=c.limitVal!=null?Math.round(c.limitVal):'';
-    return '<td style="padding:3px 6px;">'
+    return '<td style="padding:3px 4px;">'
       +'<input class="ed" style="width:100%;text-align:right;font-size:12px;font-weight:700;color:'+(isCustom?'var(--red)':'#111')+'"'
       +' value="'+v+'" placeholder="자동계산"'
       +' title="'+(c.limitAuto!=null?'자동: '+fmt(Math.round(c.limitAuto)):'')+'"'
@@ -1639,12 +1639,12 @@ function renderPension(){
     if(c.started){
       return '<td style="'+cellC+'">'
         +'<button onclick="pensionCancelStart(\''+c.p.id+'\')"'
-        +' style="border:1px solid var(--grn);background:#f0fdf4;color:var(--grn);border-radius:4px;cursor:pointer;font-size:11px;font-weight:700;padding:3px 10px;font-family:inherit;min-width:52px">개시</button>'
+        +' style="border:1px solid var(--grn);background:#f0fdf4;color:var(--grn);border-radius:4px;cursor:pointer;font-size:11px;font-weight:700;padding:3px 4px;font-family:inherit;min-width:52px">개시</button>'
         +'</td>';
     }
     return '<td style="'+cellC+'">'
       +'<button onclick="openPensionAgeModal(\''+c.p.id+'\',\''+escH(c.p.label)+'\')"'
-      +' style="border:1px solid var(--brd);background:#fff;color:var(--tx2);border-radius:4px;cursor:pointer;font-size:11px;padding:3px 10px;font-family:inherit;min-width:52px">미개시</button>'
+      +' style="border:1px solid var(--brd);background:#fff;color:var(--tx2);border-radius:4px;cursor:pointer;font-size:11px;padding:3px 4px;font-family:inherit;min-width:52px">미개시</button>'
       +'</td>';
   }
   // ⑥ 연금수령연차
@@ -1652,7 +1652,7 @@ function renderPension(){
     var yr=c.yr;
     return '<td style="'+cellC+'">'
       +(yr!=null
-        ?'<input class="ed" style="width:36px;text-align:right;font-size:11px" value="'+yr+'"'
+        ?'<input class="ed" style="width:40%;min-width:28px;box-sizing:border-box;text-align:right;font-size:11px" value="'+yr+'"'
          +' onchange="pensionEditYr(\''+c.p.id+'\',this.value)">년차'
         :'<span style="color:var(--tx3);font-size:11px">-</span>')
       +'</td>';
@@ -1672,14 +1672,14 @@ function renderPension(){
     +'<tr><td style="'+lblBase+'">개설일자</td>'
       +cols.map(function(c){
         return '<td style="'+cellC+'">'
-          +'<input class="ed" style="width:80px;text-align:right;font-size:11px" value="'+escH(c.p.openDateDisp)+'"'
+          +'<input class="ed" style="width:100%;box-sizing:border-box;text-align:right;font-size:11px" value="'+escH(c.p.openDateDisp)+'"'
           +' onchange="pensionEditDate(\'openDate\',\''+c.p.id+'\',this.value)">'
         +'</td>';
       }).join('')+'<td style="'+cellC+'"></td></tr>'
     +'<tr><td style="'+lblBase+'">연금개시(가능)일</td>'
       +cols.map(function(c){
         return '<td style="'+cellC+'">'
-          +'<input class="ed" style="width:80px;text-align:right;font-size:11px" value="'+escH(c.p.startDateDisp)+'"'
+          +'<input class="ed" style="width:100%;box-sizing:border-box;text-align:right;font-size:11px" value="'+escH(c.p.startDateDisp)+'"'
           +' onchange="pensionEditDate(\'startDate\',\''+c.p.id+'\',this.value)">'
         +'</td>';
       }).join('')+'<td style="'+cellC+'"></td></tr>'
@@ -1743,7 +1743,7 @@ function renderPension(){
 
   pg.innerHTML='<div class="sec"><div class="sechdr"><span class="sectitle">사적연금 통합관리</span></div>'
     +'<div class="twrap" style="padding:0 13px 6px"><table style="width:100%;table-layout:fixed;">'
-    +(function(){var lw=Math.round(72/(cols.length+1)*10)/10;return '<colgroup>'+'<col style="width:28%">'+cols.map(function(){return '<col style="width:'+lw+'%">';}).join('')+'<col style="width:'+lw+'%"></colgroup>';})()
+    +(function(){var lw=Math.round(75/(cols.length+1)*10)/10;return '<colgroup>'+'<col style="width:25%">'+cols.map(function(){return '<col style="width:'+lw+'%">';}).join('')+'<col style="width:'+lw+'%"></colgroup>';})()
     +hdRow+tbody+'</table></div>'+noteHTML+'</div>'+strategyHTML;
 }
 
