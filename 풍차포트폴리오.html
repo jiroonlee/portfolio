@@ -67,17 +67,20 @@ body{font-family:'Malgun Gothic',-apple-system,sans-serif;font-size:12px;backgro
   /* trow 합계행 */
   .twrap table tr.trow td:first-child{background:#e8f0fe;}
   /* pension-table은 별도 처리 (위에서 이미 정의) */
+  /* 모바일 테이블 최소 너비 (스크롤 허용) */
+  .twrap table{min-width:420px;}
+  .twrap.has-order table{min-width:460px;}
+  #dist-dashboard table{min-width:320px !important;}
+  /* 자산변동 비고열 표시 */
+  .twrap table[style*='auto']{min-width:480px;}
 }
-/* ── 분할 테이블: 고정열(왼쪽) + 스크롤열(오른쪽) ── */
-.twrap-split{display:flex;align-items:flex-start;overflow:hidden;}
-.twrap-fixed{flex-shrink:0;overflow:hidden;z-index:1;}
-.twrap-fixed table{width:auto;}
-.twrap-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;flex:1;min-width:0;}
-.twrap-scroll table{width:max-content;min-width:100%;}
+
+
+
+
+
 /* 두 테이블의 행 높이를 동기화 */
-.twrap-fixed table,.twrap-scroll table{
-  border-collapse:separate;border-spacing:0;font-size:12px;table-layout:fixed;
-}
+.twrap-fixed table,
 /* ── 이동버튼+종목명 셀을 하나처럼 표시 ── */
 .has-order table td:first-child,
 .has-order table th:first-child{
@@ -90,7 +93,7 @@ body{font-family:'Malgun Gothic',-apple-system,sans-serif;font-size:12px;backgro
 /* ── 테이블 기본 디자인 ── */
 table{width:100%;border-collapse:separate;border-spacing:0;font-size:12px}
 th{
-  padding:6px 8px;text-align:right;font-size:10px;
+  padding:3px 5px;text-align:right;font-size:10px;
   color:#4b5563;font-weight:700;
   background:#f1f5f9;
   border:none;
@@ -100,7 +103,7 @@ th{
 th:after{display:none}
 th:first-child{text-align:left}
 td{
-  padding:5px 8px;
+  padding:4px 5px;
   border:none;
   box-shadow:inset 0 -1px 0 #f0f2f5;
   text-align:right;white-space:nowrap;vertical-align:middle;
@@ -123,7 +126,7 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
   color:#64748b;text-align:left;padding:5px 9px;
   border:none;box-shadow:inset 0 -1px 0 #d1d9e0;
 }
-.pos{color:var(--nvy);font-weight:600}.neg{color:var(--wine);font-weight:600}
+.pos{color:var(--nvy)}.neg{color:var(--wine)}
 .tname{font-weight:600;line-height:1.4}.tsub{font-size:10px;color:var(--tx2);margin-top:1px}
 .ed{background:transparent;border:1px solid transparent;border-radius:3px;padding:1px 3px;text-align:right;font-family:inherit;font-size:11px;color:inherit;cursor:text}
 .ed:hover{border-color:var(--brd);background:#fff}
@@ -138,7 +141,7 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
 .drow strong{color:var(--tx);font-weight:700}
 .btn{padding:4px 11px;border-radius:5px;cursor:pointer;font-size:12px;font-weight:600;border:1px solid var(--brd);font-family:inherit}
 .btn-add{background:var(--blu);color:#fff;border-color:var(--blu)}.btn-add:hover{background:var(--blu3)}
-.btn-del{background:transparent;color:var(--wine);border:none;padding:2px 6px;font-size:11px;cursor:pointer}.btn-del:hover{color:#8b0000}
+
 .tbbar{padding:5px 11px;display:flex;gap:7px;border-top:1px solid var(--brd2);background:#fafcff}
 .ccards{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:8px;padding:11px}
 .ccard{border-radius:8px;padding:11px 13px;border:1px solid var(--brd2)}
@@ -666,7 +669,7 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
 </div>
 
 <div class="hdr">
-  <div><div class="hdr-title" id="hdr-title-el">🌸 수익은 길게, 손실은 짧게!!! <span style="font-size:10px;color:#9ca3af;font-weight:400">v5.33</span> <span style="font-size:10px;background:#2563eb;color:#fff;padding:1px 6px;border-radius:4px;font-weight:700">#1</span></div><div class="hdr-sub" id="hdr-sub-el">연금계좌 풍차계획 포트폴리오</div></div>
+  <div><div class="hdr-title" id="hdr-title-el">🌸 수익은 길게, 손실은 짧게!!! <span style="font-size:10px;color:#9ca3af;font-weight:400">v5.42</span> <span style="font-size:10px;background:#2563eb;color:#fff;padding:1px 6px;border-radius:4px;font-weight:700">#1</span></div><div class="hdr-sub" id="hdr-sub-el">연금계좌 풍차계획 포트폴리오</div></div>
   <div class="hdr-sp"></div>
   <div class="upd" id="upd">종전가</div>
   <div class="dot" id="dot"></div>
@@ -820,7 +823,7 @@ var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
   sub: '연금계좌 풍차계획 포트폴리오',
-  version: 'v5.33',   // 버전 — 여기만 수정
+  version: 'v5.42',   // 버전 — 여기만 수정
   birthdate: '', // 생년월일 (YYYY-MM-DD 또는 YY.M.D 형식)
   accMeta: {},
   accOrder: []
@@ -1195,13 +1198,6 @@ function iChange(el) {
   if (curPage !== 'overview') renderOverview();
   autoSync();
 }
-
-function badge(live){
-  return live
-    ?'<span style="font-size:9px;background:var(--blu2);color:var(--blu);padding:1px 3px;border-radius:3px;margin-right:2px">실시간</span>'
-    :'<span style="font-size:9px;background:var(--gbg);color:var(--tx3);padding:1px 3px;border-radius:3px;margin-right:2px">종전가</span>';
-}
-
 function liveP(h){return(h.tk&&PRICES[h.tk]!=null)?PRICES[h.tk]:h.cost;}
 function isLv(h){return !!(h.tk&&PRICES[h.tk]!=null);}
 function cmaFX(h){return h.cur==='JPY'?FX.JPY:h.cur==='USD'?FX.USD:1;}
@@ -1659,32 +1655,6 @@ function renderPension(){
     var d=parseInt(parts[2]||'1');
     return new Date(y,m,d);
   }
-  function calcAutoYr(p, started, savedAge){
-    if(!started) return null;
-    if(p.isRetire){
-      // 퇴직연금: 개시일(pensionStart)부터 연차 계산
-      var startD=parseDateStr(p.pensionStart);
-      if(!startD) return null;
-      var yr=TODAY.getFullYear()-startD.getFullYear();
-      // 같은 해 내라면 개월 기준 보정
-      var monthDiff=(TODAY.getMonth()-startD.getMonth())+(TODAY.getDate()>=startD.getDate()?0:-1);
-      if(TODAY.getMonth()<startD.getMonth()||(TODAY.getMonth()===startD.getMonth()&&TODAY.getDate()<startD.getDate())) yr--;
-      return Math.max(1, yr+1); // 1년차부터
-    } else {
-      // 일반연금: 계설일+5년 경과 & 55세 이상인 시점부터 연차
-      var openD=parseDateStr(p.openDate);
-      if(!openD) return null;
-      var age=savedAge||0;
-      var fiveYearsLater=new Date(openD.getFullYear()+5, openD.getMonth(), openD.getDate());
-      if(TODAY<fiveYearsLater) return null; // 5년 미경과
-      if(age>0 && age<55) return null; // 55세 미만
-      // 5년 경과 & 55세 이상: 개설일+5년 시점부터 연차 계산
-      var yr=TODAY.getFullYear()-fiveYearsLater.getFullYear();
-      if(TODAY.getMonth()<fiveYearsLater.getMonth()||(TODAY.getMonth()===fiveYearsLater.getMonth()&&TODAY.getDate()<fiveYearsLater.getDate())) yr--;
-      return Math.max(1, yr+1);
-    }
-  }
-
   var cols=PACC.map(function(p){
     var acc=ACCOUNTS.find(function(a){return a.id===p.id;});
     var curTotal=getAccCurTotal(p.id);
@@ -1920,6 +1890,7 @@ function pensionEdit(type,id,val){
   if(v===null) delete saved[type+'_'+id]; else saved[type+'_'+id]=v;
   pensionSet(saved);
   renderPension();
+  autoSync();
 }
 /* ===== 생년월일로 만 나이 계산 ===== */
 function calcAgeFromBirthdate(birthdateStr){
@@ -2027,13 +1998,6 @@ function pensionEditDate(field, id, val){
 function isISAId(id){
   return id.toLowerCase().indexOf('isa')>=0;
 }
-function pensionEditBool(type,id,val){
-  var saved=pensionGet();
-  saved[type+'_'+id]=(val==='true');
-  pensionSet(saved);
-  renderPension();
-  autoSync();
-}
 function pensionEditYr(id,val){
   var saved=pensionGet();
   var v=val===''?null:(parseInt(val)||null);
@@ -2041,12 +2005,6 @@ function pensionEditYr(id,val){
   pensionSet(saved);
   renderPension();
   autoSync();
-}
-function pensionResetAuto(id,input){
-  var saved=pensionGet();
-  delete saved['limit_'+id];
-  pensionSet(saved);
-  renderPension();
 }
 function pensionSaveStrategy(){
   var ta=document.getElementById('pension-strategy');
@@ -2077,7 +2035,7 @@ function renderKR(acc, cid) {
          + '<button onclick="moveHolding(\''+id+'\','+i+',1)" style="border:1px solid var(--brd);background:#fff;border-radius:2px;cursor:pointer;font-size:9px;padding:0 3px;line-height:1.4;color:var(--tx2)">▼</button>'
          + '</div></td>';
     // 종목명 + 코드 아래 표시 (더블클릭으로 상세 편집)
-    row += '<td style="min-width:130px;text-align:left;cursor:pointer" ondblclick="openHoldingDetail(\''+id+'\','+i+')" title="더블클릭으로 상세편집"><div class="tname">' + h.n + '</div>'
+    row += '<td style="text-align:left;cursor:pointer" ondblclick="openHoldingDetail(\''+id+'\','+i+')" title="더블클릭으로 상세편집"><div class="tname">' + h.n + '</div>'
          + (h.tk ? '<div style="font-size:9px;color:var(--tx3)">' + h.tk + '</div>' : '')
          + '</td>';
     row += '<td><input class="ed" id="' + qid + '_qty" style="width:55px"'
@@ -2089,26 +2047,25 @@ function renderKR(acc, cid) {
     row += '<td><input class="ed" id="' + qid + '_cost" style="width:70px"'
          + ' value="' + (h.cost != null ? h.cost : '') + '"'
          + ' onchange="onCost(this,\'' + id + '\',' + i + ')"></td>';
-    row += '<td class="' + (live ? 'auto' : '') + '">'
-         + (h.tk ? badge(live) : '')
-         + '<input class="ed" id="' + qid + '_price" style="width:72px"'
+    row += '<td>'
+         + '<input class="ed" id="' + qid + '_price"'
+         + ' style="width:100%;color:' + (live ? 'var(--nvy)' : '#666') + ';font-weight:' + (live ? '700' : '400') + '"'
          + ' value="' + price + '"'
          + ' onchange="onPrice(this,\'' + id + '\',' + i + ')"></td>';
     row += '<td><input class="ed" id="' + qid + '_high" style="width:68px"'
          + ' value="' + (h.high != null ? h.high : '') + '"'
          + ' onchange="onHigh(this,\'' + id + '\',' + i + ')"></td>';
-    row += '<td class="auto" id="' + qid + '_costV" style="font-weight:600">' + fmt(costV) + '</td>';
+    row += '<td id="' + qid + '_costV">' + fmt(costV) + '</td>';
     row += '<td class="auto" id="' + qid + '_curV"  style="font-weight:600">' + fmt(curV)  + '</td>';
     row += '<td id="' + qid + '_pnlR"  class="' + pc(pnlR)  + '">' + fmtPct(pnlR)  + '</td>';
     row += '<td id="' + qid + '_highR" class="' + pc(highR) + '">' + fmtPct(highR) + '</td>';
     if (dpu != null) {
-      row += '<td class="auto" id="' + qid + '_dist" style="color:var(--grn);font-weight:600">' + (mDist ? fmt(mDist) : '-') + '</td>';
+      row += '<td style="color:var(--grn)" id="' + qid + '_dist">' + (mDist ? fmt(mDist) : '-') + '</td>';
     } else {
       row += '<td><input class="ed" id="' + qid + '_dist" style="width:68px;color:var(--grn)"'
            + ' value="' + (mDist || '') + '"'
            + ' onchange="onDist(this,\'' + id + '\',' + i + ')"></td>';
     }
-    row += '<td><button class="btn-del" onclick="delH(\'' + id + '\',' + i + ')">\u2715</button></td>';
     row += '</tr>';
     return row;
   }).join('');
@@ -2151,9 +2108,17 @@ function renderKR(acc, cid) {
   // extraLabel (이연퇴직금, 비과세재원 등)
   if (acc.extraLabel) html += mkIE(acc.extraLabel+'(\uc6d0)', acc.extraVal||0, id, 'extraVal');
   html += '</div></div>';
-  html += '<div class="twrap has-order"><table style="min-width:520px"><thead><tr>';
+  html += '<div class="twrap has-order">';
+  html += '<table style="table-layout:fixed;width:100%">';
+  html += '<colgroup>';
+  html += '<col style="width:18px">';
+  html += '<col style="width:20%">';
+  var _krw=Math.round((100-20)/10*10)/10;
+  for(var _k=0;_k<10;_k++) html += '<col style="width:'+_krw+'%">';
+  html += '</colgroup>';
+  html += '<thead><tr>';
   html += '<th style="width:18px;text-align:center;padding:2px 0;background:#f1f5f9"></th>';
-  html += '<th style="text-align:left;min-width:130px;background:#f1f5f9">\uc885\ubaa9\uba85</th>';
+  html += '<th style="text-align:left;background:#f1f5f9">\uc885\ubaa9\uba85</th>';
   html += '<th>\uc218\ub7c9</th>';
   html += '<th>\ubd84\ubc30\uae08</th>';
   html += '<th>\ub9e4\uc785\ub2e8\uac00</th><th>\ud604\uc7ac\uac00</th><th>\uc804\uace0\uc810</th>';
@@ -2161,7 +2126,7 @@ function renderKR(acc, cid) {
   html += '<th>\ud604\uc7ac\ud3c9\uac00\uc561</th>';
   html += '<th>\uc218\uc775\ub960</th><th>\uc804\uace0\uc810\ub300\ube44</th>';
   html += '<th>\uc6d4\ubd84\ubc30\uae08</th>';
-  html += '<th></th></tr></thead>';
+  html += '</tr></thead>';
   html += '<tbody>' + rowsHtml;
   html += '<tr class="trow">';
   html += '<td></td><td>\ud569 \uacc4</td><td colspan="5"></td>';
@@ -2232,15 +2197,6 @@ function onDist(el, id, i) {
   renderOverview();
   autoSync();
 }
-
-function setAcctV(id, field, v) {
-  var a=findAcc(id); if(!a)return;
-  a[field]=pf(v);  // pf() 내부에서 콤마 제거
-  var cid='pg-'+id;
-  _recalcTotals(id, cid);
-  if(curPage!=='overview') renderOverview();
-}
-
 // 특정 행 재계산 → DOM 업데이트
 function _recalcRow(id, i) {
   var a=findAcc(id); if(!a)return;
@@ -2294,27 +2250,6 @@ function _recalcTotals(id, cid) {
 }
 
 // ── 당해연도 납입/인출 핸들러 ──
-function onDepYr(id, v) {
-  var a=findAcc(id); if(!a) return;
-  var newVal=pf(v);
-  var oldVal=a.depositsYr||0;
-  // 누적: 기존 당해값 빼고 새 값 더하기
-  a.accDep=(a.accDep||0)-oldVal+newVal;
-  a.depositsYr=newVal;
-  renderKR(a,'pg-'+id);
-  _recalcTotals(id,'pg-'+id);
-  if(curPage!=='overview') renderOverview();
-}
-function onWitYr(id, v) {
-  var a=findAcc(id); if(!a) return;
-  var newVal=pf(v);
-  var oldVal=a.withdrawalsYr||0;
-  a.accWit=(a.accWit||0)-oldVal+newVal;
-  a.withdrawalsYr=newVal;
-  renderKR(a,'pg-'+id);
-  _recalcTotals(id,'pg-'+id);
-  if(curPage!=='overview') renderOverview();
-}
 function mkCMAE(lbl, val, field) {
   var dv = fmtComma(val);
   return '<div class="ibox">'
@@ -2340,29 +2275,6 @@ function cmaChange(el) {
   if (curPage !== 'overview') renderOverview();
   autoSync();
 }
-
-function onCMADepYr(v) {
-  var nv=pf(v), ov=CMA.depositsYr||0;
-  CMA.accDep=(CMA.accDep||0)-ov+nv;
-  CMA.depositsYr=nv;
-  renderCMA(); if(curPage!=='overview') renderOverview();
-}
-function onCMAWitYr(v) {
-  var nv=pf(v), ov=CMA.withdrawalsYr||0;
-  CMA.accWit=(CMA.accWit||0)-ov+nv;
-  CMA.withdrawalsYr=nv;
-  renderCMA(); if(curPage!=='overview') renderOverview();
-}
-
-function onExtraVal(el) {
-  var id = el.getAttribute('data-accid');
-  var field = el.getAttribute('data-field');
-  var a = findAcc(id);
-  if (!a) return;
-  a[field] = pf(el.value);
-  if (curPage !== 'overview') renderOverview();
-}
-
 function onPrice(el, id, i) {
   var a=findAcc(id); if(!a) return;
   var val=pf(el.value);
@@ -2411,12 +2323,11 @@ function renderCMA(){
         +'<td><input class="ed" style="width:86px" value="'+h.cost+'" onchange="setCH('+i+',\'cost\',this.value)"> '+h.cur+'</td>'
         +'<td>'+avgFXinp+'</td>'
         +'<td>-</td>'
-        +'<td><input class="ed" style="width:86px" value="'+priceL+'" onchange="setCH('+i+',\'curPrice\',this.value)"> '+h.cur+'</td>'
+        +'<td><input class="ed" style="width:100%;font-weight:'+(isLv(h)?'700':'400')+';color:'+(isLv(h)?'var(--nvy)':'#666')+'" value="'+priceL+'" onchange="setCH('+i+',\'curPrice\',this.value)"></td>'
         +'<td class="auto" title="\ub9e4\uc785\ud658\uc728 '+buyFXlabel+' \uc801\uc6a9">'+fmt(costK)+'</td>'
-        +'<td class="auto" style="font-weight:600" title="\ud604\uc7ac\ud658\uc728 '+curFXlabel+' \uc801\uc6a9">'+fmt(curK)+'</td>'
+        +'<td style="font-weight:700;color:var(--nvy)" title="\ud604\uc7ac\ud658\uc728 '+curFXlabel+' \uc801\uc6a9">'+fmt(curK)+'</td>'
         +'<td class="'+pc(pnlR)+'">'+fmtPct(pnlR)+'</td>'
         +'<td>-</td>'
-        +'<td><button class="btn-del" onclick="'+delFn+'">\u2715</button></td>'
         +'</tr>';
     }
     return '<tr>'
@@ -2429,12 +2340,11 @@ function renderCMA(){
       +'<td><input class="ed" style="width:78px" value="'+h.cost+'" onchange="setCH('+i+',\'cost\',this.value)"> '+h.cur+'</td>'
       +'<td>'+avgFXinp+'</td>'
       +'<td><input class="ed" style="width:64px" value="'+(h.high||'')+'" onchange="setCH('+i+',\'high\',this.value)"></td>'
-      +'<td>'+badge(h.tk&&PRICES[h.tk]!=null)+'<input class="ed" style="width:72px;color:var(--blu)" value="'+priceL+'" onchange="onCHPrice(this,'+i+')"> '+h.cur+'</td>'
-      +'<td class="auto" style="font-weight:700" title="\ub9e4\uc785\ud658\uc728 '+buyFXlabel+' \uc801\uc6a9">'+fmt(costK)+'</td>'
-      +'<td class="auto" style="font-weight:600;color:var(--nvy)" title="\ud604\uc7ac\ud658\uc728 '+curFXlabel+' \uc801\uc6a9">'+fmt(curK)+'</td>'
+      +'<td><input class="ed" style="width:100%;font-weight:'+(h.tk&&PRICES[h.tk]!=null?'700':'400')+';color:'+(h.tk&&PRICES[h.tk]!=null?'var(--nvy)':'#666')+'" value="'+priceL+'" onchange="onCHPrice(this,'+i+')"></td>'
+      +'<td title="\ub9e4\uc785\ud658\uc728 '+buyFXlabel+' \uc801\uc6a9">'+fmt(costK)+'</td>'
+      +'<td style="font-weight:700;color:var(--nvy)" title="\ud604\uc7ac\ud658\uc728 '+curFXlabel+' \uc801\uc6a9">'+fmt(curK)+'</td>'
       +'<td class="'+pc(pnlR)+'">'+fmtPct(pnlR)+'</td>'
       +'<td class="'+(highR!=null?pc(highR):'')+'">'+( highR!=null?fmtPct(highR):'-')+'</td>'
-      +'<td><button class="btn-del" onclick="'+delFn+'">\u2715</button></td>'
       +'</tr>';
   });
 
@@ -2469,14 +2379,17 @@ function renderCMA(){
     ibox('\ud3c9\uac00\uc190\uc775(\uc2e4\ub0a9)',(tCurK-realInv>=0?'+':'')+fmt(tCurK-realInv)+'\uc6d0',pc(tCurK-realInv)),
     ibox('\uc218\uc775\ub960(\uc2e4\ub0a9)',fmtPct(pnlReal),pc(pnlReal)),
     '</div></div>',
-    '<div class="twrap has-order"><table><thead><tr>',
+    '<div class="twrap has-order">',
+    '<table style="table-layout:fixed;width:100%">',
+    '<colgroup><col style="width:18px"><col style="width:15%">'+(function(){var w=Math.round((100-15)/9*10)/10;var r='';for(var i=0;i<9;i++)r+='<col style="width:'+w+'%">';return r;})()+'</colgroup>',
+    '<thead><tr>',
     '<th style="width:18px;text-align:center;padding:2px 0;background:#f1f5f9"></th>',
-    '<th style="text-align:left;min-width:150px;background:#f1f5f9">\uc885\ubaa9\uba85</th>',
+    '<th style="text-align:left;background:#f1f5f9">\uc885\ubaa9\uba85</th>',
     '<th>\uc218\ub7c9</th><th>\ub9e4\uc785\ub2e8\uac00(\ud604\uc9c0)</th><th>\ub9e4\uc785\ud658\uc728</th><th>\uc804\uace0\uc810</th><th>\ud604\uc7ac\uac00(\ud604\uc9c0)</th>',
     '<th>\ub9e4\uc785\ucd1d\uc561(\uc6d0)</th>',
     '<th>\ud604\uc7ac\ud3c9\uac00\uc561(\uc6d0)</th>',
     '<th>\uc218\uc775\ub960</th><th>\uc804\uace0\uc810\ub300\ube44</th>',
-    '<th></th></tr></thead>',
+    '</tr></thead>',
     '<tbody>',rowsArr.join(''),
     '<tr class="trow"><td></td><td>\ud569 \uacc4</td><td colspan="5"></td>',
     '<td class="auto">'+fmt(tCostK)+'</td>',
@@ -2567,21 +2480,20 @@ function renderCrypto(force){
         +'<td><input class="ed" style="width:95px" value="'+h.qty+'" onchange="'+fn(i,'qty')+'"></td>'
         +'<td><input class="ed" style="width:80px" value="'+(h.stk||'')+'" onchange="'+fn(i,'stk')+'"></td>'
         +'<td><input class="ed" style="width:78px" value="'+h.cost+'" onchange="'+fn(i,'cost')+'"></td>'
-        +'<td class="'+(live?'auto':'')+'">'+badge(live)
-          +'<input class="ed" style="width:88px;color:var(--nvy)" value="'+price+'" onchange="'+fn(i,'price')+'"></td>'
-        +'<td class="auto" style="font-weight:700">'+fmt(cost)+'</td>'
+        +'<td>'
+          +'<input class="ed" style="width:100%;color:'+(live?'var(--nvy)':'#666')+';font-weight:'+(live?'700':'400')+'" value="'+price+'" onchange="'+fn(i,'price')+'"></td>'
+        +'<td>'+fmt(cost)+'</td>'
         +'<td class="auto" style="font-weight:600">'+fmt(cur)+'</td>'
         +'<td class="'+pc(pnlR)+'">'+fmtPct(pnlR)+'</td>'
         +'<td class="'+pc(highR)+'">'+fmtPct(highR)+'</td>'
         +'<td class="'+pc(pnlR)+'">'+(cur>=cost?'+':'')+fmt(cur-cost)+'\uc6d0</td>'
-        +'<td><button class="btn-del" onclick="delCrypto(\''+ex+'\','+i+')">\u2715</button></td>'
         +'</tr>';
     });
     return{html:rows.join(''),cost:sC,cur:sV,visible:true};
   }
   var thRow='<tr>'
     +'<th style="width:18px;text-align:center;padding:2px 0;background:#f1f5f9"></th>'
-    +'<th style="text-align:left;min-width:120px;background:#f1f5f9">\uc885\ubaa9\uba85</th>'
+    +'<th style="text-align:left;background:#f1f5f9">\uc885\ubaa9\uba85</th>'
     +'<th>\uc218\ub7c9</th><th>\uc2a4\ud14c\uc774\ud0b9</th>'
     +'<th>\ub9e4\uc785\ub2e8\uac00</th><th>\ud604\uc7ac\uac00</th>'
     +'<th>\ub9e4\uc785\ucd1d\uc561</th><th>\ud604\uc7ac\ud3c9\uac00\uc561</th>'
@@ -2597,7 +2509,10 @@ function renderCrypto(force){
       +'<span style="font-size:12px;font-weight:700">'+label+'</span>'
       +'</div>';
     if(!er.visible) return hdr;
-    return hdr+'<div class="twrap has-order"><table><thead>'+thRow+'</thead><tbody>'+er.html+'</tbody></table></div>';
+    return hdr+'<div class="twrap has-order">'
+    +'<table style="table-layout:fixed;width:100%">'
+    +'<colgroup><col style="width:18px"><col style="width:15%">'+(function(){var w=Math.round((100-15)/9*10)/10;var r='';for(var i=0;i<9;i++)r+='<col style="width:'+w+'%">';return r;})()+'</colgroup>'
+    +'<thead>'+thRow+'</thead><tbody>'+er.html+'</tbody></table></div>';
   }
   var bith=exRows(CRYPTO.bithumb,'B'), ubit=exRows(CRYPTO.upbit,'U');
   var extraBlocks='';
@@ -2714,13 +2629,13 @@ function renderHoldings(){
       +'</td>'
       +'<td style="text-align:right">'+qtyStr+'</td>'
       +'<td style="text-align:right">'+avgStr+'</td>'
-      +'<td style="text-align:right;color:var(--nvy)">'+fmt(Math.round(r.price))+'</td>'
+      +'<td style="text-align:right;font-weight:700;color:var(--nvy)">'+fmt(Math.round(r.price))+'</td>'
       +'<td style="text-align:right">'+fmt(Math.round(r.totalCost))+'</td>'
-      +'<td style="text-align:right;font-weight:700">'+fmt(Math.round(r.totalCur))+'</td>'
+      +'<td style="text-align:right;font-weight:700;color:var(--nvy)">'+fmt(Math.round(r.totalCur))+'</td>'
       +'<td class="'+pc(pnl)+'" style="text-align:right">'+(pnl>=0?'+':'')+fmt(Math.round(pnl))+'</td>'
       +'<td class="'+pc(pnlR)+'" style="text-align:right">'+fmtPct(pnlR)+'</td>'
       +'<td style="text-align:right">'
-        +'<span style="font-weight:700;color:var(--nvy)">'+wt.toFixed(1)+'%</span>'
+        +'<span style="color:var(--nvy)">'+wt.toFixed(1)+'%</span>'
         +wtBar
       +'</td>'
       +'</tr>';
@@ -2743,7 +2658,7 @@ function renderHoldings(){
     '<div class="scard"><div class="slbl">\uc6d4 \ubd84\ubc30\uae08 \ud569\uacc4</div><div class="sval" style="color:var(--grn)">'+fmt(gDist)+'\uc6d0</div></div>',
     '</div>',
     '<div class="twrap" style="padding:0 8px 12px">',
-    '<table style="table-layout:fixed;width:100%;min-width:560px">',
+    '<table style="table-layout:fixed;width:100%">',
     '<thead><tr>',
     '<th style="text-align:left;width:160px">\uc885\ubaa9\uba85</th>',
     '<th style="width:60px">\uc218\ub7c9</th>',
@@ -2760,10 +2675,10 @@ function renderHoldings(){
     '<td>\uc804\uccb4 \ud569\uacc4</td>',
     '<td colspan="3"></td>',
     '<td style="text-align:right">'+fmt(Math.round(gCost))+'</td>',
-    '<td style="text-align:right;font-weight:700">'+fmt(Math.round(totalCur))+'</td>',
+    '<td style="text-align:right;font-weight:700;color:var(--nvy)">'+fmt(Math.round(totalCur))+'</td>',
     '<td class="'+pc(gPnl)+'" style="text-align:right">'+(gPnl>=0?'+':'')+fmt(Math.round(gPnl))+'</td>',
     '<td class="'+pc(gPnlR)+'" style="text-align:right">'+fmtPct(gPnlR)+'</td>',
-    '<td style="text-align:right;font-weight:700;color:var(--nvy)">100%</td>',
+    '<td style="text-align:right;color:var(--nvy)">100%</td>',
     '</tr>',
     '</table></div></div>'
   ].join('');
@@ -2951,14 +2866,15 @@ async function drawHChart(){
     '<div class="hist-card"><div class="slbl">\uae30\uac04 \ucd5c\uc800</div><div class="sval" style="font-size:13px;color:var(--wine)">'+fmt(minCur)+'\uc6d0</div></div>',
     '</div>',
     '<div class="twrap" style="padding:0 13px 13px">',
-    '<table style="table-layout:auto;width:100%;border-collapse:collapse;min-width:480px">',
+    '<table style="table-layout:fixed;width:100%;border-collapse:collapse">',
+    '<colgroup><col style="width:13%"><col style="width:17%"><col style="width:20%"><col style="width:10%"><col><col style="width:30px"></colgroup>',
     '<thead><tr>'
       +'<th style="text-align:left;white-space:nowrap">\uae30\uac04</th>'
       +'<th style="white-space:nowrap">\ud3c9\uac00\uc561</th>'
       +'<th style="white-space:nowrap">\ubcc0\ub3d9\uc561(\uc804\uae30\ub300\ube44)</th>'
       +'<th style="white-space:nowrap">\ubcc0\ub3d9\ub960</th>'
       +'<th style="text-align:left;width:100%">\ube44\uace0</th>'
-      +'<th style="white-space:nowrap;width:32px"></th>'
+      
     +'</tr></thead>',
     '<tbody>'+tableRows+'</tbody></table></div>'
   ].join('');
@@ -3194,11 +3110,6 @@ function moveCryptoHolding(ex,idx,dir){
   var newIdx=idx+dir;
   if(newIdx<0||newIdx>=list.length) return;
   var tmp=list[idx]; list[idx]=list[newIdx]; list[newIdx]=tmp;
-  renderCrypto(); autoSync();
-}
-function delCrypto(ex,idx){
-  var list=getCryptoList(ex); if(!list) return;
-  list.splice(idx,1);
   renderCrypto(); autoSync();
 }
 /* ===== 거래소 관리 통합 ===== */
@@ -3952,7 +3863,7 @@ function renderOverview(){
     compSection,
     curSection,
     '<div class="sec"><div class="sechdr"><span class="sectitle">\uacc4\uc88c\ubcc4 \ud604\ud669</span></div>',
-    '<div class="twrap"><table style="table-layout:fixed;width:100%;min-width:600px"><thead><tr>',
+    '<div class="twrap"><table style="table-layout:fixed;width:100%"><thead><tr>',
     '<th style="text-align:left;width:110px">\uacc4\uc88c\uba85</th>',
     '<th style="width:95px">\ub0a9\uc785(\ub204\uc801)</th><th style="width:90px">\uc778\ucd9c(\ub204\uc801)</th><th style="width:95px">\uc2e4\ub0a9\uc785\uae08\uc561</th>',
     '<th style="width:95px">\ub9e4\uc785\ucd1d\uc561</th><th style="width:100px">\ud604\uc7ac\ud3c9\uac00\uc561</th><th style="width:90px">\uc190\uc775\uae08\uc561</th>',
@@ -3972,21 +3883,6 @@ function renderOverview(){
 }
 
 /* ===== 변경이력 ===== */
-function addCL(today,t){
-  var list=loadCL();
-  var entry={id:Date.now(),date:today,ts:new Date().toISOString(),cur:t.cur,pnl:t.pnl};
-  var idx=list.findIndex(function(e){return e.date===today;});
-  if(idx>=0)list[idx]=entry;else list.unshift(entry);
-  sSet(CLKEY,JSON.stringify(list));
-}
-function delCL(id){if(!confirm('\uc0ad\uc81c\ud560\uae4c\uc694?'))return;var l=loadCL().filter(function(e){return e.id!==id;});sSet(CLKEY,JSON.stringify(l));renderChangelog();}
-function clearCL(){if(!confirm('\uc804\uccb4 \uc0ad\uc81c\ud560\uae4c\uc694?'))return;sSet(CLKEY,'[]');renderChangelog();}
-
-
-
-
-
-function delH(id,i){var a=findAcc(id);if(!a)return;if(!confirm('"'+a.holdings[i].n+'" \uc885\ubaa9\uc744 \uc0ad\uc81c\ud560\uae4c\uc694?'))return;a.holdings.splice(i,1);renderActive();}
 function openAddModal(id){
   document.getElementById('add-accid').value=id;
   ['add-name','add-tk','add-qty','add-cost','add-high','add-mi','add-mm'].forEach(function(eid){var el=document.getElementById(eid);if(el)el.value='';});
@@ -4024,7 +3920,7 @@ function doAddHolding(){
     }
   } else { renderActive(); }
 }
-function setCH(i,field,v){CMA.holdings[i][field]=pf(v);renderActive();renderOverview();}
+function setCH(i,field,v){CMA.holdings[i][field]=pf(v);renderActive();renderOverview();autoSync();}
 function onCHPrice(el,i){
   var val=pf(el.value);
   var h=CMA.holdings[i];
