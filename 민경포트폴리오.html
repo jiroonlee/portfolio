@@ -643,7 +643,7 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
 </div>
 
 <div class="hdr">
-  <div><div class="hdr-title" id="hdr-title-el">🌸 수익은 길게, 손실은 짧게!!! <span style="font-size:10px;color:#9ca3af;font-weight:400">v5.19</span> <span style="font-size:10px;background:#2563eb;color:#fff;padding:1px 6px;border-radius:4px;font-weight:700">#1</span></div><div class="hdr-sub" id="hdr-sub-el">연금계좌 풍차계획 포트폴리오</div></div>
+  <div><div class="hdr-title" id="hdr-title-el">🌸 수익은 길게, 손실은 짧게!!! <span style="font-size:10px;color:#9ca3af;font-weight:400">v5.19</span> <span style="font-size:10px;background:#059669;color:#fff;padding:1px 6px;border-radius:4px;font-weight:700">#2</span></div><div class="hdr-sub" id="hdr-sub-el">연금계좌 풍차계획 포트폴리오</div></div>
   <div class="hdr-sp"></div>
   <div class="upd" id="upd">종전가</div>
   <div class="dot" id="dot"></div>
@@ -791,8 +791,9 @@ const DEF = {
 
 /* ===== 상태 ===== */
 var FX = {USD:1479, JPY:927.83};
+
 var PRICES = {}, HIGH52 = {};
-var SKEY='fp_data', SNAPKEY='fp_snaps', CLKEY='fp_cl', META_KEY='fp_meta';
+var SKEY='fp2_data', SNAPKEY='fp2_snaps', CLKEY='fp2_cl', META_KEY='fp2_meta';
 var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
@@ -862,7 +863,7 @@ function renderAppHeader(){
   var te=document.getElementById('hdr-title-el');
   var se=document.getElementById('hdr-sub-el');
   var ver=APP_META.version||'';
-  if(te) te.innerHTML=APP_META.title+(ver?' <span style="font-size:10px;color:#9ca3af;font-weight:400">'+ver+'</span>':'')+' <span style="font-size:10px;background:#2563eb;color:#fff;padding:1px 6px;border-radius:4px;font-weight:700">#1</span>';
+  if(te) te.innerHTML=APP_META.title+(ver?' <span style="font-size:10px;color:#9ca3af;font-weight:400">'+ver+'</span>':'')+' <span style="font-size:10px;background:#059669;color:#fff;padding:1px 6px;border-radius:4px;font-weight:700">#2</span>';
   if(se) se.textContent=APP_META.sub;
   document.title=APP_META.title.replace(/[\u{1F300}-\u{1FFFF}\u2600-\u27FF]/gu,'').trim()||'풍차계획 포트폴리오';
 }
@@ -930,7 +931,7 @@ function saveData(){
   sSet(SKEY,JSON.stringify({accounts:ACCOUNTS,cma:CMA,crypto:CRYPTO,fx:{usd:FX.USD,jpy:FX.JPY},prices:PRICES}));
   saveMeta();
   addCL(today,t);
-  sSet('fp_last_save',now);
+  sSet('fp2_last_save',now);
   if(ghGetToken()){
     ghPush();
     alert('\u2705 저장 완료 ('+today+')\n총평가액: '+fmt(t.cur)+'원\n\n\u2601\ufe0f GitHub \uc5c5\ub85c\ub4dc \uc911...');
@@ -938,151 +939,8 @@ function saveData(){
     alert('\u2705 저장 완료 ('+today+')\n총평가액: '+fmt(t.cur)+'원');
   }
 }
-var HIST_SNAPS=[
-  {date:'2018. 12. 31.',ts:'2018-12-31T00:00:00.000Z',cur:126951000,cost:0,pnl:0,note:''},
-  {date:'2019. 12. 31.',ts:'2019-12-31T00:00:00.000Z',cur:180566000,cost:0,pnl:0,note:''},
-  {date:'2020. 12. 31.',ts:'2020-12-31T00:00:00.000Z',cur:307102000,cost:0,pnl:0,note:'해외주식투자시작'},
-  {date:'2021. 12. 31.',ts:'2021-12-31T00:00:00.000Z',cur:460810000,cost:0,pnl:0,note:''},
-  {date:'2022. 4. 25.',ts:'2022-04-25T00:00:00.000Z',cur:297558987,cost:0,pnl:0,note:'러우전쟁(금리인상)'},
-  {date:'2022. 12. 31.',ts:'2022-12-31T00:00:00.000Z',cur:330974000,cost:0,pnl:0,note:'퇴직재산신고'},
-  {date:'2023. 8. 12.',ts:'2023-08-12T00:00:00.000Z',cur:481154323,cost:0,pnl:0,note:'퇴직금(1억9천)'},
-  {date:'2024. 8. 31.',ts:'2024-08-31T00:00:00.000Z',cur:546287780,cost:0,pnl:0,note:'부산전세(5천5백/8천)_ISA및연금계좌 55백만원, 동산파크5백, 학자금대출상환 2천만'},
-  {date:'2024. 9. 22.',ts:'2024-09-22T00:00:00.000Z',cur:562017508,cost:0,pnl:0,note:''},
-  {date:'2024. 11. 1.',ts:'2024-11-01T00:00:00.000Z',cur:580783803,cost:0,pnl:0,note:''},
-  {date:'2024. 12. 11.',ts:'2024-12-11T00:00:00.000Z',cur:720526850,cost:0,pnl:0,note:'럭스전세(9천3백/1억5천)_보증금반환10백만원, 박현숙38백만원, 국내주식및가상화폐 9천3백 이민경7백'},
-  {date:'2025. 4. 20.',ts:'2025-04-20T00:00:00.000Z',cur:630351736,cost:0,pnl:0,note:'트럼프 관세전쟁'},
-  {date:'2025. 6. 2.',ts:'2025-06-02T00:00:00.000Z',cur:681871635,cost:0,pnl:0,note:''},
-  {date:'2025. 7. 11.',ts:'2025-07-11T00:00:00.000Z',cur:710009942,cost:0,pnl:0,note:''},
-  {date:'2025. 7. 23.',ts:'2025-07-23T00:00:00.000Z',cur:749702099,cost:0,pnl:0,note:''},
-  {date:'2025. 8. 8.',ts:'2025-08-08T00:00:00.000Z',cur:762905382,cost:0,pnl:0,note:''},
-  {date:'2025. 8. 16.',ts:'2025-08-16T00:00:00.000Z',cur:774108786,cost:0,pnl:0,note:''},
-  {date:'2025. 8. 20.',ts:'2025-08-20T00:00:00.000Z',cur:761576598,cost:0,pnl:0,note:''},
-  {date:'2025. 8. 22.',ts:'2025-08-22T00:00:00.000Z',cur:760446468,cost:0,pnl:0,note:''},
-  {date:'2025. 8. 24.',ts:'2025-08-24T00:00:00.000Z',cur:766794045,cost:0,pnl:0,note:''},
-  {date:'2025. 8. 25.',ts:'2025-08-25T00:00:00.000Z',cur:773354210,cost:0,pnl:0,note:''},
-  {date:'2025. 8. 26.',ts:'2025-08-26T00:00:00.000Z',cur:772368188,cost:0,pnl:0,note:''},
-  {date:'2025. 8. 29.',ts:'2025-08-29T00:00:00.000Z',cur:771664116,cost:0,pnl:0,note:''},
-  {date:'2025. 8. 31.',ts:'2025-08-31T00:00:00.000Z',cur:772800950,cost:0,pnl:0,note:''},
-  {date:'2025. 9. 1.',ts:'2025-09-01T00:00:00.000Z',cur:769717472,cost:0,pnl:0,note:''},
-  {date:'2025. 9. 2.',ts:'2025-09-02T00:00:00.000Z',cur:773285496,cost:0,pnl:0,note:''},
-  {date:'2025. 9. 3.',ts:'2025-09-03T00:00:00.000Z',cur:773239350,cost:0,pnl:0,note:''},
-  {date:'2025. 9. 4.',ts:'2025-09-04T00:00:00.000Z',cur:774998822,cost:0,pnl:0,note:''},
-  {date:'2025. 9. 5.',ts:'2025-09-05T00:00:00.000Z',cur:780236549,cost:0,pnl:0,note:''},
-  {date:'2025. 9. 6.',ts:'2025-09-06T00:00:00.000Z',cur:780563190,cost:0,pnl:0,note:''},
-  {date:'2025. 9. 9.',ts:'2025-09-09T00:00:00.000Z',cur:780708361,cost:0,pnl:0,note:''},
-  {date:'2025. 9. 10.',ts:'2025-09-10T00:00:00.000Z',cur:785165533,cost:0,pnl:0,note:''},
-  {date:'2025. 9. 11.',ts:'2025-09-11T00:00:00.000Z',cur:786719061,cost:0,pnl:0,note:''},
-  {date:'2025. 9. 15.',ts:'2025-09-15T00:00:00.000Z',cur:796853985,cost:0,pnl:0,note:''},
-  {date:'2025. 9. 17.',ts:'2025-09-17T00:00:00.000Z',cur:798610418,cost:0,pnl:0,note:''},
-  {date:'2025. 9. 23.',ts:'2025-09-23T00:00:00.000Z',cur:813132472,cost:0,pnl:0,note:''},
-  {date:'2025. 9. 24.',ts:'2025-09-24T00:00:00.000Z',cur:810077578,cost:0,pnl:0,note:''},
-  {date:'2025. 9. 26.',ts:'2025-09-26T00:00:00.000Z',cur:811317691,cost:0,pnl:0,note:''},
-  {date:'2025. 9. 29.',ts:'2025-09-29T00:00:00.000Z',cur:809822315,cost:0,pnl:0,note:''},
-  {date:'2025. 9. 30.',ts:'2025-09-30T00:00:00.000Z',cur:812855196,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 2.',ts:'2025-10-02T00:00:00.000Z',cur:822203544,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 3.',ts:'2025-10-03T00:00:00.000Z',cur:825005147,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 4.',ts:'2025-10-04T00:00:00.000Z',cur:824535616,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 6.',ts:'2025-10-06T00:00:00.000Z',cur:827151200,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 7.',ts:'2025-10-07T00:00:00.000Z',cur:828154815,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 8.',ts:'2025-10-08T00:00:00.000Z',cur:827661817,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 9.',ts:'2025-10-09T00:00:00.000Z',cur:828086017,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 10.',ts:'2025-10-10T00:00:00.000Z',cur:837184244,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 11.',ts:'2025-10-11T00:00:00.000Z',cur:828376357,cost:0,pnl:0,note:'미중전쟁 재발(희토료 및 보복관세)'},
-  {date:'2025. 10. 13.',ts:'2025-10-13T00:00:00.000Z',cur:826318502,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 14.',ts:'2025-10-14T00:00:00.000Z',cur:827480832,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 15.',ts:'2025-10-15T00:00:00.000Z',cur:829786464,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 16.',ts:'2025-10-16T00:00:00.000Z',cur:828763841,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 17.',ts:'2025-10-17T00:00:00.000Z',cur:822648683,cost:0,pnl:0,note:'미 지역은행 위기 부각'},
-  {date:'2025. 10. 20.',ts:'2025-10-20T00:00:00.000Z',cur:829776794,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 21.',ts:'2025-10-21T00:00:00.000Z',cur:837884424,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 22.',ts:'2025-10-22T00:00:00.000Z',cur:836048373,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 23.',ts:'2025-10-23T00:00:00.000Z',cur:834029316,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 24.',ts:'2025-10-24T00:00:00.000Z',cur:841092962,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 25.',ts:'2025-10-25T00:00:00.000Z',cur:842479786,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 27.',ts:'2025-10-27T00:00:00.000Z',cur:850117927,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 28.',ts:'2025-10-28T00:00:00.000Z',cur:855297335,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 29.',ts:'2025-10-29T00:00:00.000Z',cur:856027776,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 30.',ts:'2025-10-30T00:00:00.000Z',cur:846707098,cost:0,pnl:0,note:'한미관세협상타결 환율하락, fomc 13월금리매파적발언'},
-  {date:'2025. 10. 31.',ts:'2025-10-31T00:00:00.000Z',cur:842693157,cost:0,pnl:0,note:''},
-  {date:'2025. 11. 4.',ts:'2025-11-04T00:00:00.000Z',cur:822092849,cost:0,pnl:0,note:'셧다운 장기화, 고점 논란 조정'},
-  {date:'2025. 11. 6.',ts:'2025-11-06T00:00:00.000Z',cur:839405195,cost:0,pnl:0,note:''},
-  {date:'2025. 11. 7.',ts:'2025-11-07T00:00:00.000Z',cur:834527685,cost:0,pnl:0,note:''},
-  {date:'2025. 11. 11.',ts:'2025-11-11T00:00:00.000Z',cur:849829037,cost:0,pnl:0,note:'셧다운 종료기대감'},
-  {date:'2025. 11. 12.',ts:'2025-11-12T00:00:00.000Z',cur:850471774,cost:0,pnl:0,note:''},
-  {date:'2025. 11. 14.',ts:'2025-11-14T00:00:00.000Z',cur:815007793,cost:0,pnl:0,note:'물가인상, 금리인하지연, ai버블 우려 등'},
-  {date:'2025. 11. 18.',ts:'2025-11-18T00:00:00.000Z',cur:811592231,cost:0,pnl:0,note:''},
-  {date:'2025. 11. 19.',ts:'2025-11-19T00:00:00.000Z',cur:803869477,cost:0,pnl:0,note:''},
-  {date:'2025. 11. 20.',ts:'2025-11-20T00:00:00.000Z',cur:819490008,cost:0,pnl:0,note:''},
-  {date:'2025. 11. 21.',ts:'2025-11-21T00:00:00.000Z',cur:794309702,cost:0,pnl:0,note:''},
-  {date:'2025. 11. 24.',ts:'2025-11-24T00:00:00.000Z',cur:804116960,cost:0,pnl:0,note:''},
-  {date:'2025. 11. 25.',ts:'2025-11-25T00:00:00.000Z',cur:816828100,cost:0,pnl:0,note:''},
-  {date:'2025. 11. 26.',ts:'2025-11-26T00:00:00.000Z',cur:822806226,cost:0,pnl:0,note:''},
-  {date:'2025. 11. 27.',ts:'2025-11-27T00:00:00.000Z',cur:827003276,cost:0,pnl:0,note:''},
-  {date:'2025. 11. 28.',ts:'2025-11-28T00:00:00.000Z',cur:832091290,cost:0,pnl:0,note:''},
-  {date:'2025. 12. 1.',ts:'2025-12-01T00:00:00.000Z',cur:825233766,cost:0,pnl:0,note:''},
-  {date:'2025. 12. 2.',ts:'2025-12-02T00:00:00.000Z',cur:826417422,cost:0,pnl:0,note:''},
-  {date:'2025. 12. 5.',ts:'2025-12-05T00:00:00.000Z',cur:840177256,cost:0,pnl:0,note:''},
-  {date:'2025. 12. 11.',ts:'2025-12-11T00:00:00.000Z',cur:843363401,cost:0,pnl:0,note:''},
-  {date:'2025. 12. 16.',ts:'2025-12-16T00:00:00.000Z',cur:823566792,cost:0,pnl:0,note:''},
-  {date:'2025. 12. 17.',ts:'2025-12-17T00:00:00.000Z',cur:832273134,cost:0,pnl:0,note:''},
-  {date:'2025. 12. 31.',ts:'2025-12-31T00:00:00.000Z',cur:824987544,cost:0,pnl:0,note:''},
-  {date:'2026. 1. 2.',ts:'2026-01-02T00:00:00.000Z',cur:839489244,cost:0,pnl:0,note:'차값 현숙(2천만원)_연금1800/isa200'},
-  {date:'2026. 1. 5.',ts:'2026-01-05T00:00:00.000Z',cur:849905293,cost:0,pnl:0,note:'현숙 _ 2백ISA입금'},
-  {date:'2026. 1. 6.',ts:'2026-01-06T00:00:00.000Z',cur:859644465,cost:0,pnl:0,note:''},
-  {date:'2026. 1. 9.',ts:'2026-01-09T00:00:00.000Z',cur:858483908,cost:0,pnl:0,note:''},
-  {date:'2026. 1. 10.',ts:'2026-01-10T00:00:00.000Z',cur:860609558,cost:0,pnl:0,note:''},
-  {date:'2026. 1. 13.',ts:'2026-01-13T00:00:00.000Z',cur:878685430,cost:0,pnl:0,note:''},
-  {date:'2026. 1. 14.',ts:'2026-01-14T00:00:00.000Z',cur:880722799,cost:0,pnl:0,note:''},
-  {date:'2026. 1. 19.',ts:'2026-01-19T00:00:00.000Z',cur:871432024,cost:0,pnl:0,note:''},
-  {date:'2026. 1. 20.',ts:'2026-01-20T00:00:00.000Z',cur:867307683,cost:0,pnl:0,note:''},
-  {date:'2026. 1. 21.',ts:'2026-01-21T00:00:00.000Z',cur:861462477,cost:0,pnl:0,note:''},
-  {date:'2026. 1. 22.',ts:'2026-01-22T00:00:00.000Z',cur:864295349,cost:0,pnl:0,note:''},
-  {date:'2026. 1. 23.',ts:'2026-01-23T00:00:00.000Z',cur:866901825,cost:0,pnl:0,note:''},
-  {date:'2026. 1. 26.',ts:'2026-01-26T00:00:00.000Z',cur:851682053,cost:0,pnl:0,note:''},
-  {date:'2026. 1. 27.',ts:'2026-01-27T00:00:00.000Z',cur:858213891,cost:0,pnl:0,note:''},
-  {date:'2026. 1. 28.',ts:'2026-01-28T00:00:00.000Z',cur:854903030,cost:0,pnl:0,note:''},
-  {date:'2026. 1. 29.',ts:'2026-01-29T00:00:00.000Z',cur:853443736,cost:0,pnl:0,note:''},
-  {date:'2026. 1. 30.',ts:'2026-01-30T00:00:00.000Z',cur:838905460,cost:0,pnl:0,note:''},
-  {date:'2026. 2. 2.',ts:'2026-02-02T00:00:00.000Z',cur:829224178,cost:0,pnl:0,note:''},
-  {date:'2026. 2. 3.',ts:'2026-02-03T00:00:00.000Z',cur:849735214,cost:0,pnl:0,note:''},
-  {date:'2026. 2. 4.',ts:'2026-02-04T00:00:00.000Z',cur:848331181,cost:0,pnl:0,note:''},
-  {date:'2026. 2. 6.',ts:'2026-02-06T00:00:00.000Z',cur:827813921,cost:0,pnl:0,note:''},
-  {date:'2026. 2. 9.',ts:'2026-02-09T00:00:00.000Z',cur:850167961,cost:0,pnl:0,note:''},
-  {date:'2026. 2. 10.',ts:'2026-02-10T00:00:00.000Z',cur:849235452,cost:0,pnl:0,note:''},
-  {date:'2026. 2. 12.',ts:'2026-02-12T00:00:00.000Z',cur:839751515,cost:0,pnl:0,note:''},
-  {date:'2026. 2. 13.',ts:'2026-02-13T00:00:00.000Z',cur:825784635,cost:0,pnl:0,note:''},
-  {date:'2026. 2. 19.',ts:'2026-02-19T00:00:00.000Z',cur:831709527,cost:0,pnl:0,note:''},
-  {date:'2026. 2. 20.',ts:'2026-02-20T00:00:00.000Z',cur:833462020,cost:0,pnl:0,note:''},
-  {date:'2026. 2. 24.',ts:'2026-02-24T00:00:00.000Z',cur:826714758,cost:0,pnl:0,note:''},
-  {date:'2026. 2. 26.',ts:'2026-02-26T00:00:00.000Z',cur:828615628,cost:0,pnl:0,note:''},
-  {date:'2026. 2. 27.',ts:'2026-02-27T00:00:00.000Z',cur:829778161,cost:0,pnl:0,note:''},
-  {date:'2026. 3. 2.',ts:'2026-03-02T00:00:00.000Z',cur:829395470,cost:0,pnl:0,note:''},
-  {date:'2026. 3. 3.',ts:'2026-03-03T00:00:00.000Z',cur:835375208,cost:0,pnl:0,note:''},
-  {date:'2026. 3. 4.',ts:'2026-03-04T00:00:00.000Z',cur:831694641,cost:0,pnl:0,note:''},
-  {date:'2026. 3. 5.',ts:'2026-03-05T00:00:00.000Z',cur:844536208,cost:0,pnl:0,note:''},
-  {date:'2026. 3. 6.',ts:'2026-03-06T00:00:00.000Z',cur:843734715,cost:0,pnl:0,note:''},
-  {date:'2026. 3. 10.',ts:'2026-03-10T00:00:00.000Z',cur:838058559,cost:0,pnl:0,note:''},
-  {date:'2026. 3. 11.',ts:'2026-03-11T00:00:00.000Z',cur:840456857,cost:0,pnl:0,note:''},
-  {date:'2026. 3. 13.',ts:'2026-03-13T00:00:00.000Z',cur:837162487,cost:0,pnl:0,note:''},
-  {date:'2026. 3. 16.',ts:'2026-03-16T00:00:00.000Z',cur:835526940,cost:0,pnl:0,note:''},
-  {date:'2026. 3. 17.',ts:'2026-03-17T00:00:00.000Z',cur:838599861,cost:0,pnl:0,note:''},
-  {date:'2026. 3. 18.',ts:'2026-03-18T00:00:00.000Z',cur:846747758,cost:0,pnl:0,note:''},
-  {date:'2026. 3. 19.',ts:'2026-03-19T00:00:00.000Z',cur:836256025,cost:0,pnl:0,note:''},
-  {date:'2026. 3. 20.',ts:'2026-03-20T00:00:00.000Z',cur:834086453,cost:0,pnl:0,note:''},
-  {date:'2026. 3. 23.',ts:'2026-03-23T00:00:00.000Z',cur:816398928,cost:0,pnl:0,note:''},
-  {date:'2026. 3. 26.',ts:'2026-03-26T00:00:00.000Z',cur:829366481,cost:0,pnl:0,note:''},
-  {date:'2026. 3. 30.',ts:'2026-03-30T00:00:00.000Z',cur:802725828,cost:0,pnl:0,note:''},
-  {date:'2026. 4. 1.',ts:'2026-04-01T00:00:00.000Z',cur:828143714,cost:0,pnl:0,note:''},
-  {date:'2026. 4. 2.',ts:'2026-04-02T00:00:00.000Z',cur:823500975,cost:0,pnl:0,note:''},
-  {date:'2026. 4. 6.',ts:'2026-04-06T00:00:00.000Z',cur:833607908,cost:0,pnl:0,note:''},
-  {date:'2026. 4. 9.',ts:'2026-04-09T00:00:00.000Z',cur:841358929,cost:0,pnl:0,note:''},
-  {date:'2026. 4. 14.',ts:'2026-04-14T00:00:00.000Z',cur:849737018,cost:0,pnl:0,note:''},
-  {date:'2026. 4. 16.',ts:'2026-04-16T00:00:00.000Z',cur:862082227,cost:0,pnl:0,note:''},
-  {date:'2026. 4. 17.',ts:'2026-04-17T00:00:00.000Z',cur:868609965,cost:0,pnl:0,note:''},
-  {date:'2026. 4. 21.',ts:'2026-04-21T00:00:00.000Z',cur:874749942,cost:0,pnl:0,note:''},
-  {date:'2026. 4. 22.',ts:'2026-04-22T00:00:00.000Z',cur:874737232,cost:0,pnl:0,note:''}
-];
-var SNAP_DEL_KEY='fp_snap_del';
+var HIST_SNAPS=[];
+var SNAP_DEL_KEY='fp2_snap_del';
 function loadSnaps(){
   var stored;
   try{stored=JSON.parse(sGet(SNAPKEY)||'[]');}catch(e){stored=[];}
@@ -1401,7 +1259,7 @@ function setDot(s,msg){
 }
 
 /* ===== 월별 배당금 대시보드 ===== */
-var DIST_KEY='fp_dist_v2';
+var DIST_KEY='fp2_dist_v2';
 
 function distGet(){
   try{return JSON.parse(sGet(DIST_KEY)||'{}');}catch(e){return {};}
@@ -1575,8 +1433,8 @@ function renderDistDashboard(){
 
 
 /* ===== 사적연금 통합관리 ===== */
-var PENSION_KEY='fp_pension_v1';
-var PENSION_STRATEGY_KEY='fp_pension_strategy';
+var PENSION_KEY='fp2_pension_v1';
+var PENSION_STRATEGY_KEY='fp2_pension_strategy';
 
 function pensionGet(){try{return JSON.parse(sGet(PENSION_KEY)||'{}');}catch(e){return {};}}
 function pensionSet(obj){sSet(PENSION_KEY,JSON.stringify(obj));}
@@ -3196,7 +3054,6 @@ function hdmDelete(){
 function openAddCryptoModal(){
   var sel=document.getElementById('acr-ex');
   if(!sel) return;
-  // 매번 새로 select 옵션 구성 (이전 선택값 기억)
   var prevVal=sel.value;
   var opts='';
   if((CRYPTO.bithumb||[]).length>0)
@@ -3211,10 +3068,8 @@ function openAddCryptoModal(){
     return;
   }
   sel.innerHTML=opts;
-  // 이전 선택한 거래소가 목록에 있으면 그것으로 복원, 없으면 첫번째 선택
   var prevOpt=prevVal?sel.querySelector('option[value="'+prevVal+'"]'):null;
   sel.selectedIndex=prevOpt?Array.from(sel.options).indexOf(prevOpt):0;
-  // 입력 필드 초기화
   ['acr-name','acr-sym','acr-qty','acr-cost','acr-high'].forEach(function(eid){
     var e=document.getElementById(eid); if(e) e.value='';
   });
@@ -3533,7 +3388,7 @@ function renderPage(id){
 }
 
 /* ===== 비밀번호 시스템 ===== */
-var PW_STORE='fp_pw_v1', AUTH_STORE='fp_auth_v1';
+var PW_STORE='fp2_pw_v1', AUTH_STORE='fp2_auth_v1';
 function pwHash(pw){var s='fungcha2025_'+pw+'_'+pw.length,a=0x9e3779b9|0,b=0x85ebca77|0;for(var i=0;i<s.length;i++){var x=s.charCodeAt(i);a=Math.imul(a^x,0x9e3779b9);a=(a<<13)|(a>>>19);b=Math.imul(b^x,0x85ebca77);b=(b<<7)|(b>>>25);}return((a>>>0).toString(16)+(b>>>0).toString(16));}
 function pwGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
 function pwSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
@@ -3549,7 +3404,7 @@ function initPW(){
   // 저장된 APP_META 제목/부제목을 로그인 화면에 반영
   (function(){
     try{
-      var _m=JSON.parse(localStorage.getItem('fp_meta')||'null');
+      var _m=JSON.parse(localStorage.getItem('fp2_meta')||'null');
       if(_m){
         var _t=document.getElementById('pw-main-title');
         var _s=document.getElementById('pw-sub');
@@ -3614,7 +3469,7 @@ function exportToExcel(){
   var today=new Date().toLocaleDateString('ko-KR');
 
   // ── 1. 전체현황 ──
-  var ov1=[['풍차포트폴리오  전체현황','','','','','','','','','',today]];
+  var ov1=[['민경포트폴리오  전체현황','','','','','','','','','',today]];
   ov1.push(['계좌명','납입(누적)','인출(누적)','실납입','매입총액','현재평가액','평가손익','수익률','수익률(실납)','연간분배율','월분배금']);
   ACCOUNTS.forEach(function(acc){
     var cost=0,cur=0,dist=0;
@@ -3767,7 +3622,7 @@ function exportToExcel(){
 
   // ── 다운로드 ──
   var dateStr=new Date().toLocaleDateString('ko-KR').replace(/\. /g,'-').replace('.','');
-  XLSX.writeFile(wb,'풍차포트폴리오_'+dateStr+'.xlsx');
+  XLSX.writeFile(wb,'민경포트폴리오_'+dateStr+'.xlsx');
 }
 
 
@@ -4115,8 +3970,8 @@ function autoSync(){
 
 /* ===== GitHub 동기화 ===== */
 var GH_REPO='jiroonlee/portfolio';
-var GH_FILE='data.json';
-var GH_TOKEN_KEY='fp_gh_token';
+var GH_FILE='data2.json';
+var GH_TOKEN_KEY='fp2_gh_token';
 function ghGetToken(){return sGet(GH_TOKEN_KEY)||'';}
 function ghSetToken(t){sSet(GH_TOKEN_KEY,t);}
 
@@ -4130,7 +3985,7 @@ function ghSaveAndSync(){
   ghSetToken(t);closeModal('gh-modal');ghPush();
 }
 function ghForcePull(){
-  closeModal('gh-modal');sSet('fp_last_save','0');
+  closeModal('gh-modal');sSet('fp2_last_save','0');
   var btn=document.getElementById('gh-btn');
   if(btn){btn.textContent='\ub85c\ub529...';btn.className='hbtn hbtn-sync syncing';}
   ghPull(true).then(function(ok){
@@ -4162,7 +4017,7 @@ async function ghPush(silent){
     if(sha) body.sha=sha;
     var r=await fetch(apiBase,{method:'PUT',headers:hdrs,body:JSON.stringify(body)});
     if(!r.ok){var err=await r.json();throw new Error(err.message||r.status);}
-    sSet('fp_last_save',payload.saved);
+    sSet('fp2_last_save',payload.saved);
     // 동기화 성공 시간 저장
     var syncEl=document.getElementById('upd');
     if(syncEl&&silent) syncEl.dataset.lastSync=new Date().toLocaleTimeString('ko-KR');
@@ -4191,7 +4046,7 @@ async function ghPull(force){
     }catch(de){decoded=decodeURIComponent(escape(atob(raw)));}
     var obj=JSON.parse(decoded);
     if(!obj||!obj.data||!obj.data.accounts) return false;
-    var localSaved=sGet('fp_last_save')||'0';
+    var localSaved=sGet('fp2_last_save')||'0';
     if(!force&&obj.saved&&obj.saved<=localSaved) return false;
     ACCOUNTS=obj.data.accounts;CMA=obj.data.cma;CRYPTO=obj.data.crypto;
     if(!CRYPTO.exchanges) CRYPTO.exchanges=[];
@@ -4203,7 +4058,7 @@ async function ghPull(force){
       sSet(SNAPKEY,JSON.stringify(Object.values(map).sort(function(a,b){return a.date<b.date?-1:1;})));
     }
     sSet(SKEY,JSON.stringify({accounts:ACCOUNTS,cma:CMA,crypto:CRYPTO,fx:{usd:FX.USD,jpy:FX.JPY},prices:PRICES}));
-    if(obj.distData){sSet(DIST_KEY,JSON.stringify(obj.distData));sSet('fp_dist_ver','v3');}
+    if(obj.distData){sSet(DIST_KEY,JSON.stringify(obj.distData));sSet('fp2_dist_ver','v3');}
     if(obj.pensionData) sSet(PENSION_KEY,JSON.stringify(obj.pensionData));
     if(obj.pensionStrategy) sSet(PENSION_STRATEGY_KEY,obj.pensionStrategy);
     if(obj.snapDel&&obj.snapDel.length) sSet(SNAP_DEL_KEY,JSON.stringify(obj.snapDel));
@@ -4212,7 +4067,7 @@ async function ghPull(force){
       delete _am.version; // version은 파일 내장값 우선
       sSet(META_KEY,JSON.stringify(_am));
     }
-    sSet('fp_last_save',obj.saved||new Date().toISOString());
+    sSet('fp2_last_save',obj.saved||new Date().toISOString());
     return true;
   }catch(e){return false;}
 }
@@ -4525,9 +4380,9 @@ function startApp(){
   try{migrateTickers();}catch(e){}
   // 월별 분배금 데이터 (버전 v3 강제 업데이트)
   (function(){
-    if(sGet('fp_dist_ver')!=='v3'){
+    if(sGet('fp2_dist_ver')!=='v3'){
       sSet(DIST_KEY,"{\"y2023\":{\"m1\":0,\"m2\":2550,\"m3\":105014,\"m4\":87014,\"m5\":170537,\"m6\":289496,\"m7\":1071701,\"m8\":641299,\"m9\":1566065,\"m10\":1584347,\"m11\":1773076,\"m12\":2200277},\"y2024\":{\"m1\":6103826,\"m2\":5310958,\"m3\":4728500,\"m4\":4704000,\"m5\":4851000,\"m6\":4851000,\"m7\":4851000,\"m8\":4851000,\"m9\":4851000,\"m10\":4851000,\"m11\":4851000,\"m12\":4851000},\"y2025\":{\"m1\":3791571,\"m2\":5539175,\"m3\":4925236,\"m4\":4608313,\"m5\":4345458,\"m6\":5311764,\"m7\":5601346,\"m8\":5548515,\"m9\":5260115,\"m10\":5458915,\"m11\":5757331,\"m12\":5404500},\"y2026\":{\"m1\":6103826,\"m2\":5310958,\"m3\":4728500,\"m4\":4704000}}");
-      sSet('fp_dist_ver','v3');
+      sSet('fp2_dist_ver','v3');
     }
   })();
 
