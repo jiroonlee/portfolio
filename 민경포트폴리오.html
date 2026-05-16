@@ -643,7 +643,7 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
 </div>
 
 <div class="hdr">
-  <div><div class="hdr-title" id="hdr-title-el">🌸 수익은 길게, 손실은 짧게!!! <span style="font-size:10px;color:#9ca3af;font-weight:400">v5.19</span> <span style="font-size:10px;background:#059669;color:#fff;padding:1px 6px;border-radius:4px;font-weight:700">#2</span></div><div class="hdr-sub" id="hdr-sub-el">연금계좌 풍차계획 포트폴리오</div></div>
+  <div><div class="hdr-title" id="hdr-title-el">🌸 수익은 길게, 손실은 짧게!!! <span style="font-size:10px;color:#9ca3af;font-weight:400">v5.20</span> <span style="font-size:10px;background:#059669;color:#fff;padding:1px 6px;border-radius:4px;font-weight:700">#2</span></div><div class="hdr-sub" id="hdr-sub-el">연금계좌 풍차계획 포트폴리오</div></div>
   <div class="hdr-sp"></div>
   <div class="upd" id="upd">종전가</div>
   <div class="dot" id="dot"></div>
@@ -798,7 +798,7 @@ var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
   sub: '연금계좌 풍차계획 포트폴리오',
-  version: 'v5.19',   // 버전 — 여기만 수정
+  version: 'v5.20',   // 버전 — 여기만 수정
   birthdate: '', // 생년월일 (YYYY-MM-DD 또는 YY.M.D 형식)
   accMeta: {},
   accOrder: []
@@ -1743,7 +1743,7 @@ function renderPension(){
 
   pg.innerHTML='<div class="sec"><div class="sechdr"><span class="sectitle">사적연금 통합관리</span></div>'
     +'<div class="twrap" style="padding:0 13px 6px"><table style="width:100%;table-layout:fixed;">'
-    +'<colgroup><col style="width:110px">'+cols.map(function(){return '<col>';}).join('')+'<col></colgroup>'
+    +(function(){var lw=Math.round(72/(cols.length+1)*10)/10;return '<colgroup>'+'<col style="width:28%">'+cols.map(function(){return '<col style="width:'+lw+'%">';}).join('')+'<col style="width:'+lw+'%"></colgroup>';})()
     +hdRow+tbody+'</table></div>'+noteHTML+'</div>'+strategyHTML;
 }
 
