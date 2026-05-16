@@ -46,10 +46,18 @@ body{font-family:'Malgun Gothic',-apple-system,sans-serif;font-size:12px;backgro
 .iedit:focus{outline:none;border-color:var(--blu)}
 .twrap{overflow-x:auto;position:relative}
 @media(max-width:768px){
-  .pension-table th:first-child,.pension-table td:first-child{position:sticky;left:0;z-index:2;background:#fff;}
-  .pension-table thead th:first-child{background:#f1f5f9;}
-  .pension-table .trow td:first-child{background:#e8f0fe;}
-  .pension-table .xhdr td{background:#f8fafc;}
+  .pension-table th:first-child{
+    position:sticky;left:0;z-index:3;
+    background:#f1f5f9;
+    border-right:2px solid #cbd5e1;
+  }
+  .pension-table td:first-child{
+    position:sticky;left:0;z-index:2;
+    background:#fff;
+    border-right:2px solid #e2e8f0;
+  }
+  .pension-table tr.trow td:first-child{background:#e8f0fe;}
+  .pension-table tr.xhdr td:first-child{background:#f8fafc;}
 }
 /* ── 분할 테이블: 고정열(왼쪽) + 스크롤열(오른쪽) ── */
 .twrap-split{display:flex;align-items:flex-start;overflow:hidden;}
@@ -649,7 +657,7 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
 </div>
 
 <div class="hdr">
-  <div><div class="hdr-title" id="hdr-title-el">🌸 수익은 길게, 손실은 짧게!!! <span style="font-size:10px;color:#9ca3af;font-weight:400">v5.29</span> <span style="font-size:10px;background:#2563eb;color:#fff;padding:1px 6px;border-radius:4px;font-weight:700">#1</span></div><div class="hdr-sub" id="hdr-sub-el">연금계좌 풍차계획 포트폴리오</div></div>
+  <div><div class="hdr-title" id="hdr-title-el">🌸 수익은 길게, 손실은 짧게!!! <span style="font-size:10px;color:#9ca3af;font-weight:400">v5.30</span> <span style="font-size:10px;background:#2563eb;color:#fff;padding:1px 6px;border-radius:4px;font-weight:700">#1</span></div><div class="hdr-sub" id="hdr-sub-el">연금계좌 풍차계획 포트폴리오</div></div>
   <div class="hdr-sp"></div>
   <div class="upd" id="upd">종전가</div>
   <div class="dot" id="dot"></div>
@@ -803,7 +811,7 @@ var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
   sub: '연금계좌 풍차계획 포트폴리오',
-  version: 'v5.29',   // 버전 — 여기만 수정
+  version: 'v5.30',   // 버전 — 여기만 수정
   birthdate: '', // 생년월일 (YYYY-MM-DD 또는 YY.M.D 형식)
   accMeta: {},
   accOrder: []
@@ -3052,92 +3060,7 @@ function clearCL(){if(!confirm('\uc804\uccb4 \uc0ad\uc81c\ud560\uae4c\uc694?'))r
 
 /* ===== 데이터 변경 ===== */
 /* ── 모바일 split-table 후처리: sticky 없이 열 고정 ── */
-function splitTablesOnMobile(){
-  if(window.innerWidth > 768) return;
-  document.querySelectorAll('.twrap table, .twrap-split table').forEach(function(tbl){
-    var wrap = tbl.closest('.twrap');
-    if(!wrap || wrap.classList.contains('_split_done')) return;
-    var hasOrder = wrap.classList.contains('has-order');
-    var fixedCount = hasOrder ? 2 : 1; // 고정 열 수
-    wrap.classList.add('_split_done');
 
-    // 이미 split된 경우 스킵
-    if(wrap.classList.contains('twrap-split')) return;
-
-    // 원본 테이블 행/열 파싱
-    var rows = tbl.querySelectorAll('tr');
-    if(!rows.length) return;
-
-    // 고정 테이블 / 스크롤 테이블 생성
-    var fTable = document.createElement('table');
-    var sTable = document.createElement('table');
-    fTable.className = tbl.className;
-    sTable.className = tbl.className;
-
-    rows.forEach(function(row){
-      var fRow = document.createElement('tr');
-      var sRow = document.createElement('tr');
-      fRow.className = row.className;
-      sRow.className = row.className;
-      var cells = row.children;
-      var isXhdr = row.classList.contains('xhdr');
-
-      for(var i=0; i<cells.length; i++){
-        var cell = cells[i].cloneNode(true);
-        var span = parseInt(cell.getAttribute('colspan')||'1');
-
-        if(span > 1 && i === 0){
-          // colspan 전체인 행 (xhdr, trow 등)
-          var fCell = document.createElement(cell.tagName);
-          fCell.className = cell.className;
-          fCell.setAttribute('colspan', fixedCount);
-          // xhdr: 고정열은 비우고 스크롤열에만 텍스트
-          if(isXhdr){ fCell.innerHTML = ''; }
-          else { fCell.innerHTML = cell.innerHTML; }
-
-          var sCell = document.createElement(cell.tagName);
-          sCell.className = cell.className;
-          sCell.setAttribute('colspan', Math.max(1, span - fixedCount));
-          sCell.innerHTML = cell.innerHTML; // 스크롤열엔 항상 내용
-          fRow.appendChild(fCell);
-          sRow.appendChild(sCell);
-        } else if(i < fixedCount){
-          fRow.appendChild(cell);
-        } else {
-          sRow.appendChild(cell);
-        }
-      }
-      fTable.appendChild(fRow);
-      sTable.appendChild(sRow);
-    });
-
-    // 원래 wrap을 split 구조로 교체
-    var fDiv = document.createElement('div');
-    fDiv.className = 'twrap-fixed';
-    fDiv.appendChild(fTable);
-
-    var sDiv = document.createElement('div');
-    sDiv.className = 'twrap-scroll';
-    sDiv.appendChild(sTable);
-
-    var splitDiv = document.createElement('div');
-    splitDiv.className = 'twrap-split';
-    splitDiv.appendChild(fDiv);
-    splitDiv.appendChild(sDiv);
-
-    wrap.parentNode.replaceChild(splitDiv, wrap);
-
-    // 행 높이 동기화
-    var fRows2 = fTable.querySelectorAll('tr');
-    var sRows2 = sTable.querySelectorAll('tr');
-    fRows2.forEach(function(r, i){
-      if(!sRows2[i]) return;
-      var h = Math.max(r.offsetHeight, sRows2[i].offsetHeight);
-      r.style.height = h+'px';
-      sRows2[i].style.height = h+'px';
-    });
-  });
-}
 function findAcc(id){return ACCOUNTS.find(function(a){return a.id===id;});}
 
 /* ===== 종목 상세/수정 모달 ===== */
@@ -3517,7 +3440,6 @@ function go(id,el){
   var pg=document.getElementById('pg-'+id);if(pg)pg.classList.add('on');
   if(el)el.classList.add('on');
   curPage=id;renderPage(id);
-  setTimeout(splitTablesOnMobile, 30);
   if(id==='crypto'&&typeof fetchAll==='function'){
     var now=Date.now();
     if(now-(_lastFetch||0)>15000){_lastFetch=now;fetchAll();}
@@ -3527,8 +3449,7 @@ function renderActive(){
   renderPage(curPage);
   setTimeout(function(){
     if(typeof applyCommaAll==='function') applyCommaAll();
-    splitTablesOnMobile();
-  }, 30);
+      }, 30);
 }
 function renderPage(id){
   if(id==='overview')renderOverview();
