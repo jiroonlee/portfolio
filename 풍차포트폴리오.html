@@ -49,15 +49,14 @@ body{font-family:'Malgun Gothic',-apple-system,sans-serif;font-size:12px;backgro
   .pension-table th:first-child{
     position:sticky;left:0;z-index:3;
     background:#f1f5f9;
-    border-right:2px solid #cbd5e1;
   }
   .pension-table td:first-child{
     position:sticky;left:0;z-index:2;
     background:#fff;
-    border-right:2px solid #e2e8f0;
   }
   .pension-table tr.trow td:first-child{background:#e8f0fe;}
-  .pension-table tr.xhdr td:first-child{background:#f8fafc;}
+  .pension-table tr.xhdr td:first-child{background:#fff;}
+  .pension-table tr.xhdr td{background:#fff;box-shadow:none;}
 }
 /* ── 분할 테이블: 고정열(왼쪽) + 스크롤열(오른쪽) ── */
 .twrap-split{display:flex;align-items:flex-start;overflow:hidden;}
@@ -657,7 +656,7 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
 </div>
 
 <div class="hdr">
-  <div><div class="hdr-title" id="hdr-title-el">🌸 수익은 길게, 손실은 짧게!!! <span style="font-size:10px;color:#9ca3af;font-weight:400">v5.30</span> <span style="font-size:10px;background:#2563eb;color:#fff;padding:1px 6px;border-radius:4px;font-weight:700">#1</span></div><div class="hdr-sub" id="hdr-sub-el">연금계좌 풍차계획 포트폴리오</div></div>
+  <div><div class="hdr-title" id="hdr-title-el">🌸 수익은 길게, 손실은 짧게!!! <span style="font-size:10px;color:#9ca3af;font-weight:400">v5.32</span> <span style="font-size:10px;background:#2563eb;color:#fff;padding:1px 6px;border-radius:4px;font-weight:700">#1</span></div><div class="hdr-sub" id="hdr-sub-el">연금계좌 풍차계획 포트폴리오</div></div>
   <div class="hdr-sp"></div>
   <div class="upd" id="upd">종전가</div>
   <div class="dot" id="dot"></div>
@@ -811,7 +810,7 @@ var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
   sub: '연금계좌 풍차계획 포트폴리오',
-  version: 'v5.30',   // 버전 — 여기만 수정
+  version: 'v5.32',   // 버전 — 여기만 수정
   birthdate: '', // 생년월일 (YYYY-MM-DD 또는 YY.M.D 형식)
   accMeta: {},
   accOrder: []
@@ -1854,7 +1853,7 @@ function renderPension(){
       +cols.map(function(c){return n(c.nontaxVal);}).join('')+nSum(sumNon)+'</tr>'
     +'<tr><td style="'+lblSub+'">ㄴ 이연퇴직금</td>'
       +cols.map(function(c){return n(c.retireVal);}).join('')+nSum(sumRet)+'</tr>'
-    +'<tr><td style="'+lblSub+'">ㄴ 과세재원(운영수익 포함)</td>'
+    +'<tr><td style="'+lblSub+'">ㄴ 과세재원</td>'
       +cols.map(function(c){return n(c.taxable);}).join('')+nSum(sumTax)+'</tr>'
     +sep()
     // ── 한도산정 ──
@@ -2942,7 +2941,7 @@ async function drawHChart(){
     '<div class="hist-card"><div class="slbl">\uae30\uac04 \ucd5c\uc800</div><div class="sval" style="font-size:13px;color:var(--wine)">'+fmt(minCur)+'\uc6d0</div></div>',
     '</div>',
     '<div class="twrap" style="padding:0 13px 13px">',
-    '<table style="table-layout:auto;width:100%">',
+    '<table style="table-layout:auto;width:100%;border-collapse:collapse">',
     '<thead><tr>'
       +'<th style="text-align:left;white-space:nowrap">\uae30\uac04</th>'
       +'<th style="white-space:nowrap">\ud3c9\uac00\uc561</th>'
