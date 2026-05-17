@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>풍차계획 포트폴리오 v5.60</title>
+<title>풍차계획 포트폴리오 v5.61</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -863,7 +863,7 @@ var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
   sub: '연금계좌 풍차계획 포트폴리오',
-  version: 'v5.60',   // 버전 — 여기만 수정
+  version: 'v5.61',   // 버전 — 여기만 수정
   birthdate: '', // 생년월일 (YYYY-MM-DD 또는 YY.M.D 형식)
   accMeta: {},
   accOrder: []
@@ -2007,7 +2007,7 @@ function renderKR(acc, cid) {
   html += '</div></div>';
   html += '<div style="display:flex;justify-content:flex-end;padding:4px 0 2px">';
   html += '<button class="btn btn-add" style="padding:3px 10px;font-size:11px" '
-    +'onclick="openAddModal(\\\''+id+'\\\')">&plus; 종목 추가</button>';
+    +'onclick="openAddModal(\''+id+'\')">&plus; 종목 추가</button>';
   html += '</div>';
   html += '<div class="twrap has-order">';
   html += '<table style="table-layout:auto;width:100%">';
@@ -2433,7 +2433,8 @@ function renderCrypto(force){
   var extraBlocks='';
   (CRYPTO.exchanges||[]).forEach(function(ex){
     var er=exRows(ex.holdings,ex.id);
-    extraBlocks+=exBlock(er,ex.emoji||'🔷',ex.name,'#ddd6fe',true);  // 추가거래소: 빈 경우 헤더 유지
+    var _exEmoji=ex.emoji||(ex.name&&(ex.name.indexOf('코인원')>=0||ex.name.toLowerCase().indexOf('coinone')>=0)?'🟣':'🔷');
+    extraBlocks+=exBlock(er,_exEmoji,ex.name,'#ddd6fe',true);  // 추가거래소: 빈 경우 헤더 유지
   });
 
   var pg=document.getElementById('pg-crypto');if(!pg)return;
