@@ -59,17 +59,20 @@ body{font-family:'Malgun Gothic',-apple-system,sans-serif;font-size:12px;backgro
   }
   .has-order table th:nth-child(2),
   .has-order table td:nth-child(2){
-    position:sticky;left:18px;z-index:2;background:#fff;
+    position:sticky;left:22px;z-index:2;background:var(--sur);
   }
   /* 헤더 행 배경 */
   .twrap table thead th:first-child{background:#f1f5f9;}
   .has-order table thead th:nth-child(1),.has-order table thead th:nth-child(2){background:#f1f5f9;}
+  tbody tr:nth-child(even) td:first-child,tbody tr:nth-child(even) td:nth-child(2){background:#fafbff;}
+  .has-order tbody tr:hover:not(.trow) td:first-child,.has-order tbody tr:hover:not(.trow) td:nth-child(2){background:#f0f6ff;}
   /* trow 합계행 */
   .twrap table tr.trow td:first-child{background:#e8f0fe;}
+  .has-order table tr.trow td:nth-child(1),.has-order table tr.trow td:nth-child(2){background:#e8f0fe;}
   /* pension-table은 별도 처리 (위에서 이미 정의) */
   /* 모바일: auto layout에서 min-width 불필요 */
-  .twrap.has-order table{min-width:460px;}
-  #dist-dashboard table{min-width:320px !important;}
+  .twrap.has-order table{min-width:640px;}
+  /* dist-dashboard handled by auto table layout */
   /* 자산변동 비고열 표시 */
   .twrap table[style*='auto']{min-width:480px;}
 }
@@ -110,6 +113,7 @@ td{
 }
 td:first-child{text-align:left}
 tr:last-child td{box-shadow:none;}
+tbody tr:nth-child(even):not(.trow):not(.nrow):not(.xhdr) td{background:#fafbff;}
 tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
   background:#f0f6ff;transition:background .12s;
 }
@@ -172,8 +176,8 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
 .mgrid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 /* ── 테이블 첫 열 고정 (모바일) ── */
 @media(max-width:768px){
-  #dist-dashboard table{min-width:320px !important;}
-  #dist-dashboard input{font-size:9px !important;padding:1px !important;}
+  /* dist-dashboard handled by auto table layout */
+  #dist-dashboard input{font-size:10px !important;padding:2px !important;}
   #dist-dashboard th{font-size:9px !important;padding:2px 1px !important;}
   /* 하단 모바일 퀵메뉴 */
   #mob-bar{
@@ -258,8 +262,6 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
   .twrap table td,
   .twrap table th{
     white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
   }
   table td{
     background:#fff;border:none;
@@ -272,6 +274,7 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
     box-shadow:inset 0 -2px 0 #d1d9e0;
     padding:4px 5px;font-size:10px;
   }
+  tbody tr:nth-child(even):not(.trow):not(.nrow):not(.xhdr) td{background:#fafbff;}
   tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{background:#f0f6ff;}
   tr.trow td{
     background:#e8f0fe;border:none;
@@ -284,6 +287,14 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
   tr:last-child td{box-shadow:none;}
 }
 .meta-order-item:hover{box-shadow:0 2px 8px rgba(0,0,0,.1);}
+@media(max-width:768px){
+  .pension-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%;}
+  .pension-wrap table{min-width:520px;}
+  .pension-strategy{width:100% !important;max-width:100% !important;box-sizing:border-box !important;}
+  .snap-twrap table{min-width:480px;}
+  .snap-twrap table td:first-child,.snap-twrap table th:first-child{position:sticky;left:0;z-index:2;background:#fff;}
+  .snap-twrap table thead th:first-child{background:#f1f5f9;}
+}
 .meta-order-item[draggable="true"]:active{cursor:grabbing;}
 /* ── 로그인 ── */
 #pw-screen{position:fixed;inset:0;background:linear-gradient(135deg,#1a1d23,#1a3a5c);z-index:9999;display:flex;align-items:center;justify-content:center}
@@ -827,7 +838,7 @@ const DEF = {
 
 
 /* ===== 상태 ===== */
-var FX = {USD:1479, JPY:927.83};
+var FX = {USD:1479, JPY:927.83, _usdLive:false, _jpyLive:false};
 
 var PRICES = {}, HIGH52 = {};
 var SKEY='fp2_data', SNAPKEY='fp2_snaps', CLKEY='fp2_cl', META_KEY='fp2_meta';
@@ -1243,7 +1254,7 @@ async function fetchFXApi(){
       }catch(e){return null;}
     })()
   ]);
-  if(fx&&fx.usd){FX.USD=fx.usd;if(fx.jpy)FX.JPY=fx.jpy;}
+  if(fx&&fx.usd){FX.USD=fx.usd;FX._usdLive=true;if(fx.jpy){FX.JPY=fx.jpy;FX._jpyLive=true;}}
 }
 
 async function fetchAll(){
@@ -1418,7 +1429,7 @@ function renderDistDashboard(){
 
   var thCells=MN.map(function(n,i){
     var m=i+1, isCur=(selY===curY&&m===curM);
-    return '<th style="text-align:center;padding:3px 2px;font-size:10px;font-weight:'+(isCur?'700':'400')+';color:'+(isCur?'#111':'var(--tx3)')+'">'+n+'</th>';
+    return '<th style="text-align:center;padding:3px 6px;font-size:10px;font-weight:'+(isCur?'700':'400')+';color:'+(isCur?'#111':'var(--tx3)')+';white-space:nowrap;min-width:60px">'+n+'</th>';
   }).join('')+'<th style="text-align:right;padding:3px 4px;font-size:10px;font-weight:700;color:var(--tx2)">합계</th>';
 
   var tdCells=arr.map(function(d,i){
@@ -1427,15 +1438,15 @@ function renderDistDashboard(){
     var border='border:1px solid var(--brd);';
     // ⑧ 해당월: 흰 배경 + 검정 볼드, 나머지도 흰 배경 통일
     if(isPast||(selY<curY)){
-      return '<td style="padding:2px;'+border+'background:#fff"><input style="width:100%;border:none;background:transparent;text-align:right;font-size:10px;color:#111;" value="'+fmt(Math.round(d.v))+'" onchange="distSaveMonth('+selY+','+m+',this.value)"></td>';
+      return '<td style="padding:2px;'+border+'background:#fff;min-width:60px"><input style="width:100%;min-width:56px;border:none;background:transparent;text-align:right;font-size:10px;color:#111;" value="'+fmt(Math.round(d.v))+'" onchange="distSaveMonth('+selY+','+m+',this.value)"></td>';
     }
     var color=isCur?'color:#111;font-weight:700;':'color:var(--tx3);';
-    return '<td style="padding:2px;'+border+'background:#fff"><div style="width:100%;text-align:right;font-size:10px;'+color+'padding:2px 3px">'+fmt(Math.round(d.v))+'</div></td>';
+    return '<td style="padding:2px;'+border+'background:#fff;min-width:60px"><div style="width:100%;min-width:56px;text-align:right;font-size:10px;'+color+'padding:2px 3px">'+fmt(Math.round(d.v))+'</div></td>';
   }).join('');
   var sumCell='<td style="padding:2px 4px;text-align:right;font-size:11px;font-weight:700;color:var(--nvy);border:1px solid var(--brd)">'+fmt(Math.round(total))+'</td>';
 
-  el.innerHTML='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">'
-    +'<table style="width:100%;border-collapse:collapse;table-layout:fixed">'
+  el.innerHTML='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%">'
+    +'<table style="border-collapse:collapse;table-layout:auto;min-width:100%">'
     +'<thead><tr>'+thCells+'</tr></thead>'
     +'<tbody><tr>'+tdCells+sumCell+'</tr></tbody>'
     +'</table></div>'
@@ -1744,11 +1755,11 @@ function renderPension(){
     +'<div class="sechdr"><span class="sectitle">연금계좌 인출 및 운영전략</span>'
     +'<button class="btn" style="font-size:11px;padding:3px 9px;margin-left:8px;" onclick="pensionSaveStrategy()">저장</button></div>'
     +'<div style="padding:0 13px 13px">'
-    +'<textarea id="pension-strategy" style="width:100%;min-height:90px;border:1px solid var(--brd);border-radius:8px;padding:10px;font-size:12px;font-family:inherit;resize:vertical;box-sizing:border-box;line-height:1.6">'
+    +'<textarea id="pension-strategy" class="pension-strategy" style="width:100%;min-height:90px;border:1px solid var(--brd);border-radius:8px;padding:10px;font-size:12px;font-family:inherit;resize:vertical;box-sizing:border-box;line-height:1.6">'
     +pensionStrategyGet()+'</textarea></div></div>';
 
   pg.innerHTML='<div class="sec"><div class="sechdr"><span class="sectitle">사적연금 통합관리</span></div>'
-    +'<div class="twrap" style="padding:0 13px 6px;overflow-x:auto"><table class="pension-table" style="border-collapse:collapse;table-layout:fixed;">'
+    +'<div class="twrap pension-wrap" style="padding:0 13px 6px"><table class="pension-table" style="border-collapse:collapse;table-layout:fixed;">'
     +(function(){var _mob=window.innerWidth<=768;var _cg='<colgroup>';if(_mob){_cg+='<col style="width:110px">';for(var _j=0;_j<=cols.length;_j++)_cg+='<col style="width:80px">';}else{var _dw=Math.round(83/(cols.length+1)*10)/10;_cg+='<col style="width:17%">';for(var _j=0;_j<=cols.length;_j++)_cg+='<col style="width:'+_dw+'%">';}_cg+='</colgroup>';return _cg;})()
     +hdRow+tbody+'</table></div>'+noteHTML+'</div>'+strategyHTML;
 }
@@ -1898,13 +1909,13 @@ function renderKR(acc, cid) {
     var qid = cid + '_' + i;
     var row = '<tr>';
     // 순서이동 버튼
-    row += '<td style="width:18px;text-align:center;padding:2px 0">'
-         + '<div style="display:flex;flex-direction:column;gap:1px">'
-         + '<button onclick="moveHolding(\''+id+'\','+i+',-1)" style="border:1px solid var(--brd);background:#fff;border-radius:2px;cursor:pointer;font-size:9px;padding:0 3px;line-height:1.4;color:var(--tx2)">▲</button>'
-         + '<button onclick="moveHolding(\''+id+'\','+i+',1)" style="border:1px solid var(--brd);background:#fff;border-radius:2px;cursor:pointer;font-size:9px;padding:0 3px;line-height:1.4;color:var(--tx2)">▼</button>'
+    row += '<td style="width:22px;text-align:center;padding:1px 0">'
+         + '<div style="display:flex;flex-direction:column;gap:0">'
+         + '<button onclick="moveHolding(\''+id+'\','+i+',-1)" style="border:none;background:none;cursor:pointer;font-size:10px;padding:0;line-height:1.2;color:#9ca3af;width:22px" title="위로">▲</button>'
+         + '<button onclick="moveHolding(\''+id+'\','+i+',1)" style="border:none;background:none;cursor:pointer;font-size:10px;padding:0;line-height:1.2;color:#9ca3af;width:22px" title="아래로">▼</button>'
          + '</div></td>';
     // 종목명 + 코드 아래 표시 (더블클릭으로 상세 편집)
-    row += '<td style="text-align:left;cursor:pointer" ondblclick="openHoldingDetail(\''+id+'\','+i+')" title="더블클릭으로 상세편집"><div class="tname">' + h.n + '</div>'
+    row += '<td style="text-align:left;cursor:pointer;padding-left:6px" ondblclick="openHoldingDetail(\''+id+'\','+i+')" title="더블클릭으로 상세편집"><div class="tname">' + h.n + '</div>'
          + (h.tk ? '<div style="font-size:9px;color:var(--tx3)">' + h.tk + '</div>' : '')
          + '</td>';
     row += '<td><input class="ed" id="' + qid + '_qty" style="width:100%"'
@@ -1980,15 +1991,15 @@ function renderKR(acc, cid) {
     +'onclick="openAddModal(\\\''+id+'\\\')">&plus; 종목 추가</button>';
   html += '</div>';
   html += '<div class="twrap has-order">';
-  html += '<table style="table-layout:fixed;width:100%">';
+  html += '<table style="table-layout:auto;width:100%">';
   html += '<colgroup>';
-  html += '<col style="width:18px">';
+  html += '<col style="width:22px">';
   html += '<col style="width:22%">';
-  var _krw=Math.round((78)/10*10)/10;
+  var _krw=Math.round((72)/10*10)/10;
   for(var _k=0;_k<10;_k++) html += '<col style="width:'+_krw+'%">';
   html += '</colgroup>';
   html += '<thead><tr>';
-  html += '<th style="width:18px;text-align:center;padding:2px 0;background:#f1f5f9"></th>';
+  html += '<th style="width:22px;text-align:center;padding:2px 0;background:#f1f5f9"></th>';
   html += '<th style="text-align:left;background:#f1f5f9">\uc885\ubaa9\uba85</th>';
   html += '<th>\uc218\ub7c9</th>';
   html += '<th>\ubd84\ubc30\uae08</th>';
@@ -2000,7 +2011,7 @@ function renderKR(acc, cid) {
   html += '</tr></thead>';
   html += '<tbody>' + rowsHtml;
   html += '<tr class="trow">';
-  html += '<td></td><td>\ud569 \uacc4</td><td colspan="4"></td>';
+  html += '<td></td><td>\ud569 \uacc4</td><td colspan="5"></td>';
   html += '<td class="auto" id="' + cid + '_tot_cost">' + fmt(tCost) + '</td>';
   html += '<td class="auto" id="' + cid + '_tot_cur">'  + fmt(tCur)  + '</td>';
   html += '<td class="' + pc(pnlR) + '" id="' + cid + '_tot_pnlr">' + fmtPct(pnlR) + '</td>';
@@ -2185,11 +2196,11 @@ function renderCMA(){
       :'<input class="ed" style="width:68px" value="'+buyFX.toFixed(2)+'" onchange="setCH('+i+',\'avgFX\',this.value)" placeholder="\ub9e4\uc785\ud658\uc728">';
     if(h.isRP){
       return '<tr>'
-        +'<td style="width:18px;text-align:center;padding:2px 0"><div style="display:flex;flex-direction:column;gap:1px">'
-        +'<button onclick="moveCMAHolding('+i+',-1)" style="border:1px solid var(--brd);background:#fff;border-radius:2px;cursor:pointer;font-size:9px;padding:0 3px;line-height:1.4;color:var(--tx2)">▲</button>'
-        +'<button onclick="moveCMAHolding('+i+',1)" style="border:1px solid var(--brd);background:#fff;border-radius:2px;cursor:pointer;font-size:9px;padding:0 3px;line-height:1.4;color:var(--tx2)">▼</button>'
+        +'<td style="width:22px;text-align:center;padding:2px 0"><div style="display:flex;flex-direction:column;gap:1px">'
+        +'<button onclick="moveCMAHolding('+i+',-1)" style="border:none;background:none;cursor:pointer;font-size:10px;padding:0;line-height:1.2;color:#9ca3af;width:22px" title="위로">▲</button>'
+        +'<button onclick="moveCMAHolding('+i+',1)" style="border:none;background:none;cursor:pointer;font-size:10px;padding:0;line-height:1.2;color:#9ca3af;width:22px" title="아래로">▼</button>'
         +'</div></td>'
-        +'<td style="text-align:left;cursor:pointer" ondblclick="openCMADetail('+i+')" title="더블클릭으로 상세편집"><div class="tname">'+h.n+(h.tk?'<span style="font-weight:400;color:var(--tx3)"> ('+h.tk+')</span>':'')+'</div></td>'
+        +'<td style="text-align:left;cursor:pointer;padding-left:6px" ondblclick="openCMADetail('+i+')" title="더블클릭으로 상세편집"><div class="tname">'+h.n+(h.tk?'<span style="font-weight:400;color:var(--tx3)"> ('+h.tk+')</span>':'')+'</div></td>'
         +'<td style="text-align:center;color:var(--tx3)">-</td>'
         +'<td><input class="ed" style="width:86px" value="'+h.cost+'" onchange="setCH('+i+',\'cost\',this.value)"> '+h.cur+'</td>'
         +'<td>'+avgFXinp+'</td>'
@@ -2202,9 +2213,9 @@ function renderCMA(){
         +'</tr>';
     }
     return '<tr>'
-      +'<td style="width:18px;text-align:center;padding:2px 0"><div style="display:flex;flex-direction:column;gap:1px">'
-      +'<button onclick="moveCMAHolding('+i+',-1)" style="border:1px solid var(--brd);background:#fff;border-radius:2px;cursor:pointer;font-size:9px;padding:0 3px;line-height:1.4;color:var(--tx2)">▲</button>'
-      +'<button onclick="moveCMAHolding('+i+',1)" style="border:1px solid var(--brd);background:#fff;border-radius:2px;cursor:pointer;font-size:9px;padding:0 3px;line-height:1.4;color:var(--tx2)">▼</button>'
+      +'<td style="width:22px;text-align:center;padding:2px 0"><div style="display:flex;flex-direction:column;gap:1px">'
+      +'<button onclick="moveCMAHolding('+i+',-1)" style="border:none;background:none;cursor:pointer;font-size:10px;padding:0;line-height:1.2;color:#9ca3af;width:22px" title="위로">▲</button>'
+      +'<button onclick="moveCMAHolding('+i+',1)" style="border:none;background:none;cursor:pointer;font-size:10px;padding:0;line-height:1.2;color:#9ca3af;width:22px" title="아래로">▼</button>'
       +'</div></td>'
       +'<td style="text-align:left;cursor:pointer" ondblclick="openCMADetail('+i+')" title="더블클릭으로 상세편집"><div class="tname">'+h.n+(h.tk?'<span style="font-weight:400;color:var(--tx3)"> ('+h.tk+')</span>':'')+'</div>'+(h.sub?'<div style="font-size:9px;color:var(--tx3)">'+h.sub+'</div>':'')+'</td>'
       +'<td><input class="ed" style="width:56px" value="'+(h.qty||'')+'" onchange="setCH('+i+',\'qty\',this.value)"></td>'
@@ -2227,8 +2238,12 @@ function renderCMA(){
 
   document.getElementById('pg-cma').innerHTML=[
     '<div class="fxbar">',
-    '<div class="fxitem">\uc6d0/\ub2ec\ub7ec(USD): <input class="fxinp" value="'+FX.USD+'" onchange="FX.USD=+this.value;renderActive();autoSync()"> <span class="abadge">\uc790\ub3d9\uac31\uc2e0</span></div>',
-    '<div class="fxitem">\uc6d0/\uc5d4(JPY): <input class="fxinp" value="'+FX.JPY+'" onchange="FX.JPY=+this.value;renderActive();autoSync()"> <span class="abadge">\uc790\ub3d9\uac31\uc2e0</span></div>',
+    '<div class="fxitem">\uc6d0/\ub2ec\ub7ec(USD): '
+    +'<input class="fxinp" style="color:'+(FX._usdLive?'#1e3a8a':'#4b5563')+';font-weight:'+(FX._usdLive?'700':'400')+'" value="'+FX.USD+'" onchange="FX.USD=+this.value;renderActive();autoSync()">'
+    +'</div>',
+    '<div class="fxitem">\uc6d0/\uc5d4(JPY): '
+    +'<input class="fxinp" style="color:'+(FX._jpyLive?'#1e3a8a':'#4b5563')+';font-weight:'+(FX._jpyLive?'700':'400')+'" value="'+FX.JPY+'" onchange="FX.JPY=+this.value;renderActive();autoSync()">'
+    +'</div>',
     '<span style="font-size:11px;color:var(--tx3)"></span></div>',
     '<div class="sec">',
     '<div class="sechdr">',
@@ -2253,10 +2268,10 @@ function renderCMA(){
       +'&plus; 종목 추가</button>',
     '</div>',
     '<div class="twrap has-order">',
-    '<table style="table-layout:fixed;width:100%">',
-    '<colgroup><col style="width:18px"><col style="width:18%">'+(function(){var w=Math.round(82/9*10)/10;var r='';for(var i=0;i<9;i++)r+='<col style="width:'+w+'%">';return r;})()+'</colgroup>',
+    '<table style="table-layout:auto;width:100%">',
+    '<colgroup><col style="width:22px"><col style="width:22%">'+(function(){var w=Math.round(78/9*10)/10;var r='';for(var i=0;i<9;i++)r+='<col style="width:'+w+'%">';return r;})()+'</colgroup>',
     '<thead><tr>',
-    '<th style="width:18px;text-align:center;padding:2px 0;background:#f1f5f9"></th>',
+    '<th style="width:22px;text-align:center;padding:2px 0;background:#f1f5f9"></th>',
     '<th style="text-align:left;background:#f1f5f9">\uc885\ubaa9\uba85</th>',
     '<th>\uc218\ub7c9</th><th>\ub9e4\uc785\ub2e8\uac00(\ud604\uc9c0)</th><th>\ub9e4\uc785\ud658\uc728</th><th>\uc804\uace0\uc810</th><th>\ud604\uc7ac\uac00(\ud604\uc9c0)</th>',
     '<th>\ub9e4\uc785\ucd1d\uc561(\uc6d0)</th>',
@@ -2268,7 +2283,7 @@ function renderCMA(){
     '<td class="auto">'+fmt(tCostK)+'</td>',
     '<td class="auto">'+fmt(tCurK)+'</td>',
     '<td class="'+pc(pnlR)+'">'+fmtPct(pnlR)+'</td>',
-    '<td></td><td></td>',
+    '<td></td>',
     '</tr></tbody></table></div>',
 
     '</div>'
@@ -2335,16 +2350,14 @@ function renderCrypto(force){
       var live=PRICES[h.sym]!=null;
       sC+=cost; sV+=cur;
       return '<tr>'
-        +'<td style="width:18px;text-align:center;padding:2px 0">'
+        +'<td style="width:26px;text-align:center;padding:2px 0">'
           +'<div style="display:flex;flex-direction:column;gap:1px">'
           +'<button onclick="moveCryptoHolding(\''+ex+'\','+i+',-1)" '
-            +'style="border:1px solid var(--brd);background:#fff;border-radius:2px;'
-            +'cursor:pointer;font-size:9px;padding:0 3px;line-height:1.4;color:var(--tx2)">\u25b2</button>'
+            +'style="border:none;background:none;cursor:pointer;font-size:10px;padding:0;line-height:1.2;color:#9ca3af;width:22px" title="위로">\u25b2</button>'
           +'<button onclick="moveCryptoHolding(\''+ex+'\','+i+',1)" '
-            +'style="border:1px solid var(--brd);background:#fff;border-radius:2px;'
-            +'cursor:pointer;font-size:9px;padding:0 3px;line-height:1.4;color:var(--tx2)">\u25bc</button>'
+            +'style="border:none;background:none;cursor:pointer;font-size:10px;padding:0;line-height:1.2;color:#9ca3af;width:22px" title="아래로">\u25bc</button>'
           +'</div></td>'
-        +'<td style="text-align:left;cursor:pointer" '
+        +'<td style="text-align:left;cursor:pointer;padding-left:6px" '
           +'ondblclick="openCryptoDetail(\''+ex+'\','+i+')" '
           +'title="\ub354\ube14\ud074\ub9ad \uc0c1\uc138\ud3b8\uc9d1">'
           +'<div class="tname">'+h.n+(h.sym?'<span style="font-weight:400;color:var(--tx3)"> ('+h.sym+')</span>':'')+'</div>'
@@ -2365,13 +2378,13 @@ function renderCrypto(force){
     return{html:rows.join(''),cost:sC,cur:sV,visible:true};
   }
   var thRow='<tr>'
-    +'<th style="width:18px;text-align:center;padding:2px 0;background:#f1f5f9"></th>'
+    +'<th style="width:22px;text-align:center;padding:2px 0;background:#f1f5f9"></th>'
     +'<th style="text-align:left;background:#f1f5f9">\uc885\ubaa9\uba85</th>'
     +'<th>\uc218\ub7c9</th><th>\uc2a4\ud14c\uc774\ud0b9</th>'
     +'<th>\ub9e4\uc785\ub2e8\uac00</th><th>\ud604\uc7ac\uac00</th>'
     +'<th>\ub9e4\uc785\ucd1d\uc561</th><th>\ud604\uc7ac\ud3c9\uac00\uc561</th>'
     +'<th>\uc218\uc775\ub960</th><th>\uc804\uace0\uc810\ub300\ube44</th>'
-    +'<th>\ud3c9\uac00\uc190\uc775</th><th></th></tr>';
+    +'<th>\ud3c9\uac00\uc190\uc775</th></tr>';
   function exBlock(er,emj,label,bg,isExtra){
     // 추가거래소(isExtra=true): 빈 경우 헤더만 표시(코인 추가 가능)
     // 빗썸/업비트: 빈 경우 완전 숨김
@@ -2382,10 +2395,19 @@ function renderCrypto(force){
       +'<span style="font-size:12px;font-weight:700">'+label+'</span>'
       +'</div>';
     if(!er.visible) return hdr;
+    var pnlC=er.cur-er.cost,pnlR2=er.cost>0?pnlC/er.cost:0;
+    var subtotalRow='<tr class="trow">'
+      +'<td></td><td>\uc18c \uacc4</td><td colspan="4"></td>'
+      +'<td class="auto">'+fmt(er.cost)+'</td>'
+      +'<td class="auto">'+fmt(er.cur)+'</td>'
+      +'<td class="'+(pnlC>=0?'pos':'neg')+'">'+fmtPct(pnlR2)+'</td>'
+      +'<td></td>'
+      +'<td class="'+(pnlC>=0?'pos':'neg')+'">'+(pnlC>=0?'+':'')+fmt(pnlC)+'\uc6d0</td>'
+      +'</tr>';
     return hdr+'<div class="twrap has-order">'
-    +'<table style="table-layout:fixed;width:100%">'
-    +'<colgroup><col style="width:18px"><col style="width:18%">'+(function(){var w=Math.round(82/10*10)/10;var r='';for(var i=0;i<10;i++)r+='<col style="width:'+w+'%">';return r;})()+'</colgroup>'
-    +'<thead>'+thRow+'</thead><tbody>'+er.html+'</tbody></table></div>';
+    +'<table style="table-layout:auto;width:100%">'
+    +'<colgroup><col style="width:18px"><col style="width:20%">'+(function(){var w=Math.round(80/9*10)/10;var r='';for(var i=0;i<9;i++)r+='<col style="width:'+w+'%">';return r;})()+'</colgroup>'
+    +'<thead>'+thRow+'</thead><tbody>'+er.html+subtotalRow+'</tbody></table></div>';
   }
   var bith=exRows(CRYPTO.bithumb,'B'), ubit=exRows(CRYPTO.upbit,'U');
   var extraBlocks='';
@@ -2410,16 +2432,17 @@ function renderCrypto(force){
       +'<div class="ccards" style="padding:0">'+cards+'</div>'
     +'</div></div>'
     +'<div class="sec">'
-      +'<div class="sechdr">'
+      +'<div class="sechdr" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">'
         +'<span class="sectitle">\uac70\ub798\uc18c\ubcc4 \ubcf4\uc720 \ud604\ud669</span>'
-      +'<div style="display:flex;justify-content:flex-end;gap:6px;padding:4px 0 2px">'
-      +'<button class="btn" style="padding:3px 9px;font-size:11px;background:#f0fdf4;color:#057a55;border-color:#a7f3d0" '
-        +'onclick="openExchangeMgmt()">거래소 관리</button>'
-      +'<button class="btn btn-add" style="padding:3px 9px;font-size:11px" '
-        +'onclick="openAddCryptoModal()">&plus; 코인 추가</button>'
+        +'<div style="display:flex;gap:6px;flex-wrap:wrap">'
+          +'<button class="btn" style="padding:3px 9px;font-size:11px;background:#f0fdf4;color:#057a55;border-color:#a7f3d0" '
+            +'onclick="openExchangeMgmt()">거래소 관리</button>'
+          +'<button class="btn btn-add" style="padding:3px 9px;font-size:11px" '
+            +'onclick="openAddCryptoModal()">&plus; 코인 추가</button>'
+        +'</div>'
       +'</div>'
-      +exBlock(bith,'🔸','\ube57\uc12c (Bithumb)','#fffbeb')
-      +exBlock(ubit,'🔹','\uc5c5\ube44\ud2b8 (Upbit)','#eff6ff')
+      +exBlock(bith,'\ud83d\udd38','\ube57\uc12c (Bithumb)','#fffbeb')
+      +exBlock(ubit,'\ud83d\udd39','\uc5c5\ube44\ud2b8 (Upbit)','#eff6ff')
       +extraBlocks
     +'</div>';
 }
@@ -2530,7 +2553,7 @@ function renderHoldings(){
     '<div class="scard"><div class="slbl">\uc6d4 \ubd84\ubc30\uae08 \ud569\uacc4</div><div class="sval" style="color:var(--grn)">'+fmt(gDist)+'\uc6d0</div></div>',
     '</div>',
     '<div class="twrap" style="padding:0 8px 12px">',
-    '<table style="table-layout:fixed;width:100%">',
+    '<table style="table-layout:auto;width:100%">',
     '<thead><tr>',
     '<th style="text-align:left;width:160px">\uc885\ubaa9\uba85</th>',
     '<th style="width:60px">\uc218\ub7c9</th>',
@@ -2733,20 +2756,20 @@ async function drawHChart(){
     '<div class="hist-card"><div class="slbl">\uae30\uac04 \ucd5c\uace0</div><div class="sval" style="font-size:13px;color:var(--grn)">'+fmt(maxCur)+'\uc6d0</div></div>',
     '<div class="hist-card"><div class="slbl">\uae30\uac04 \ucd5c\uc800</div><div class="sval" style="font-size:13px;color:var(--wine)">'+fmt(minCur)+'\uc6d0</div></div>',
     '</div>',
-    '<div class="twrap" style="padding:0 13px 13px">',
+    '<div class="twrap snap-twrap" style="padding:0 13px 13px">',
     '<div style="display:flex;justify-content:flex-end;gap:6px;padding:4px 0 2px">',
     '<button class="btn btn-add" style="padding:3px 10px;font-size:11px" onclick="snapNow()">📸 지금 기록</button>',
     '<button class="btn" style="padding:3px 10px;font-size:11px;background:#fee2e2;color:#dc2626;border-color:#fca5a5" onclick="deleteAllSnaps()">기록 전체삭제</button>',
     '</div>',
-    '<table style="table-layout:fixed;width:100%;border-collapse:collapse">',
-    '<colgroup><col style="width:13%"><col style="width:17%"><col style="width:20%"><col style="width:10%"><col><col style="width:30px"></colgroup>',
+    '<table style="table-layout:auto;width:100%;border-collapse:collapse">',
+    '<colgroup><col style="min-width:80px"><col style="min-width:110px"><col style="min-width:120px"><col style="min-width:60px"><col style="min-width:100px"><col style="width:30px"></colgroup>',
     '<thead><tr>'
       +'<th style="text-align:left;white-space:nowrap">\uae30\uac04</th>'
       +'<th style="white-space:nowrap">\ud3c9\uac00\uc561</th>'
       +'<th style="white-space:nowrap">\ubcc0\ub3d9\uc561(\uc804\uae30\ub300\ube44)</th>'
       +'<th style="white-space:nowrap">\ubcc0\ub3d9\ub960</th>'
-      +'<th style="text-align:left;width:100%">\ube44\uace0</th>'
-      
+      +'<th style="text-align:left">\ube44\uace0</th>'
+      +'<th style="width:30px"></th>'
     +'</tr></thead>',
     '<tbody>'+tableRows+'</tbody></table></div>'
   ].join('');
@@ -3697,9 +3720,12 @@ function renderOverview(){
 
   document.getElementById('pg-overview').innerHTML=[
     '<div class="fxbar">',
-    '<div class="fxitem">\uc6d0/\ub2ec\ub7ec: <input class="fxinp" value="'+FX.USD+'" onchange="FX.USD=+this.value;renderActive()"></div>',
-    '<div class="fxitem">\uc6d0/\uc5d4: <input class="fxinp" value="'+FX.JPY+'" onchange="FX.JPY=+this.value;renderActive()"></div>',
-    '<span class="abadge">\uc790\ub3d9\uac31\uc2e0</span>',
+    '<div class="fxitem">\uc6d0/\ub2ec\ub7ec: '
+    +'<input class="fxinp" style="color:'+(FX._usdLive?'#1e3a8a':'#4b5563')+';font-weight:'+(FX._usdLive?'700':'400')+'" value="'+FX.USD+'" onchange="FX.USD=+this.value;renderActive()">'
+    +'</div>',
+    '<div class="fxitem">\uc6d0/\uc5d4: '
+    +'<input class="fxinp" style="color:'+(FX._jpyLive?'#1e3a8a':'#4b5563')+';font-weight:'+(FX._jpyLive?'700':'400')+'" value="'+FX.JPY+'" onchange="FX.JPY=+this.value;renderActive()">'
+    +'</div>',
     '<span style="font-size:11px;color:var(--tx3)"></span></div>',
     '<div class="sec"><div class="sechdr">',
     '<span class="sectitle">\uc804\uccb4 \ud3ec\ud2b8\ud3f4\ub9ac\uc624 \ucd1d\uad04</span>',
@@ -3732,7 +3758,7 @@ function renderOverview(){
     compSection,
     curSection,
     '<div class="sec"><div class="sechdr"><span class="sectitle">\uacc4\uc88c\ubcc4 \ud604\ud669</span></div>',
-    '<div class="twrap"><table style="table-layout:fixed;width:100%"><thead><tr>',
+    '<div class="twrap"><table style="table-layout:auto;width:100%"><thead><tr>',
     '<th style="text-align:left;width:110px">\uacc4\uc88c\uba85</th>',
     '<th style="width:95px">\ub0a9\uc785(\ub204\uc801)</th><th style="width:90px">\uc778\ucd9c(\ub204\uc801)</th><th style="width:95px">\uc2e4\ub0a9\uc785\uae08\uc561</th>',
     '<th style="width:95px">\ub9e4\uc785\ucd1d\uc561</th><th style="width:100px">\ud604\uc7ac\ud3c9\uac00\uc561</th><th style="width:90px">\uc190\uc775\uae08\uc561</th>',
