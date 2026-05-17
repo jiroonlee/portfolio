@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>풍차계획 포트폴리오</title>
+<title>풍차계획 포트폴리오 v5.47</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -68,10 +68,18 @@ body{font-family:'Malgun Gothic',-apple-system,sans-serif;font-size:12px;backgro
   .has-order tbody tr:hover:not(.trow) td:first-child,.has-order tbody tr:hover:not(.trow) td:nth-child(2){background:#f0f6ff;}
   /* trow 합계행 */
   .twrap table tr.trow td:first-child{background:#e8f0fe;}
-  .has-order table tr.trow td:nth-child(1),.has-order table tr.trow td:nth-child(2){background:#e8f0fe;}
+  .has-order table tr.trow td:nth-child(1),.has-order table tr.trow td:nth-child(2){background:#e8f0fe !important;}
+  .twrap table tr.trow td:first-child{background:#e8f0fe !important;}
+  /* overview trow - fixed table */
+  .twrap table tr.trow td{background:#e8f0fe !important;font-weight:700;color:#1e3a8a;}
   /* pension-table은 별도 처리 (위에서 이미 정의) */
   /* 모바일: auto layout에서 min-width 불필요 */
-  .twrap.has-order table{min-width:640px;}
+  .twrap.has-order table{width:max-content;min-width:100%;}
+  /* 모바일 종목명 셀 최소너비 */
+  .has-order table td:nth-child(2),.has-order table th:nth-child(2){min-width:100px;}
+  /* 모바일 데이터셀 최소너비 */
+  .has-order table td:not(:nth-child(1)):not(:nth-child(2)),
+  .has-order table th:not(:nth-child(1)):not(:nth-child(2)){min-width:72px;}
   /* dist-dashboard handled by auto table layout */
   /* 자산변동 비고열 표시 */
   .twrap table[style*='auto']{min-width:480px;}
@@ -87,13 +95,23 @@ body{font-family:'Malgun Gothic',-apple-system,sans-serif;font-size:12px;backgro
 .has-order table td:first-child,
 .has-order table th:first-child{
   padding-right:0;
+  width:22px !important;
+  max-width:22px !important;
+  min-width:22px !important;
 }
 .has-order table td:nth-child(2),
 .has-order table th:nth-child(2){
-  padding-left:2px;
+  padding-left:6px;
+  min-width:100px;
+  white-space:nowrap;
 }
 /* ── 테이블 기본 디자인 ── */
 table{width:100%;border-collapse:separate;border-spacing:0;font-size:12px}
+.has-order table{table-layout:auto;}
+.has-order table td:not(:nth-child(1)):not(:nth-child(2)),
+.has-order table th:not(:nth-child(1)):not(:nth-child(2)){
+  min-width:70px;
+}
 th{
   padding:3px 5px;text-align:right;font-size:10px;
   color:#4b5563;font-weight:700;
@@ -262,6 +280,17 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
   .twrap table td,
   .twrap table th{
     white-space:nowrap;
+    min-width:fit-content;
+  }
+  /* 입력셀(ed) 최소/최대 너비 */
+  .twrap table td input.ed{
+    min-width:60px;
+    max-width:110px;
+    box-sizing:border-box;
+  }
+  /* 종목명 열은 좁게 */
+  .twrap.has-order table td:nth-child(2){
+    min-width:80px;
   }
   table td{
     background:#fff;border:none;
@@ -289,7 +318,7 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
 .meta-order-item:hover{box-shadow:0 2px 8px rgba(0,0,0,.1);}
 @media(max-width:768px){
   .pension-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%;}
-  .pension-wrap table{min-width:520px;}
+  .pension-wrap table{min-width:max-content;width:auto;table-layout:auto !important;}
   .pension-strategy{width:100% !important;max-width:100% !important;box-sizing:border-box !important;}
   .snap-twrap table{min-width:480px;}
   .snap-twrap table td:first-child,.snap-twrap table th:first-child{position:sticky;left:0;z-index:2;background:#fff;}
@@ -846,7 +875,7 @@ var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
   sub: '연금계좌 풍차계획 포트폴리오',
-  version: 'v5.46',   // 버전 — 여기만 수정
+  version: 'v5.47',   // 버전 — 여기만 수정
   birthdate: '', // 생년월일 (YYYY-MM-DD 또는 YY.M.D 형식)
   accMeta: {},
   accOrder: []
@@ -1759,7 +1788,7 @@ function renderPension(){
     +pensionStrategyGet()+'</textarea></div></div>';
 
   pg.innerHTML='<div class="sec"><div class="sechdr"><span class="sectitle">사적연금 통합관리</span></div>'
-    +'<div class="twrap pension-wrap" style="padding:0 13px 6px"><table class="pension-table" style="border-collapse:collapse;table-layout:fixed;">'
+    +'<div class="twrap pension-wrap" style="padding:0 13px 6px"><table class="pension-table" style="border-collapse:collapse;table-layout:auto;width:max-content;min-width:100%">'
     +(function(){var _mob=window.innerWidth<=768;var _cg='<colgroup>';if(_mob){_cg+='<col style="width:110px">';for(var _j=0;_j<=cols.length;_j++)_cg+='<col style="width:80px">';}else{var _dw=Math.round(83/(cols.length+1)*10)/10;_cg+='<col style="width:17%">';for(var _j=0;_j<=cols.length;_j++)_cg+='<col style="width:'+_dw+'%">';}_cg+='</colgroup>';return _cg;})()
     +hdRow+tbody+'</table></div>'+noteHTML+'</div>'+strategyHTML;
 }
@@ -1929,7 +1958,7 @@ function renderKR(acc, cid) {
          + ' onchange="onCost(this,\'' + id + '\',' + i + ')"></td>';
     row += '<td>'
          + '<input class="ed" id="' + qid + '_price"'
-         + ' style="width:100%;color:' + (live ? 'var(--nvy)' : '#666') + ';font-weight:' + (live ? '700' : '400') + '"'
+         + ' style="width:100%;min-width:70px;max-width:100px;color:' + (live ? 'var(--nvy)' : '#666') + ';font-weight:' + (live ? '700' : '400') + '"'
          + ' value="' + price + '"'
          + ' onchange="onPrice(this,\'' + id + '\',' + i + ')"></td>';
     row += '<td><input class="ed" id="' + qid + '_high" style="width:100%"'
@@ -1993,10 +2022,9 @@ function renderKR(acc, cid) {
   html += '<div class="twrap has-order">';
   html += '<table style="table-layout:auto;width:100%">';
   html += '<colgroup>';
-  html += '<col style="width:22px">';
-  html += '<col style="width:22%">';
-  var _krw=Math.round((72)/10*10)/10;
-  for(var _k=0;_k<10;_k++) html += '<col style="width:'+_krw+'%">';
+  html += '<col style="width:22px;min-width:22px;max-width:22px">';
+  html += '<col style="min-width:100px">';
+  for(var _k=0;_k<10;_k++) html += '<col>';
   html += '</colgroup>';
   html += '<thead><tr>';
   html += '<th style="width:22px;text-align:center;padding:2px 0;background:#f1f5f9"></th>';
@@ -2205,7 +2233,7 @@ function renderCMA(){
         +'<td><input class="ed" style="width:86px" value="'+h.cost+'" onchange="setCH('+i+',\'cost\',this.value)"> '+h.cur+'</td>'
         +'<td>'+avgFXinp+'</td>'
         +'<td>-</td>'
-        +'<td><input class="ed" style="width:100%;font-weight:'+(isLv(h)?'700':'400')+';color:'+(isLv(h)?'var(--nvy)':'#666')+'" value="'+priceL+'" onchange="setCH('+i+',\'curPrice\',this.value)"></td>'
+        +'<td><input class="ed" style="width:100%;min-width:70px;max-width:100px;font-weight:'+(isLv(h)?'700':'400')+';color:'+(isLv(h)?'var(--nvy)':'#666')+'" value="'+priceL+'" onchange="setCH('+i+',\'curPrice\',this.value)"></td>'
         +'<td class="auto" title="\ub9e4\uc785\ud658\uc728 '+buyFXlabel+' \uc801\uc6a9">'+fmt(costK)+'</td>'
         +'<td style="font-weight:700;color:var(--nvy)" title="\ud604\uc7ac\ud658\uc728 '+curFXlabel+' \uc801\uc6a9">'+fmt(curK)+'</td>'
         +'<td class="'+pc(pnlR)+'">'+fmtPct(pnlR)+'</td>'
@@ -2222,7 +2250,7 @@ function renderCMA(){
       +'<td><input class="ed" style="width:78px" value="'+h.cost+'" onchange="setCH('+i+',\'cost\',this.value)"> '+h.cur+'</td>'
       +'<td>'+avgFXinp+'</td>'
       +'<td><input class="ed" style="width:64px" value="'+(h.high||'')+'" onchange="setCH('+i+',\'high\',this.value)"></td>'
-      +'<td><input class="ed" style="width:100%;font-weight:'+(h.tk&&PRICES[h.tk]!=null?'700':'400')+';color:'+(h.tk&&PRICES[h.tk]!=null?'var(--nvy)':'#666')+'" value="'+priceL+'" onchange="onCHPrice(this,'+i+')"></td>'
+      +'<td><input class="ed" style="width:100%;min-width:70px;max-width:100px;font-weight:'+(h.tk&&PRICES[h.tk]!=null?'700':'400')+';color:'+(h.tk&&PRICES[h.tk]!=null?'var(--nvy)':'#666')+'" value="'+priceL+'" onchange="onCHPrice(this,'+i+')"></td>'
       +'<td title="\ub9e4\uc785\ud658\uc728 '+buyFXlabel+' \uc801\uc6a9">'+fmt(costK)+'</td>'
       +'<td style="font-weight:700;color:var(--nvy)" title="\ud604\uc7ac\ud658\uc728 '+curFXlabel+' \uc801\uc6a9">'+fmt(curK)+'</td>'
       +'<td class="'+pc(pnlR)+'">'+fmtPct(pnlR)+'</td>'
@@ -2269,7 +2297,7 @@ function renderCMA(){
     '</div>',
     '<div class="twrap has-order">',
     '<table style="table-layout:auto;width:100%">',
-    '<colgroup><col style="width:22px"><col style="width:22%">'+(function(){var w=Math.round(78/9*10)/10;var r='';for(var i=0;i<9;i++)r+='<col style="width:'+w+'%">';return r;})()+'</colgroup>',
+    '<colgroup><col style="width:22px;min-width:22px;max-width:22px"><col style="min-width:100px">'+(function(){var r='';for(var i=0;i<9;i++)r+='<col>';return r;})()+'</colgroup>',
     '<thead><tr>',
     '<th style="width:22px;text-align:center;padding:2px 0;background:#f1f5f9"></th>',
     '<th style="text-align:left;background:#f1f5f9">\uc885\ubaa9\uba85</th>',
@@ -2367,7 +2395,7 @@ function renderCrypto(force){
         +'<td><input class="ed" style="width:80px" value="'+(h.stk||'')+'" onchange="'+fn(i,'stk')+'"></td>'
         +'<td><input class="ed" style="width:78px" value="'+h.cost+'" onchange="'+fn(i,'cost')+'"></td>'
         +'<td>'
-          +'<input class="ed" style="width:100%;color:'+(live?'var(--nvy)':'#666')+';font-weight:'+(live?'700':'400')+'" value="'+price+'" onchange="'+fn(i,'price')+'"></td>'
+          +'<input class="ed" style="width:100%;min-width:70px;max-width:100px;color:'+(live?'var(--nvy)':'#666')+';font-weight:'+(live?'700':'400')+'" value="'+price+'" onchange="'+fn(i,'price')+'"></td>'
         +'<td>'+fmt(cost)+'</td>'
         +'<td class="auto" style="font-weight:600">'+fmt(cur)+'</td>'
         +'<td class="'+pc(pnlR)+'">'+fmtPct(pnlR)+'</td>'
@@ -2406,14 +2434,14 @@ function renderCrypto(force){
       +'</tr>';
     return hdr+'<div class="twrap has-order">'
     +'<table style="table-layout:auto;width:100%">'
-    +'<colgroup><col style="width:18px"><col style="width:20%">'+(function(){var w=Math.round(80/9*10)/10;var r='';for(var i=0;i<9;i++)r+='<col style="width:'+w+'%">';return r;})()+'</colgroup>'
+    +'<colgroup><col style="width:22px;min-width:22px;max-width:22px"><col style="min-width:100px">'+(function(){var r='';for(var i=0;i<9;i++)r+='<col>';return r;})()+'</colgroup>'
     +'<thead>'+thRow+'</thead><tbody>'+er.html+subtotalRow+'</tbody></table></div>';
   }
   var bith=exRows(CRYPTO.bithumb,'B'), ubit=exRows(CRYPTO.upbit,'U');
   var extraBlocks='';
   (CRYPTO.exchanges||[]).forEach(function(ex){
     var er=exRows(ex.holdings,ex.id);
-    extraBlocks+=exBlock(er,ex.emoji||'🔷',ex.name,'#f5f3ff',true);  // 추가거래소: 빈 경우 헤더 유지
+    extraBlocks+=exBlock(er,ex.emoji||'🔷',ex.name,'#ddd6fe',true);  // 추가거래소: 빈 경우 헤더 유지
   });
 
   var pg=document.getElementById('pg-crypto');if(!pg)return;
@@ -2441,8 +2469,8 @@ function renderCrypto(force){
             +'onclick="openAddCryptoModal()">&plus; 코인 추가</button>'
         +'</div>'
       +'</div>'
-      +exBlock(bith,'\ud83d\udd38','\ube57\uc12c (Bithumb)','#fffbeb')
-      +exBlock(ubit,'\ud83d\udd39','\uc5c5\ube44\ud2b8 (Upbit)','#eff6ff')
+      +exBlock(bith,'\ud83d\udd38','\ube57\uc12c (Bithumb)','#fde68a')
+      +exBlock(ubit,'\ud83d\udd39','\uc5c5\ube44\ud2b8 (Upbit)','#bfdbfe')
       +extraBlocks
     +'</div>';
 }
@@ -2756,11 +2784,11 @@ async function drawHChart(){
     '<div class="hist-card"><div class="slbl">\uae30\uac04 \ucd5c\uace0</div><div class="sval" style="font-size:13px;color:var(--grn)">'+fmt(maxCur)+'\uc6d0</div></div>',
     '<div class="hist-card"><div class="slbl">\uae30\uac04 \ucd5c\uc800</div><div class="sval" style="font-size:13px;color:var(--wine)">'+fmt(minCur)+'\uc6d0</div></div>',
     '</div>',
-    '<div class="twrap snap-twrap" style="padding:0 13px 13px">',
-    '<div style="display:flex;justify-content:flex-end;gap:6px;padding:4px 0 2px">',
+    '<div style="display:flex;justify-content:flex-end;gap:6px;padding:6px 13px;position:sticky;top:0;background:var(--sur);z-index:10;border-bottom:1px solid var(--brd2)">',
     '<button class="btn btn-add" style="padding:3px 10px;font-size:11px" onclick="snapNow()">📸 지금 기록</button>',
     '<button class="btn" style="padding:3px 10px;font-size:11px;background:#fee2e2;color:#dc2626;border-color:#fca5a5" onclick="deleteAllSnaps()">기록 전체삭제</button>',
     '</div>',
+    '<div class="twrap snap-twrap" style="padding:0 13px 13px">',
     '<table style="table-layout:auto;width:100%;border-collapse:collapse">',
     '<colgroup><col style="min-width:80px"><col style="min-width:110px"><col style="min-width:120px"><col style="min-width:60px"><col style="min-width:100px"><col style="width:30px"></colgroup>',
     '<thead><tr>'
