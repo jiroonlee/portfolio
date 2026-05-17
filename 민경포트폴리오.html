@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>풍차계획 포트폴리오 v5.56</title>
+<title>풍차계획 포트폴리오 v5.57</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -314,9 +314,9 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
 .meta-order-item:hover{box-shadow:0 2px 8px rgba(0,0,0,.1);}
 @media(max-width:768px){
   .pension-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%;}
-  .pension-wrap table{width:100%;table-layout:auto !important;}
+  .pension-wrap table{border-collapse:collapse;}
   .pension-strategy{width:100% !important;max-width:100% !important;box-sizing:border-box !important;resize:none !important;overflow:hidden !important;}
-  .pension-wrap table{width:max-content !important;white-space:nowrap;}
+  .pension-wrap table{white-space:nowrap;}
   .snap-twrap{
     overflow-x:auto;-webkit-overflow-scrolling:touch;
     width:100%;-webkit-overflow-scrolling:touch;
@@ -852,7 +852,7 @@ var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
   sub: '연금계좌 풍차계획 포트폴리오',
-  version: 'v5.56',   // 버전 — 여기만 수정
+  version: 'v5.57',   // 버전 — 여기만 수정
   birthdate: '', // 생년월일 (YYYY-MM-DD 또는 YY.M.D 형식)
   accMeta: {},
   accOrder: []
@@ -2776,7 +2776,7 @@ async function drawHChart(){
     +'<col style="width:1px">'
     +'<col style="width:1px">'
     +'<col style="width:1px">'
-    +'<col style="width:100%">'
+    +'<col style="width:100%;min-width:80px">'
     +'<col style="width:1px">'
     +'</colgroup>',
     '<thead><tr>'
