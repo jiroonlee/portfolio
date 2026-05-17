@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>풍차계획 포트폴리오 v5.51</title>
+<title>풍차계획 포트폴리오 v5.52</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -207,27 +207,8 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
   /* dist-dashboard handled by auto table layout */
   #dist-dashboard input{font-size:10px !important;padding:2px !important;}
   #dist-dashboard th{font-size:9px !important;padding:2px 1px !important;}
-  /* 하단 모바일 퀵메뉴 */
-  #mob-bar{
-    display:none;
-    position:fixed;bottom:0;left:0;right:0;z-index:200;
-    background:var(--sur);border-top:1px solid var(--brd);
-    padding:6px 4px env(safe-area-inset-bottom);
-    display:flex;justify-content:space-around;align-items:center;
-  }
-  .mob-btn{
-    display:flex;flex-direction:column;align-items:center;gap:2px;
-    font-size:9px;color:var(--tx2);cursor:pointer;padding:4px 6px;
-    border-radius:8px;border:none;background:none;font-family:inherit;
-    min-width:48px;
-  }
-  .mob-btn .mico{font-size:18px;line-height:1;}
-  .mob-btn.on{color:var(--blu);}
-  /* 하단 바 공간 확보 */
-  body{padding-bottom:calc(56px + env(safe-area-inset-bottom));}
 }
 @media(min-width:769px){
-  #mob-bar{display:none !important;}
   body{padding-bottom:0;}
 }
 @media(max-width:768px){
@@ -756,35 +737,7 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
 </div>
 
 <!-- 모바일 하단 퀵 메뉴 -->
-<div id="mob-bar">
-  <button class="mob-btn on" id="mob-ov" onclick="go('overview',null);mobSel('mob-ov')">
-    <span class="mico">📊</span>전체현황
-  </button>
-  <button class="mob-btn" id="mob-ps" onclick="go('pension',null);mobSel('mob-ps')">
-    <span class="mico">🏛</span>사적연금
-  </button>
-  <button class="mob-btn" id="mob-hd" onclick="go('holdings',null);mobSel('mob-hd')">
-    <span class="mico">📋</span>종목총괄
-  </button>
-  <button class="mob-btn" id="mob-ac" onclick="mobShowAccMenu()">
-    <span class="mico">🏦</span>계좌
-  </button>
-  <button class="mob-btn" id="mob-cr" onclick="go('crypto',null);mobSel('mob-cr')">
-    <span class="mico">₿</span>가상화폐
-  </button>
-  <button class="mob-btn" id="mob-hi" onclick="go('history',null);mobSel('mob-hi')">
-    <span class="mico">📈</span>자산변동
-  </button>
-</div>
-
 <!-- 모바일 계좌 선택 시트 -->
-<div id="mob-acc-sheet" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:300;background:var(--sur);border-radius:16px 16px 0 0;box-shadow:0 -4px 20px rgba(0,0,0,.18);padding:16px 0 calc(12px + env(safe-area-inset-bottom))">
-  <div style="text-align:center;margin-bottom:10px"><div style="width:36px;height:4px;background:var(--brd);border-radius:2px;margin:0 auto"></div></div>
-  <div style="font-size:13px;font-weight:700;padding:0 18px 10px;color:var(--tx2)">계좌 선택</div>
-  <div id="mob-acc-list"></div>
-  <button onclick="document.getElementById('mob-acc-sheet').style.display='none'" style="width:calc(100% - 32px);margin:8px 16px 0;padding:11px;border:1px solid var(--brd);border-radius:8px;font-size:13px;font-family:inherit;background:#fff;cursor:pointer;color:var(--tx2)">닫기</button>
-</div>
-<div id="mob-acc-overlay" onclick="document.getElementById('mob-acc-sheet').style.display='none';document.getElementById('mob-acc-overlay').style.display='none'" style="display:none;position:fixed;inset:0;z-index:290;background:rgba(0,0,0,.4)"></div>
 <div class="page on" id="pg-overview"></div>
 <div class="page" id="pg-pension"></div>
 <div class="page" id="pg-holdings"></div>
@@ -885,7 +838,7 @@ var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
   sub: '연금계좌 풍차계획 포트폴리오',
-  version: 'v5.51',   // 버전 — 여기만 수정
+  version: 'v5.52',   // 버전 — 여기만 수정
   birthdate: '', // 생년월일 (YYYY-MM-DD 또는 YY.M.D 형식)
   accMeta: {},
   accOrder: []
@@ -1943,7 +1896,7 @@ function renderPension(){
   pg.innerHTML='<div class="sec"><div class="sechdr"><span class="sectitle">사적연금 통합관리</span></div>'
     +'<div class="twrap pension-wrap" style="padding:0 13px 6px"><table class="pension-table" style="border-collapse:collapse;'
       +(window.innerWidth>768?'table-layout:fixed;width:100%':'table-layout:auto;width:max-content')+'">'
-    +(function(){var _mob=window.innerWidth<=768;var _cg='<colgroup>';if(_mob){_cg+='<col style="min-width:130px">';for(var _j=0;_j<=cols.length;_j++)_cg+='<col style="min-width:90px">';}else{var _fw=15,_dw=Math.round((85/(cols.length+1))*10)/10;_cg+='<col style="width:'+_fw+'%;min-width:115px">';for(var _j=0;_j<=cols.length;_j++)_cg+='<col style="width:'+_dw+'%;min-width:75px">';}_cg+='</colgroup>';return _cg;})()
+    +(function(){var _mob=window.innerWidth<=768;var _cg='<colgroup>';if(_mob){var _mfw=120,_mdw=Math.max(85,Math.round((window.innerWidth-_mfw-10)/(cols.length+1)));_cg+='<col style="min-width:'+_mfw+'px;width:'+_mfw+'px">';for(var _j=0;_j<=cols.length;_j++)_cg+='<col style="min-width:85px;width:'+_mdw+'px">';}else{var _fw=15,_dw=Math.round((85/(cols.length+1))*10)/10;_cg+='<col style="width:'+_fw+'%;min-width:115px">';for(var _j=0;_j<=cols.length;_j++)_cg+='<col style="width:'+_dw+'%;min-width:75px">';}_cg+='</colgroup>';return _cg;})()
     +hdRow+tbody+'</table></div>'+noteHTML+'</div>'+strategyHTML;
 }
 
@@ -2924,7 +2877,7 @@ async function drawHChart(){
       +'<td style="white-space:nowrap">'+Math.round(d.cur).toLocaleString('ko-KR')+'\uc6d0</td>'
       +'<td class="'+pc(chgAmt)+'" style="white-space:nowrap">'+(prevCur>0?(chgAmt>=0?'+':'')+Math.round(chgAmt).toLocaleString('ko-KR')+'\uc6d0':'-')+'</td>'
       +'<td class="'+pc(chgRate)+'" style="white-space:nowrap">'+(prevCur>0?(chgRate>=0?'+':'')+chgRate.toFixed(2)+'%':'-')+'</td>'
-      +'<td style="text-align:left;background:#fff"><input class="ed" style="width:100%;min-width:120px;font-size:11px;box-sizing:border-box;text-align:left;background:#fff" value="'+noteEsc+'"'
+      +'<td style="text-align:left;background:#fff"><input class="ed" style="width:100%;font-size:11px;box-sizing:border-box;text-align:left;background:#fff" value="'+noteEsc+'"'
         +' onchange="saveSnapNote(\''+tsEsc+'\',this.value)"'
         +' onfocus="this.style.background=\'#fffbeb\'"'
         +' onblur="this.style.background=\'\'"></td>'
@@ -2947,12 +2900,12 @@ async function drawHChart(){
     '<div class="twrap snap-twrap" style="padding:0 13px 13px">',
     '<table style="table-layout:fixed;width:100%;border-collapse:collapse">',
     '<colgroup>'
-    +'<col style="width:100px;min-width:90px">'
-    +'<col style="width:130px;min-width:110px">'
-    +'<col style="width:160px;min-width:130px">'
-    +'<col style="width:90px;min-width:70px">'
-    +'<col style="min-width:160px">'
-    +'<col style="width:40px;min-width:36px">'
+    +'<col style="width:90px">'
+    +'<col style="width:115px">'
+    +'<col style="width:130px">'
+    +'<col style="width:75px">'
+    +'<col>'
+    +'<col style="width:36px">'
     +'</colgroup>',
     '<thead><tr>'
       +'<th style="text-align:left;white-space:nowrap">\uae30\uac04</th>'
@@ -3707,26 +3660,8 @@ function exportToExcel(){
 
 
 /* ===== 모바일 퀵메뉴 ===== */
-function mobSel(id){
-  document.querySelectorAll('.mob-btn').forEach(function(b){b.classList.remove('on');});
-  var el=document.getElementById(id);if(el)el.classList.add('on');
-}
-function mobShowAccMenu(){
-  var sheet=document.getElementById('mob-acc-sheet');
-  var overlay=document.getElementById('mob-acc-overlay');
-  var list=document.getElementById('mob-acc-list');
-  // 계좌 목록: ACCOUNTS 순서 기반으로 동적 생성
-  var items=ACCOUNTS.map(function(acc){return {id:acc.id,name:acc.name};});
-  items.push({id:'cma',name:(CMA&&CMA.name?CMA.name:'CMA')});
-  list.innerHTML=items.map(function(it){
-    return '<button onclick="go(\''+it.id+'\',null);mobSel(\'mob-ac\');document.getElementById(\'mob-acc-sheet\').style.display=\'none\';document.getElementById(\'mob-acc-overlay\').style.display=\'none\'" '
-      +'style="display:block;width:100%;text-align:left;padding:13px 20px;border:none;background:none;font-size:14px;font-family:inherit;cursor:pointer;border-bottom:1px solid var(--brd2);color:var(--tx)">'
-      +escH(it.name)+'</button>';
-  }).join('');
-  overlay.style.display='block';
-  sheet.style.display='block';
-}
-/* ===== 전체현황 렌더 ===== */
+
+
 function renderOverview(){
   var gDep=0,gWit=0,gCost=0,gCur=0,gDist=0,gExtra=0,gExtraTax=0,gExtraRet=0;
   var rows=[];
