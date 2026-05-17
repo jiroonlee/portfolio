@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>풍차계획 포트폴리오 v5.47</title>
+<title>풍차계획 포트폴리오 v5.51</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -59,19 +59,29 @@ body{font-family:'Malgun Gothic',-apple-system,sans-serif;font-size:12px;backgro
   }
   .has-order table th:nth-child(2),
   .has-order table td:nth-child(2){
-    position:sticky;left:22px;z-index:2;background:var(--sur);
+    position:sticky;left:22px;z-index:2;background:#fff;
   }
   /* 헤더 행 배경 */
   .twrap table thead th:first-child{background:#f1f5f9;}
   .has-order table thead th:nth-child(1),.has-order table thead th:nth-child(2){background:#f1f5f9;}
-  tbody tr:nth-child(even) td:first-child,tbody tr:nth-child(even) td:nth-child(2){background:#fafbff;}
-  .has-order tbody tr:hover:not(.trow) td:first-child,.has-order tbody tr:hover:not(.trow) td:nth-child(2){background:#f0f6ff;}
+  tbody tr:nth-child(even):not(.trow) td{background:#fafbff;}
+  tbody tr:nth-child(even):not(.trow) td:first-child,
+  tbody tr:nth-child(even):not(.trow) td:nth-child(2){background:#fafbff;}
+  .has-order tbody tr:hover:not(.trow) td{background:#eef2ff;}
+  .has-order tbody tr:hover:not(.trow) td:first-child,
+  .has-order tbody tr:hover:not(.trow) td:nth-child(2){background:#eef2ff;}
   /* trow 합계행 */
   .twrap table tr.trow td:first-child{background:#e8f0fe;}
   .has-order table tr.trow td:nth-child(1),.has-order table tr.trow td:nth-child(2){background:#e8f0fe !important;}
   .twrap table tr.trow td:first-child{background:#e8f0fe !important;}
   /* overview trow - fixed table */
   .twrap table tr.trow td{background:#e8f0fe !important;font-weight:700;color:#1e3a8a;}
+.trow td.neg,.trow td.neg span,.trow td.neg.auto{color:var(--wine) !important;}
+.trow td.pos,.trow td.pos span,.trow td.pos.auto{color:var(--nvy) !important;}
+.trow td.auto{color:#1e3a8a;}
+  /* 소계행 내 마이너스=와인색, 플러스=네이비 */
+  .trow td.neg,.trow td.neg.auto{color:var(--wine) !important;}
+  .trow td.pos,.trow td.pos.auto{color:var(--nvy) !important;}
   /* pension-table은 별도 처리 (위에서 이미 정의) */
   /* 모바일: auto layout에서 min-width 불필요 */
   .twrap.has-order table{width:max-content;min-width:100%;}
@@ -275,7 +285,7 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
   .twrap table{
     table-layout:auto !important;
     width:auto !important;
-    border-collapse:collapse;
+    border-collapse:collapse !important;
   }
   .twrap table td,
   .twrap table th{
@@ -318,9 +328,10 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
 .meta-order-item:hover{box-shadow:0 2px 8px rgba(0,0,0,.1);}
 @media(max-width:768px){
   .pension-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%;}
-  .pension-wrap table{min-width:max-content;width:auto;table-layout:auto !important;}
+  .pension-wrap table{width:100%;table-layout:auto !important;}
   .pension-strategy{width:100% !important;max-width:100% !important;box-sizing:border-box !important;}
-  .snap-twrap table{min-width:480px;}
+  .pension-wrap table{width:max-content !important;white-space:nowrap;}
+  .snap-twrap table{min-width:600px;width:max-content;}
   .snap-twrap table td:first-child,.snap-twrap table th:first-child{position:sticky;left:0;z-index:2;background:#fff;}
   .snap-twrap table thead th:first-child{background:#f1f5f9;}
 }
@@ -874,7 +885,7 @@ var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
   sub: '연금계좌 풍차계획 포트폴리오',
-  version: 'v5.47',   // 버전 — 여기만 수정
+  version: 'v5.51',   // 버전 — 여기만 수정
   birthdate: '', // 생년월일 (YYYY-MM-DD 또는 YY.M.D 형식)
   accMeta: {},
   accOrder: []
@@ -1930,8 +1941,9 @@ function renderPension(){
     +pensionStrategyGet()+'</textarea></div></div>';
 
   pg.innerHTML='<div class="sec"><div class="sechdr"><span class="sectitle">사적연금 통합관리</span></div>'
-    +'<div class="twrap pension-wrap" style="padding:0 13px 6px"><table class="pension-table" style="border-collapse:collapse;table-layout:auto;width:max-content;min-width:100%">'
-    +(function(){var _mob=window.innerWidth<=768;var _cg='<colgroup>';if(_mob){_cg+='<col style="width:110px">';for(var _j=0;_j<=cols.length;_j++)_cg+='<col style="width:80px">';}else{var _dw=Math.round(83/(cols.length+1)*10)/10;_cg+='<col style="width:17%">';for(var _j=0;_j<=cols.length;_j++)_cg+='<col style="width:'+_dw+'%">';}_cg+='</colgroup>';return _cg;})()
+    +'<div class="twrap pension-wrap" style="padding:0 13px 6px"><table class="pension-table" style="border-collapse:collapse;'
+      +(window.innerWidth>768?'table-layout:fixed;width:100%':'table-layout:auto;width:max-content')+'">'
+    +(function(){var _mob=window.innerWidth<=768;var _cg='<colgroup>';if(_mob){_cg+='<col style="min-width:130px">';for(var _j=0;_j<=cols.length;_j++)_cg+='<col style="min-width:90px">';}else{var _fw=15,_dw=Math.round((85/(cols.length+1))*10)/10;_cg+='<col style="width:'+_fw+'%;min-width:115px">';for(var _j=0;_j<=cols.length;_j++)_cg+='<col style="width:'+_dw+'%;min-width:75px">';}_cg+='</colgroup>';return _cg;})()
     +hdRow+tbody+'</table></div>'+noteHTML+'</div>'+strategyHTML;
 }
 
@@ -2495,12 +2507,13 @@ function renderCrypto(force){
       +'<div class="ccoin" style="color:'+co.color+'">'+co.emoji+' '+co.label+'</div>'
       +'<div class="cval">'+fmt(co.tV)+'\uc6d0</div>'
       +'<div class="cpct '+pc(co.pnlR)+'">'+fmtPct(co.pnlR)+'</div>'
-      +'<div style="font-size:9px;color:var(--tx2);margin-top:3px">\ubcf4\uc720: '
-        +co.tQ.toFixed(4)+' | \ud604\uc7ac\uac00: '+fmt(co.price)+'\uc6d0</div>'
+      +'<div style="font-size:9px;color:var(--tx2);margin-top:3px">'
+        +'<b>\ubcf4\uc720</b>: <b>'+co.tQ.toFixed(4)+'</b>'
+        +' | <b>\ud604\uc7ac\uac00</b>: <b>'+fmt(co.price)+'\uc6d0</b></div>'
       +'<div class="mbar"><div class="mfill" style="width:'
         +Math.min(100,Math.max(0,(1+co.pnlR)*50))+'%;background:'
         +(co.pnlR>=0?'#057a55':'#c81e1e')+'"></div></div>'
-      +'<div style="font-size:9px;color:var(--tx3);margin-top:2px">52\uc8fc\uace0\uc810\ub300\ube44: '
+      +'<div style="font-size:9px;color:var(--tx3);margin-top:2px">52\uc8fc\uace0\uc810 \ub300\ube44: '
         +'<span class="'+pc(co.highR)+'">'+fmtPct(co.highR)+'</span></div>'
       +'</div>';
   }).join('');
@@ -2514,9 +2527,9 @@ function renderCrypto(force){
     }
     var rows=list.map(function(h,i){
       var price=PRICES[h.sym]!=null?PRICES[h.sym]:h.cost;
-      var high52=HIGH52[h.sym]!=null?HIGH52[h.sym]:h.high;
+      var high52=h.high>0?h.high:(HIGH52[h.sym]!=null?HIGH52[h.sym]:0);
       var tq=(h.stk||0)+(h.qty||0),cost=h.cost*tq,cur=price*tq;
-      var pnlR=cost>0?(cur-cost)/cost:0,highR=high52>0?(price-high52)/high52:0;
+      var pnlR=cost>0?(cur-cost)/cost:0,highR=high52>0?(price-high52)/high52:null;
       var live=PRICES[h.sym]!=null;
       sC+=cost; sV+=cur;
       return '<tr>'
@@ -2559,10 +2572,11 @@ function renderCrypto(force){
     // 추가거래소(isExtra=true): 빈 경우 헤더만 표시(코인 추가 가능)
     // 빗썸/업비트: 빈 경우 완전 숨김
     if(!er.visible && !isExtra) return '';
+    var _labelClr=bg==='#fde68a'?'#b45309':bg==='#bfdbfe'?'#1d4ed8':bg==='#ddd6fe'?'#6d28d9':'#374151';
     var hdr='<div style="display:flex;align-items:center;padding:5px 12px 4px;'
-      +'background:'+bg+';border-bottom:1px solid #e8ecf0">'
+      +'background:#fff;border-bottom:2px solid '+bg+'">'
       +'<span style="font-size:13px;margin-right:5px">'+emj+'</span>'
-      +'<span style="font-size:12px;font-weight:700">'+label+'</span>'
+      +'<span style="font-size:12px;font-weight:700;color:'+_labelClr+'">'+label+'</span>'
       +'</div>';
     if(!er.visible) return hdr;
     var pnlC=er.cur-er.cost,pnlR2=er.cost>0?pnlC/er.cost:0;
@@ -2570,9 +2584,9 @@ function renderCrypto(force){
       +'<td></td><td>\uc18c \uacc4</td><td colspan="4"></td>'
       +'<td class="auto">'+fmt(er.cost)+'</td>'
       +'<td class="auto">'+fmt(er.cur)+'</td>'
-      +'<td class="'+(pnlC>=0?'pos':'neg')+'">'+fmtPct(pnlR2)+'</td>'
+      +'<td class="'+(pnlC>=0?'pos':'neg')+'" style="color:'+(pnlC>=0?'var(--nvy)':'var(--wine)')+'">'+fmtPct(pnlR2)+'</td>'
       +'<td></td>'
-      +'<td class="'+(pnlC>=0?'pos':'neg')+'">'+(pnlC>=0?'+':'')+fmt(pnlC)+'\uc6d0</td>'
+      +'<td class="'+(pnlC>=0?'pos':'neg')+'" style="color:'+(pnlC>=0?'var(--nvy)':'var(--wine)')+';">'+(pnlC>=0?'+':'')+fmt(pnlC)+'\uc6d0</td>'
       +'</tr>';
     return hdr+'<div class="twrap has-order">'
     +'<table style="table-layout:auto;width:100%">'
@@ -2910,7 +2924,7 @@ async function drawHChart(){
       +'<td style="white-space:nowrap">'+Math.round(d.cur).toLocaleString('ko-KR')+'\uc6d0</td>'
       +'<td class="'+pc(chgAmt)+'" style="white-space:nowrap">'+(prevCur>0?(chgAmt>=0?'+':'')+Math.round(chgAmt).toLocaleString('ko-KR')+'\uc6d0':'-')+'</td>'
       +'<td class="'+pc(chgRate)+'" style="white-space:nowrap">'+(prevCur>0?(chgRate>=0?'+':'')+chgRate.toFixed(2)+'%':'-')+'</td>'
-      +'<td style="text-align:left;width:100%;background:#fff"><input class="ed" style="width:100%;min-width:80px;font-size:11px;box-sizing:border-box;text-align:left;background:#fff" value="'+noteEsc+'"'
+      +'<td style="text-align:left;background:#fff"><input class="ed" style="width:100%;min-width:120px;font-size:11px;box-sizing:border-box;text-align:left;background:#fff" value="'+noteEsc+'"'
         +' onchange="saveSnapNote(\''+tsEsc+'\',this.value)"'
         +' onfocus="this.style.background=\'#fffbeb\'"'
         +' onblur="this.style.background=\'\'"></td>'
@@ -2931,8 +2945,15 @@ async function drawHChart(){
     '<button class="btn" style="padding:3px 10px;font-size:11px;background:#fee2e2;color:#dc2626;border-color:#fca5a5" onclick="deleteAllSnaps()">기록 전체삭제</button>',
     '</div>',
     '<div class="twrap snap-twrap" style="padding:0 13px 13px">',
-    '<table style="table-layout:auto;width:100%;border-collapse:collapse">',
-    '<colgroup><col style="min-width:80px"><col style="min-width:110px"><col style="min-width:120px"><col style="min-width:60px"><col style="min-width:100px"><col style="width:30px"></colgroup>',
+    '<table style="table-layout:fixed;width:100%;border-collapse:collapse">',
+    '<colgroup>'
+    +'<col style="width:100px;min-width:90px">'
+    +'<col style="width:130px;min-width:110px">'
+    +'<col style="width:160px;min-width:130px">'
+    +'<col style="width:90px;min-width:70px">'
+    +'<col style="min-width:160px">'
+    +'<col style="width:40px;min-width:36px">'
+    +'</colgroup>',
     '<thead><tr>'
       +'<th style="text-align:left;white-space:nowrap">\uae30\uac04</th>'
       +'<th style="white-space:nowrap">\ud3c9\uac00\uc561</th>'
@@ -3629,7 +3650,7 @@ function exportToExcel(){
   XLSX.utils.book_append_sheet(wb,wsCMA,'CMA 해외주식');
 
   // ── 5. 가상화폐 (모든 거래소 포함) ──
-  var crR=[['거래소','종목명','심볼','스테이킹','보유수량','합산수량','매입단가','현재가','매입총액','현재평가액','평가손익','수익률','52주고점대비','스테이킹이율']];
+  var crR=[['거래소','종목명','심볼','스테이킹','보유수량','합산수량','매입단가','현재가','매입총액','현재평가액','평가손익','수익률','전고점 대비','스테이킹이율']];
   function addCR(list,ex){
     list.forEach(function(h){
       var price=PRICES[h.sym]||h.cost,tq=(h.stk||0)+(h.qty||0);
