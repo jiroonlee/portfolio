@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>풍차계획 포트폴리오 v5.54</title>
+<title>풍차계획 포트폴리오 v5.55</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -92,7 +92,7 @@ body{font-family:'Malgun Gothic',-apple-system,sans-serif;font-size:12px;backgro
   .has-order table th:not(:nth-child(1)):not(:nth-child(2)){min-width:72px;}
   /* dist-dashboard handled by auto table layout */
   /* 자산변동 비고열 표시 */
-  .twrap table[style*='auto']{min-width:480px;}
+
 }
 
 
@@ -263,9 +263,14 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
   .has-order table td:nth-child(2),
   .has-order table th:nth-child(2){padding-left:2px;}
   /* 모바일 테이블: 내용에 맞게 자동 크기, 줄바꿈 없음 */
-  .twrap table{
+  .twrap:not(.snap-twrap) table{
     table-layout:auto !important;
     width:auto !important;
+    border-collapse:collapse !important;
+  }
+  .snap-twrap table{
+    table-layout:fixed !important;
+    width:100% !important;
     border-collapse:collapse !important;
   }
   .twrap table td,
@@ -312,8 +317,15 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
   .pension-wrap table{width:100%;table-layout:auto !important;}
   .pension-strategy{width:100% !important;max-width:100% !important;box-sizing:border-box !important;resize:none !important;overflow:hidden !important;}
   .pension-wrap table{width:max-content !important;white-space:nowrap;}
-  .snap-twrap{overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%;}
-  .snap-twrap table{width:100%;table-layout:fixed !important;}
+  .snap-twrap{
+    overflow-x:auto;-webkit-overflow-scrolling:touch;
+    width:100%;-webkit-overflow-scrolling:touch;
+  }
+  .snap-twrap table{
+    width:100% !important;
+    table-layout:fixed !important;
+    border-collapse:collapse !important;
+  }
   .snap-twrap table td:first-child,.snap-twrap table th:first-child{position:sticky;left:0;z-index:2;background:#fff;}
   .snap-twrap table thead th:first-child{background:#f1f5f9;}
 }
@@ -839,7 +851,7 @@ var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
   sub: '연금계좌 풍차계획 포트폴리오',
-  version: 'v5.54',   // 버전 — 여기만 수정
+  version: 'v5.55',   // 버전 — 여기만 수정
   birthdate: '', // 생년월일 (YYYY-MM-DD 또는 YY.M.D 형식)
   accMeta: {},
   accOrder: []
@@ -2899,7 +2911,7 @@ async function drawHChart(){
     '<button class="btn btn-add" style="padding:3px 10px;font-size:11px" onclick="snapNow()">📸 지금 기록</button>',
     '<button class="btn" style="padding:3px 10px;font-size:11px;background:#fee2e2;color:#dc2626;border-color:#fca5a5" onclick="deleteAllSnaps()">기록 전체삭제</button>',
     '</div>',
-    '<div class="twrap snap-twrap" style="padding:0 13px 13px">',
+    '<div class="snap-twrap" style="padding:0 13px 13px;overflow-x:auto">',
     '<table style="table-layout:fixed;width:100%;border-collapse:collapse">',
     (function(){
       var _mob=window.innerWidth<=768;
