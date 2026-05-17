@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>풍차계획 포트폴리오 v5.55</title>
+<title>풍차계획 포트폴리오 v5.56</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -269,7 +269,7 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
     border-collapse:collapse !important;
   }
   .snap-twrap table{
-    table-layout:fixed !important;
+    table-layout:auto !important;
     width:100% !important;
     border-collapse:collapse !important;
   }
@@ -323,7 +323,7 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
   }
   .snap-twrap table{
     width:100% !important;
-    table-layout:fixed !important;
+    table-layout:auto !important;
     border-collapse:collapse !important;
   }
   .snap-twrap table td:first-child,.snap-twrap table th:first-child{position:sticky;left:0;z-index:2;background:#fff;}
@@ -852,7 +852,7 @@ var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
   sub: '연금계좌 풍차계획 포트폴리오',
-  version: 'v5.55',   // 버전 — 여기만 수정
+  version: 'v5.56',   // 버전 — 여기만 수정
   birthdate: '', // 생년월일 (YYYY-MM-DD 또는 YY.M.D 형식)
   accMeta: {},
   accOrder: []
@@ -2770,38 +2770,22 @@ async function drawHChart(){
     '<button class="btn" style="padding:3px 10px;font-size:11px;background:#fee2e2;color:#dc2626;border-color:#fca5a5" onclick="deleteAllSnaps()">기록 전체삭제</button>',
     '</div>',
     '<div class="snap-twrap" style="padding:0 13px 13px;overflow-x:auto">',
-    '<table style="table-layout:fixed;width:100%;border-collapse:collapse">',
-    (function(){
-      var _mob=window.innerWidth<=768;
-      if(_mob){
-        // 모바일: % 기반 고정열, 비고열은 너비 미지정으로 나머지 공간 자동 차지
-        // fixed+width:100% 에서 합이 100% 미만이면 미지정열이 나머지를 가짐
-        return '<colgroup>'
-          +'<col style="width:15%">'
-          +'<col style="width:22%">'
-          +'<col style="width:22%">'
-          +'<col style="width:13%">'
-          +'<col>'
-          +'<col style="width:8%">'
-          +'</colgroup>';
-      } else {
-        return '<colgroup>'
-          +'<col style="width:90px">'
-          +'<col style="width:115px">'
-          +'<col style="width:130px">'
-          +'<col style="width:75px">'
-          +'<col>'
-          +'<col style="width:36px">'
-          +'</colgroup>';
-      }
-    })(),
+    '<table style="table-layout:auto;width:100%;border-collapse:collapse">',
+    '<colgroup>'
+    +'<col style="width:1px">'
+    +'<col style="width:1px">'
+    +'<col style="width:1px">'
+    +'<col style="width:1px">'
+    +'<col style="width:100%">'
+    +'<col style="width:1px">'
+    +'</colgroup>',
     '<thead><tr>'
       +'<th style="text-align:left;white-space:nowrap">\uae30\uac04</th>'
       +'<th style="white-space:nowrap">\ud3c9\uac00\uc561</th>'
       +'<th style="white-space:nowrap">\ubcc0\ub3d9\uc561(\uc804\uae30\ub300\ube44)</th>'
       +'<th style="white-space:nowrap">\ubcc0\ub3d9\ub960</th>'
       +'<th style="text-align:left">\ube44\uace0</th>'
-      +'<th style="width:30px"></th>'
+      +'<th></th>'
     +'</tr></thead>',
     '<tbody>'+tableRows+'</tbody></table></div>'
   ].join('');
