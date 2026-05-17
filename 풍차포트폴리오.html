@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>풍차계획 포트폴리오 v5.59</title>
+<title>풍차계획 포트폴리오 v5.60</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -862,7 +862,7 @@ var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
   sub: '연금계좌 풍차계획 포트폴리오',
-  version: 'v5.59',   // 버전 — 여기만 수정
+  version: 'v5.60',   // 버전 — 여기만 수정
   birthdate: '', // 생년월일 (YYYY-MM-DD 또는 YY.M.D 형식)
   accMeta: {},
   accOrder: []
@@ -1919,7 +1919,7 @@ function renderPension(){
 
   pg.innerHTML='<div class="sec"><div class="sechdr"><span class="sectitle">사적연금 통합관리</span></div>'
     +'<div class="pension-wrap" style="padding:0 13px 6px;overflow-x:auto;position:relative"><table class="pension-table" style="border-collapse:collapse;'
-      +(window.innerWidth>768?'table-layout:fixed;width:100%':'table-layout:fixed;width:max-content')+'">'
+      +(window.innerWidth>768?'table-layout:fixed;width:100%':'table-layout:fixed;width:max-content;min-width:100%')+'">'
     +(function(){var _mob=window.innerWidth<=768;var _cg='<colgroup>';if(_mob){var _mfw=120,_mdw=Math.max(85,Math.round((window.innerWidth-_mfw-10)/(cols.length+1)));_cg+='<col style="min-width:'+_mfw+'px;width:'+_mfw+'px">';for(var _j=0;_j<=cols.length;_j++)_cg+='<col style="min-width:85px;width:'+_mdw+'px">';}else{var _fw=15,_dw=Math.round((85/(cols.length+1))*10)/10;_cg+='<col style="width:'+_fw+'%;min-width:115px">';for(var _j=0;_j<=cols.length;_j++)_cg+='<col style="width:'+_dw+'%;min-width:75px">';}_cg+='</colgroup>';return _cg;})()
     +hdRow+tbody+'</table></div>'+noteHTML+'</div>'+strategyHTML;
 }
