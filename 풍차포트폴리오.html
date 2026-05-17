@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>풍차계획 포트폴리오 v5.52</title>
+<title>풍차계획 포트폴리오 v5.53</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -310,9 +310,10 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
 @media(max-width:768px){
   .pension-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%;}
   .pension-wrap table{width:100%;table-layout:auto !important;}
-  .pension-strategy{width:100% !important;max-width:100% !important;box-sizing:border-box !important;}
+  .pension-strategy{width:100% !important;max-width:100% !important;box-sizing:border-box !important;resize:none !important;overflow:hidden !important;}
   .pension-wrap table{width:max-content !important;white-space:nowrap;}
-  .snap-twrap table{min-width:600px;width:max-content;}
+  .snap-twrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .snap-twrap table{width:100%;min-width:446px;}
   .snap-twrap table td:first-child,.snap-twrap table th:first-child{position:sticky;left:0;z-index:2;background:#fff;}
   .snap-twrap table thead th:first-child{background:#f1f5f9;}
 }
@@ -838,7 +839,7 @@ var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
   sub: '연금계좌 풍차계획 포트폴리오',
-  version: 'v5.52',   // 버전 — 여기만 수정
+  version: 'v5.53',   // 버전 — 여기만 수정
   birthdate: '', // 생년월일 (YYYY-MM-DD 또는 YY.M.D 형식)
   accMeta: {},
   accOrder: []
@@ -1890,7 +1891,7 @@ function renderPension(){
     +'<div class="sechdr"><span class="sectitle">연금계좌 인출 및 운영전략</span>'
     +'<button class="btn" style="font-size:11px;padding:3px 9px;margin-left:8px;" onclick="pensionSaveStrategy()">저장</button></div>'
     +'<div style="padding:0 13px 13px">'
-    +'<textarea id="pension-strategy" class="pension-strategy" style="width:100%;min-height:90px;border:1px solid var(--brd);border-radius:8px;padding:10px;font-size:12px;font-family:inherit;resize:vertical;box-sizing:border-box;line-height:1.6">'
+    +'<textarea id="pension-strategy" class="pension-strategy" style="width:100%;min-height:120px;border:1px solid var(--brd);border-radius:8px;padding:10px;font-size:12px;font-family:inherit;resize:none;box-sizing:border-box;line-height:1.6;overflow:hidden;height:auto" oninput="this.style.height=\'auto\';this.style.height=this.scrollHeight+\'px\'" onload="this.style.height=this.scrollHeight+\'px\'">'
     +pensionStrategyGet()+'</textarea></div></div>';
 
   pg.innerHTML='<div class="sec"><div class="sechdr"><span class="sectitle">사적연금 통합관리</span></div>'
@@ -1899,6 +1900,7 @@ function renderPension(){
     +(function(){var _mob=window.innerWidth<=768;var _cg='<colgroup>';if(_mob){var _mfw=120,_mdw=Math.max(85,Math.round((window.innerWidth-_mfw-10)/(cols.length+1)));_cg+='<col style="min-width:'+_mfw+'px;width:'+_mfw+'px">';for(var _j=0;_j<=cols.length;_j++)_cg+='<col style="min-width:85px;width:'+_mdw+'px">';}else{var _fw=15,_dw=Math.round((85/(cols.length+1))*10)/10;_cg+='<col style="width:'+_fw+'%;min-width:115px">';for(var _j=0;_j<=cols.length;_j++)_cg+='<col style="width:'+_dw+'%;min-width:75px">';}_cg+='</colgroup>';return _cg;})()
     +hdRow+tbody+'</table></div>'+noteHTML+'</div>'+strategyHTML;
 }
+  setTimeout(function(){var ta=document.getElementById('pension-strategy');if(ta){ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';}},0);
 
 function pensionEdit(type,id,val){
   var saved=pensionGet();
