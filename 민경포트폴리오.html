@@ -313,7 +313,7 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
   .pension-strategy{width:100% !important;max-width:100% !important;box-sizing:border-box !important;resize:none !important;overflow:hidden !important;}
   .pension-wrap table{width:max-content !important;white-space:nowrap;}
   .snap-twrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
-  .snap-twrap table{width:100%;min-width:446px;}
+  .snap-twrap table{width:100%;}
   .snap-twrap table td:first-child,.snap-twrap table th:first-child{position:sticky;left:0;z-index:2;background:#fff;}
   .snap-twrap table thead th:first-child{background:#f1f5f9;}
 }
@@ -2759,14 +2759,30 @@ async function drawHChart(){
     '</div>',
     '<div class="twrap snap-twrap" style="padding:0 13px 13px">',
     '<table style="table-layout:fixed;width:100%;border-collapse:collapse">',
-    '<colgroup>'
-    +'<col style="width:90px">'
-    +'<col style="width:115px">'
-    +'<col style="width:130px">'
-    +'<col style="width:75px">'
-    +'<col>'
-    +'<col style="width:36px">'
-    +'</colgroup>',
+    (function(){
+      var _isMob=window.innerWidth<=768;
+      if(_isMob){
+        var _fixW=70+85+90+55+32; // 기간+평가액+변동액+변동률+삭제
+        var _noteW=Math.max(60, window.innerWidth-_fixW-26); // 26=패딩
+        return '<colgroup>'
+          +'<col style="width:70px">'
+          +'<col style="width:85px">'
+          +'<col style="width:90px">'
+          +'<col style="width:55px">'
+          +'<col style="width:'+_noteW+'px">'
+          +'<col style="width:32px">'
+          +'</colgroup>';
+      } else {
+        return '<colgroup>'
+          +'<col style="width:90px">'
+          +'<col style="width:115px">'
+          +'<col style="width:130px">'
+          +'<col style="width:75px">'
+          +'<col>'
+          +'<col style="width:36px">'
+          +'</colgroup>';
+      }
+    })(),
     '<thead><tr>'
       +'<th style="text-align:left;white-space:nowrap">\uae30\uac04</th>'
       +'<th style="white-space:nowrap">\ud3c9\uac00\uc561</th>'
