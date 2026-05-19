@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>풍차계획 포트폴리오 v5.69</title>
+<title>풍차계획 포트폴리오 v5.70</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -866,7 +866,7 @@ var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
   sub: '연금계좌 풍차계획 포트폴리오',
-  version: 'v5.69',   // 버전 — 여기만 수정
+  version: 'v5.70',   // 버전 — 여기만 수정
   birthdate: '', // 생년월일 (YYYY-MM-DD 또는 YY.M.D 형식)
   accMeta: {},
   accOrder: []
@@ -3964,7 +3964,26 @@ async function ghPush(silent){
   if(!token){if(!silent)alert('\ud1a0\ud070\uc744 \uba3c\uc800 \uc785\ub825\ud558\uc138\uc694.');return;}
   if(btn&&!silent){btn.textContent='\uc5c5\ub85c\ub4dc...';btn.className='hbtn hbtn-sync syncing';}
   try{
+    // push 전 GitHub snaps와 로컬 병합 (다른 기기 기록 보존)
     var snaps=loadSnaps();
+    try{
+      var _r0=await withTO(fetch('https://api.github.com/repos/'+GH_REPO+'/contents/'+GH_FILE,
+        {headers:{'Authorization':'token '+token,'Accept':'application/vnd.github.v3+json'},cache:'no-store'}),5000);
+      if(_r0.ok){
+        var _j0=await _r0.json();
+        if(_j0.content){
+          var _raw=_j0.content.replace(/\n/g,'');
+          var _obj=JSON.parse(new TextDecoder('utf-8').decode(new Uint8Array(Array.from(atob(_raw)).map(function(c){return c.charCodeAt(0);}))));
+          if(_obj.snaps&&_obj.snaps.length){
+            var _smap={};
+            snaps.forEach(function(s){_smap[s.date]=s;});
+            _obj.snaps.forEach(function(s){if(!_smap[s.date]||s.ts>_smap[s.date].ts)_smap[s.date]=s;});
+            snaps=Object.values(_smap).sort(function(a,b){return a.date<b.date?-1:1;});
+            sSet(SNAPKEY,JSON.stringify(snaps));
+          }
+        }
+      }
+    }catch(e){}
     var distData=distGet();
     var payload={v:8,saved:new Date().toISOString(),
       data:{accounts:ACCOUNTS,cma:CMA,crypto:CRYPTO,fx:{usd:FX.USD,jpy:FX.JPY},prices:PRICES},
@@ -4012,21 +4031,34 @@ async function ghPull(force){
     if(!obj||!obj.data||!obj.data.accounts) return false;
     var localSaved=sGet('fp2_last_save')||'0';
     if(!force&&obj.saved&&obj.saved<=localSaved) return false;
-    ACCOUNTS=obj.data.accounts;CMA=obj.data.cma;CRYPTO=obj.data.crypto;
+    // ── 스마트 병합: saved 타임스탬프 비교
+    var localSaved2=sGet('fp2_last_save')||'0';
+    var ghSaved=obj.saved||'0';
+    var ghNewer=(ghSaved>localSaved2);
+    if(ghNewer){
+      // GitHub가 더 최신 → 계좌/CMA/CRYPTO 교체
+      ACCOUNTS=obj.data.accounts;CMA=obj.data.cma;CRYPTO=obj.data.crypto;
+    } else {
+      // 로컬이 더 최신 → 계좌 데이터 유지, snaps만 병합
+      // (아래 snaps 병합 코드가 처리)
+    }
     if(!CRYPTO.exchanges) CRYPTO.exchanges=[];
     if(obj.data.fx){
       FX.USD=obj.data.fx.usd||FX.USD;
       FX.JPY=obj.data.fx.jpy||FX.JPY;
-      // GitHub에서 복원한 환율도 이전 값 → 실시간 아님
       FX._usdLive=false;
       FX._jpyLive=false;
     }
     if(obj.data.prices){Object.assign(PRICES,obj.data.prices);_pricesLive=false;}
+    // snaps 병합: 양쪽 모두 보존, 같은 날짜는 더 최신 ts 우선
+    var mergedMap={};
+    loadSnaps().forEach(function(s){mergedMap[s.date]=s;});
     if(obj.snaps&&obj.snaps.length){
-      var map={};loadSnaps().forEach(function(s){map[s.date]=s;});
-      obj.snaps.forEach(function(s){map[s.date]=s;});
-      sSet(SNAPKEY,JSON.stringify(Object.values(map).sort(function(a,b){return a.date<b.date?-1:1;})));
+      obj.snaps.forEach(function(s){
+        if(!mergedMap[s.date]||s.ts>mergedMap[s.date].ts) mergedMap[s.date]=s;
+      });
     }
+    sSet(SNAPKEY,JSON.stringify(Object.values(mergedMap).sort(function(a,b){return a.date<b.date?-1:1;})));
     sSet(SKEY,JSON.stringify({accounts:ACCOUNTS,cma:CMA,crypto:CRYPTO,fx:{usd:FX.USD,jpy:FX.JPY},prices:PRICES}));
     if(obj.distData){sSet(DIST_KEY,JSON.stringify(obj.distData));sSet('fp2_dist_ver','v3');}
     if(obj.pensionData) sSet(PENSION_KEY,JSON.stringify(obj.pensionData));
