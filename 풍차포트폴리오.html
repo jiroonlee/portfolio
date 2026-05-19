@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>풍차계획 포트폴리오 v5.61</title>
+<title>풍차계획 포트폴리오 v5.64</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -857,12 +857,14 @@ const DEF = {
 /* ===== 상태 ===== */
 var FX = {USD:1479, JPY:927.83, _usdLive:false, _jpyLive:false};
 var PRICES = {}, HIGH52 = {};
+var _fetchRunning=false;
+var PROXY_URL='https://portfolio-proxy.feel118.workers.dev'; // Cloudflare Workers 프록시
 var SKEY='fp_data', SNAPKEY='fp_snaps', CLKEY='fp_cl', META_KEY='fp_meta';
 var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
   sub: '연금계좌 풍차계획 포트폴리오',
-  version: 'v5.61',   // 버전 — 여기만 수정
+  version: 'v5.64',   // 버전 — 여기만 수정
   birthdate: '', // 생년월일 (YYYY-MM-DD 또는 YY.M.D 형식)
   accMeta: {},
   accOrder: []
@@ -1285,36 +1287,55 @@ function fetchFirst(promises){
 
 /* Yahoo Finance v8 */
 async function _yahoo(sym,base){
-  try{
-    var r=await withTO(fetch((base||'https://query1.finance.yahoo.com')
-      +'/v8/finance/chart/'+encodeURIComponent(sym)+'?interval=1d&range=5d',
-      {cache:'no-store'}),6000);
-    if(!r.ok) return null;
-    var j=await r.json();
-    var m=j&&j.chart&&j.chart.result&&j.chart.result[0]&&j.chart.result[0].meta;
-    return(m&&m.regularMarketPrice>0)?m.regularMarketPrice:null;
-  }catch(e){return null;}
+  var yhBase=base||'https://query1.finance.yahoo.com';
+  var yhKey=yhBase.indexOf('query1')>=0?'yahoo1':'yahoo2';
+  var yhPath='/v8/finance/chart/'+encodeURIComponent(sym)+'?interval=1d&range=5d';
+  var urls=[
+    'https://portfolio-proxy.feel118.workers.dev?t='+yhKey+'&p='+encodeURIComponent(yhPath),
+    yhBase+yhPath,
+  ];
+  for(var i=0;i<urls.length;i++){
+    try{
+      var r=await withTO(fetch(urls[i],{cache:'no-store'}),6000);
+      if(!r.ok) continue;
+      var j=await r.json();
+      var m=j&&j.chart&&j.chart.result&&j.chart.result[0]&&j.chart.result[0].meta;
+      if(m&&m.regularMarketPrice>0) return m.regularMarketPrice;
+    }catch(e){}
+  }
+  return null;
 }
 
 /* Stooq (일본 ETF 대체) */
 async function _stooq(sym){
-  try{
-    var r=await withTO(fetch('https://stooq.com/q/l/?s='+sym.toLowerCase()+'&f=c&e=csv'),5000);
-    if(!r.ok) return null;
-    var txt=await r.text();
-    var lines=txt.trim().split('\n');
-    for(var i=1;i<lines.length;i++){var p=parseFloat(lines[i].split(',').pop());if(p>0) return p;}
-  }catch(e){}
+  var stooqPath='/q/l/?s='+sym.toLowerCase()+'&f=c&e=csv';
+  var urls=[
+    'https://portfolio-proxy.feel118.workers.dev?t=stooq&p='+encodeURIComponent(stooqPath),
+    'https://stooq.com'+stooqPath,
+  ];
+  for(var i=0;i<urls.length;i++){
+    try{
+      var r=await withTO(fetch(urls[i]),5000);
+      if(!r.ok) continue;
+      var txt=await r.text();
+      var lines=txt.trim().split('\n');
+      for(var k=1;k<lines.length;k++){var p=parseFloat(lines[k].split(',').pop());if(p>0) return p;}
+    }catch(e){}
+  }
   return null;
 }
 
 /* CORS 프록시 + Yahoo */
 async function _proxy(sym){
-  var url='https://query1.finance.yahoo.com/v8/finance/chart/'+encodeURIComponent(sym)+'?interval=1d&range=5d';
-  var proxies=['https://corsproxy.io/?'+encodeURIComponent(url),'https://api.allorigins.win/raw?url='+encodeURIComponent(url)];
-  for(var i=0;i<proxies.length;i++){
+  var yhPath='/v8/finance/chart/'+encodeURIComponent(sym)+'?interval=1d&range=5d';
+  var yhUrl='https://query1.finance.yahoo.com'+yhPath;
+  var urls=[
+    'https://portfolio-proxy.feel118.workers.dev?t=yahoo1&p='+encodeURIComponent(yhPath),
+    'https://corsproxy.io/?'+encodeURIComponent(yhUrl),
+  ];
+  for(var i=0;i<urls.length;i++){
     try{
-      var r=await withTO(fetch(proxies[i]),8000);
+      var r=await withTO(fetch(urls[i]),8000);
       if(!r.ok) continue;
       var j=await r.json();
       var m=j&&j.chart&&j.chart.result&&j.chart.result[0]&&j.chart.result[0].meta;
@@ -1326,17 +1347,20 @@ async function _proxy(sym){
 
 /* 네이버 CORS 프록시 (한국 ETF) */
 async function _naver(tk){
-  var url='https://polling.finance.naver.com/api/realtime?query=SERVICE_ITEM:'+tk;
-  var proxies=['https://corsproxy.io/?'+encodeURIComponent(url),'https://api.allorigins.win/raw?url='+encodeURIComponent(url)];
-  for(var i=0;i<proxies.length;i++){
+  var path='/api/realtime?query=SERVICE_ITEM:'+tk;
+  var urls=[
+    'https://portfolio-proxy.feel118.workers.dev?t=naver&p='+encodeURIComponent(path),
+    'https://corsproxy.io/?'+encodeURIComponent('https://polling.finance.naver.com'+path),
+  ];
+  for(var i=0;i<urls.length;i++){
     try{
-      var r=await withTO(fetch(proxies[i]),6000);
+      var r=await withTO(fetch(urls[i]),6000);
       if(!r.ok) continue;
       var j=await r.json();
       if(j&&j.result&&j.result.areas){
         for(var a=0;a<j.result.areas.length;a++){
           var ds=j.result.areas[a].datas||[];
-          for(var d=0;d<ds.length;d++){var p=parseInt(ds[d].nv||ds[d].sv||ds[d].pcv||0);if(p>0) return p;}
+          for(var d=0;d<ds.length;d++){var p=parseInt(ds[d].nv||0)||parseInt(ds[d].pcv||0);if(p>0) return p;}
         }
       }
     }catch(e){}
@@ -1349,9 +1373,9 @@ async function fetchKR(tk){
   /* 한국 6자리 */
   if(/^[0-9][0-9A-Za-z]{5}$/.test(tk)){
     p=await fetchFirst([
+      _naver(tk),
       _yahoo(tk+'.KS','https://query1.finance.yahoo.com'),
       _yahoo(tk+'.KS','https://query2.finance.yahoo.com'),
-      _naver(tk),
       _proxy(tk+'.KS')
     ]);
     return p?Math.round(p):null;
@@ -1398,13 +1422,33 @@ async function fetchCrypto(sym){
 
 async function fetchFXApi(){
   var fx=await fetchFirst([
+    // 1순위: Workers 프록시 경유 open.er-api.com
     (async function(){
       try{
-        var r=await withTO(fetch('https://open.er-api.com/v6/latest/USD'),5000);
+        var r=await withTO(fetch('https://portfolio-proxy.feel118.workers.dev?t=erapia&p='+encodeURIComponent('/v6/latest/USD'),{cache:'no-store'}),5000);
         var j=await r.json();
         return(j.rates&&j.rates.KRW)?{usd:Math.round(j.rates.KRW),jpy:j.rates.JPY?Math.round(j.rates.KRW/j.rates.JPY*100)/100:null,_v:1}:null;
       }catch(e){return null;}
     })(),
+    // 2순위: 직접 호출 open.er-api.com
+    (async function(){
+      try{
+        var r=await withTO(fetch('https://open.er-api.com/v6/latest/USD',{cache:'no-store'}),5000);
+        var j=await r.json();
+        return(j.rates&&j.rates.KRW)?{usd:Math.round(j.rates.KRW),jpy:j.rates.JPY?Math.round(j.rates.KRW/j.rates.JPY*100)/100:null,_v:1}:null;
+      }catch(e){return null;}
+    })(),
+    // 2순위: CDN currency-api (일 1회)
+    (async function(){
+      try{
+        var r=await withTO(fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json',{cache:'no-store'}),5000);
+        var j=await r.json();
+        if(!j||!j.usd) return null;
+        var usdKrw=j.usd['krw'],usdJpy=j.usd['jpy'];
+        return usdKrw?{usd:Math.round(usdKrw),jpy:usdJpy?Math.round(usdKrw/usdJpy*100)/100:null,_v:1}:null;
+      }catch(e){return null;}
+    })(),
+    // 3순위: frankfurter.app (ECB 기준)
     (async function(){
       try{
         var r=await withTO(fetch('https://api.frankfurter.app/latest?from=USD&to=KRW,JPY'),5000);
@@ -1417,6 +1461,8 @@ async function fetchFXApi(){
 }
 
 async function fetchAll(){
+  if(_fetchRunning) return;
+  _fetchRunning=true;
   _lastFetch=Date.now();
   setDot('loading');
   var ok=false;
@@ -1444,8 +1490,11 @@ async function fetchAll(){
         if(d){PRICES[sym]=d.price;HIGH52[sym]=d.high52;ok=true;}
       })
     ]);
-  }catch(e){}
+  }catch(e){_fetchRunning=false;}
   setDot(ok?'ok':'fail');
+  _fetchRunning=false;
+  var _dotEl=document.getElementById('live-dot');
+  if(_dotEl){var _now=new Date();_dotEl.title='마지막 갱신: '+_now.getHours()+':'+String(_now.getMinutes()).padStart(2,'0')+':'+String(_now.getSeconds()).padStart(2,'0');}
   renderActive();
   if(typeof curPage!=='undefined'&&curPage==='crypto') renderCrypto(true);
 }
@@ -3427,7 +3476,7 @@ function go(id,el){
   curPage=id;renderPage(id);
   if(id==='crypto'&&typeof fetchAll==='function'){
     var now=Date.now();
-    if(now-(_lastFetch||0)>15000){_lastFetch=now;fetchAll();}
+    if(now-(_lastFetch||0)>30000){_lastFetch=now;fetchAll();}
   }
 }
 function renderActive(){
@@ -4424,7 +4473,7 @@ function startApp(){
 
   function _boot(){
     setDot('fail');
-    fetchAll();setInterval(fetchAll,30000);
+    fetchAll();setInterval(fetchAll,60000);
   }
 
   // 다른 기기/탭에서 변경 후 돌아왔을 때 자동 pull + 시세 갱신
@@ -4433,7 +4482,7 @@ function startApp(){
     if(document.visibilityState==='visible'){
       // 시세 갱신 (마지막 갱신 후 30초 이상 지났으면)
       var now=Date.now();
-      if(now-_lastFetch>30000){_lastFetch=now;fetchAll();}
+      if(now-_lastFetch>60000){_lastFetch=now;fetchAll();}
       // GitHub pull
       if(ghGetToken()){
         ghPull(false).then(function(ok){
