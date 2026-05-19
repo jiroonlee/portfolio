@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>풍차계획 포트폴리오 v5.65</title>
+<title>풍차계획 포트폴리오 v5.69</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -866,7 +866,7 @@ var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
   sub: '연금계좌 풍차계획 포트폴리오',
-  version: 'v5.65',   // 버전 — 여기만 수정
+  version: 'v5.69',   // 버전 — 여기만 수정
   birthdate: '', // 생년월일 (YYYY-MM-DD 또는 YY.M.D 형식)
   accMeta: {},
   accOrder: []
@@ -1211,6 +1211,27 @@ async function _proxy(sym){
 }
 
 /* 네이버 CORS 프록시 (한국 ETF) */
+/* 다음 금융 API (브라우저 직접 CORS 허용) */
+async function _daum(tk){
+  var path='/api/quotes/A'+tk;
+  var urls=[
+    'https://portfolio-proxy.feel118.workers.dev?t=daum&p='+encodeURIComponent(path),
+    'https://finance.daum.net'+path,
+  ];
+  for(var i=0;i<urls.length;i++){
+    try{
+      var r=await withTO(fetch(urls[i],
+        {headers:{'Referer':'https://finance.daum.net/','Accept':'application/json, text/plain, */*'}}
+      ),5000);
+      if(!r.ok) continue;
+      var j=await r.json();
+      var p=j&&(j.tradePrice||j.closePrice||j.prevClosingPrice);
+      if(p&&p>0) return Math.round(p);
+    }catch(e){}
+  }
+  return null;
+}
+
 async function _naver(tk){
   var path='/api/realtime?query=SERVICE_ITEM:'+tk;
   var urls=[
@@ -1238,6 +1259,7 @@ async function fetchKR(tk){
   /* 한국 6자리 */
   if(/^[0-9][0-9A-Za-z]{5}$/.test(tk)){
     p=await fetchFirst([
+      _daum(tk),
       _naver(tk),
       _yahoo(tk+'.KS','https://query1.finance.yahoo.com'),
       _yahoo(tk+'.KS','https://query2.finance.yahoo.com'),
@@ -1353,10 +1375,11 @@ async function fetchAll(){
       }),
       ...cryptoSyms.map(async function(sym){
         var d=await fetchCrypto(sym);
-        if(d){PRICES[sym]=d.price;HIGH52[sym]=d.high52;ok=true;}
+        if(d){PRICES[sym]=d.price;HIGH52[sym]=d.high52;ok=true;_pricesLive=true;}
       })
     ]);
   }catch(e){_fetchRunning=false;}
+  if(ok) _pricesLive=true; // 어느 것이든 성공하면 시세 표시 활성화
   setDot(ok?'ok':'fail');
   _fetchRunning=false;
   var _dotEl=document.getElementById('live-dot');
@@ -4355,7 +4378,15 @@ function startApp(){
       // GitHub pull
       if(ghGetToken()){
         ghPull(false).then(function(ok){
-          if(ok){try{loadData();}catch(e){}try{migrateTickers();}catch(e){}renderAppHeader();try{renderNav();}catch(e){}renderActive();}
+          if(ok){
+            try{loadData();}catch(e){}
+            try{migrateTickers();}catch(e){}
+            renderAppHeader();
+            try{renderNav();}catch(e){}
+            renderActive();
+            // 데이터 재로드 후 시세 다시 갱신 (_pricesLive=false 상태 해소)
+            fetchAll();
+          }
         });
       }
     }
