@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>풍차계획 포트폴리오 v5.64</title>
+<title>풍차계획 포트폴리오 v5.65</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -859,13 +859,14 @@ var FX = {USD:1479, JPY:927.83, _usdLive:false, _jpyLive:false};
 
 var PRICES = {}, HIGH52 = {};
 var _fetchRunning=false;
+var _pricesLive=false; // fetchAll 성공 후 true → 시세 네이비 표시
 var PROXY_URL='https://portfolio-proxy.feel118.workers.dev'; // Cloudflare Workers 프록시
 var SKEY='fp2_data', SNAPKEY='fp2_snaps', CLKEY='fp2_cl', META_KEY='fp2_meta';
 var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
   sub: '연금계좌 풍차계획 포트폴리오',
-  version: 'v5.64',   // 버전 — 여기만 수정
+  version: 'v5.65',   // 버전 — 여기만 수정
   birthdate: '', // 생년월일 (YYYY-MM-DD 또는 YY.M.D 형식)
   accMeta: {},
   accOrder: []
@@ -964,8 +965,14 @@ function loadData(){
     var s=JSON.parse(sGet(SKEY)||'null');
     if(s&&s.accounts&&s.cma&&s.crypto){
       ACCOUNTS=s.accounts;CMA=s.cma;CRYPTO=s.crypto;
-      if(s.fx){FX.USD=s.fx.usd||FX.USD;FX.JPY=s.fx.jpy||FX.JPY;}
-      if(s.prices){Object.assign(PRICES,s.prices);}
+      if(s.fx){
+        FX.USD=s.fx.usd||FX.USD;
+        FX.JPY=s.fx.jpy||FX.JPY;
+        // 저장된 환율은 이전 값 → 실시간 아님 (회색 표시)
+        FX._usdLive=false;
+        FX._jpyLive=false;
+      }
+      if(s.prices){Object.assign(PRICES,s.prices);_pricesLive=false;}
       // DEF의 extraLabel/annualDistRate 강제 적용 (버전 업데이트 반영)
       DEF.accounts.forEach(function(def){
         var acc=ACCOUNTS.find(function(a){return a.id===def.id;});
@@ -1098,7 +1105,7 @@ function iChange(el) {
   autoSync();
 }
 function liveP(h){return(h.tk&&PRICES[h.tk]!=null)?PRICES[h.tk]:h.cost;}
-function isLv(h){return !!(h.tk&&PRICES[h.tk]!=null);}
+function isLv(h){return !!(h.tk&&PRICES[h.tk]!=null&&_pricesLive);}
 function cmaFX(h){return h.cur==='JPY'?FX.JPY:h.cur==='USD'?FX.USD:1;}
 function cmaCostKRW(h){var fx=h.avgFX||(h.cur==='JPY'?FX.JPY:h.cur==='USD'?FX.USD:1);if(h.isRP)return h.cost*fx;return h.cost*(h.qty||0)*fx;}
 function cmaLiveP(h){return(h.tk&&PRICES[h.tk]!=null)?PRICES[h.tk]:(h.curPrice!=null?h.curPrice:h.cost);}
@@ -1321,6 +1328,7 @@ async function fetchFXApi(){
 async function fetchAll(){
   if(_fetchRunning) return;
   _fetchRunning=true;
+  _pricesLive=false; // 갱신 시작 시 일단 초기화
   _lastFetch=Date.now();
   setDot('loading');
   var ok=false;
@@ -1341,7 +1349,7 @@ async function fetchAll(){
       fetchFXApi(),
       ...tks.map(async function(tk){
         var p=await fetchKR(tk);
-        if(p!=null){PRICES[tk]=p;ok=true;}
+        if(p!=null){PRICES[tk]=p;ok=true;_pricesLive=true;}
       }),
       ...cryptoSyms.map(async function(sym){
         var d=await fetchCrypto(sym);
@@ -3983,8 +3991,14 @@ async function ghPull(force){
     if(!force&&obj.saved&&obj.saved<=localSaved) return false;
     ACCOUNTS=obj.data.accounts;CMA=obj.data.cma;CRYPTO=obj.data.crypto;
     if(!CRYPTO.exchanges) CRYPTO.exchanges=[];
-    if(obj.data.fx){FX.USD=obj.data.fx.usd||FX.USD;FX.JPY=obj.data.fx.jpy||FX.JPY;}
-    if(obj.data.prices) Object.assign(PRICES,obj.data.prices);
+    if(obj.data.fx){
+      FX.USD=obj.data.fx.usd||FX.USD;
+      FX.JPY=obj.data.fx.jpy||FX.JPY;
+      // GitHub에서 복원한 환율도 이전 값 → 실시간 아님
+      FX._usdLive=false;
+      FX._jpyLive=false;
+    }
+    if(obj.data.prices){Object.assign(PRICES,obj.data.prices);_pricesLive=false;}
     if(obj.snaps&&obj.snaps.length){
       var map={};loadSnaps().forEach(function(s){map[s.date]=s;});
       obj.snaps.forEach(function(s){map[s.date]=s;});
