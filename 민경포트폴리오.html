@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>풍차계획 포트폴리오 v5.71</title>
+<title>풍차계획 포트폴리오 v5.72</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -866,7 +866,7 @@ var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
   sub: '연금계좌 풍차계획 포트폴리오',
-  version: 'v5.71',   // 버전 — 여기만 수정
+  version: 'v5.72',   // 버전 — 여기만 수정
   birthdate: '', // 생년월일 (YYYY-MM-DD 또는 YY.M.D 형식)
   accMeta: {},
   accOrder: []
@@ -4374,6 +4374,40 @@ function migrateTickers(){
   });
 }
 
+/* ===== 연초 당해납입/인출 자동 리셋 ===== */
+var YR_RESET_KEY='fp_yr_reset';
+function checkYearReset(){
+  var curY=new Date().getFullYear();
+  var savedY=parseInt(sGet(YR_RESET_KEY)||'0');
+  if(savedY>=curY) return; // 이미 올해 리셋됨
+  // 연도가 바뀌었으면 당해납입/인출 리셋
+  var changed=false;
+  ACCOUNTS.forEach(function(a){
+    if(a.depositsYr||a.withdrawalsYr){
+      a.depositsYr=0;
+      a.withdrawalsYr=0;
+      changed=true;
+    }
+  });
+  if((CMA.depositsYr||CMA.withdrawalsYr)){
+    CMA.depositsYr=0;
+    CMA.withdrawalsYr=0;
+    changed=true;
+  }
+  if(changed){
+    sSet(YR_RESET_KEY,String(curY));
+    // 리셋 후 저장 + 동기화
+    try{
+      sSet(SKEY,JSON.stringify({accounts:ACCOUNTS,cma:CMA,crypto:CRYPTO,
+        fx:{usd:FX.USD,jpy:FX.JPY},prices:PRICES}));
+    }catch(e){}
+    autoSync();
+    console.log('['+curY+'] 당해납입/인출 연초 리셋 완료');
+  } else {
+    sSet(YR_RESET_KEY,String(curY));
+  }
+}
+
 /* ===== 앱 시작 ===== */
 function startApp(){
   try{loadData();}catch(e){
@@ -4382,6 +4416,8 @@ function startApp(){
     CRYPTO=JSON.parse(JSON.stringify(DEF.crypto));
     loadMeta();
   }
+  // 연초 당해납입/인출 자동 리셋
+  try{checkYearReset();}catch(e){}
   renderAppHeader();
   try{renderNav();}catch(e){}
   try{migrateTickers();}catch(e){}
