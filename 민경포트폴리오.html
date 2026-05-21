@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>풍차계획 포트폴리오 v5.72</title>
+<title>풍차계획 포트폴리오 v5.74</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -866,7 +866,7 @@ var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
   sub: '연금계좌 풍차계획 포트폴리오',
-  version: 'v5.72',   // 버전 — 여기만 수정
+  version: 'v5.74',   // 버전 — 여기만 수정
   birthdate: '', // 생년월일 (YYYY-MM-DD 또는 YY.M.D 형식)
   accMeta: {},
   accOrder: []
@@ -1308,45 +1308,67 @@ async function fetchCrypto(sym){
 }
 
 async function fetchFXApi(){
-  var fx=await fetchFirst([
-    // 1순위: Workers 프록시 경유 open.er-api.com
-    (async function(){
-      try{
-        var r=await withTO(fetch('https://portfolio-proxy.feel118.workers.dev?t=erapia&p='+encodeURIComponent('/v6/latest/USD'),{cache:'no-store'}),5000);
-        var j=await r.json();
-        return(j.rates&&j.rates.KRW)?{usd:Math.round(j.rates.KRW),jpy:j.rates.JPY?Math.round(j.rates.KRW/j.rates.JPY*100)/100:null,_v:1}:null;
-      }catch(e){return null;}
-    })(),
-    // 2순위: 직접 호출 open.er-api.com
-    (async function(){
-      try{
-        var r=await withTO(fetch('https://open.er-api.com/v6/latest/USD',{cache:'no-store'}),5000);
-        var j=await r.json();
-        return(j.rates&&j.rates.KRW)?{usd:Math.round(j.rates.KRW),jpy:j.rates.JPY?Math.round(j.rates.KRW/j.rates.JPY*100)/100:null,_v:1}:null;
-      }catch(e){return null;}
-    })(),
-    // 2순위: CDN currency-api (일 1회)
-    (async function(){
-      try{
-        var r=await withTO(fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json',{cache:'no-store'}),5000);
-        var j=await r.json();
-        if(!j||!j.usd) return null;
-        var usdKrw=j.usd['krw'],usdJpy=j.usd['jpy'];
-        return usdKrw?{usd:Math.round(usdKrw),jpy:usdJpy?Math.round(usdKrw/usdJpy*100)/100:null,_v:1}:null;
-      }catch(e){return null;}
-    })(),
-    // 3순위: frankfurter.app (ECB 기준)
-    (async function(){
-      try{
-        var r=await withTO(fetch('https://api.frankfurter.app/latest?from=USD&to=KRW,JPY'),5000);
-        var j=await r.json();
-        return(j.rates&&j.rates.KRW)?{usd:Math.round(j.rates.KRW),jpy:j.rates.JPY?Math.round(j.rates.KRW/j.rates.JPY*100)/100:null,_v:1}:null;
-      }catch(e){return null;}
-    })()
-  ]);
-  if(fx&&fx.usd){FX.USD=fx.usd;FX._usdLive=true;if(fx.jpy){FX.JPY=fx.jpy;FX._jpyLive=true;}}
-}
+  var fx=null;
+  // 1순위: 한국수출입은행 (순차 실행 - 반드시 먼저 시도)
+  try{
+    var r1=await withTO(fetch('https://portfolio-proxy.feel118.workers.dev?t=exim',{cache:'no-store'}),7000);
+    if(r1.ok){
+      var arr=await r1.json();
+      if(Array.isArray(arr)&&arr.length>0){
+        var usdObj=arr.find(function(x){return x.cur_unit==='USD';});
+        var jpyObj=arr.find(function(x){return x.cur_unit==='JPY(100)';});
+        if(usdObj){
+          var usdRate=parseFloat((usdObj.deal_bas_r||'').replace(/,/g,''));
+          var jpyRate=jpyObj?parseFloat((jpyObj.deal_bas_r||'').replace(/,/g,''))/100:null;
+          if(usdRate>0) fx={usd:Math.round(usdRate),jpy:jpyRate?Math.round(jpyRate*100)/100:null,_v:1,src:'exim'};
+        }
+      }
+    }
+  }catch(e){}
 
+  // 2순위 이하: 병렬 fallback (수출입은행 실패 시만 실행)
+  if(!fx){
+    fx=await fetchFirst([
+      (async function(){
+        try{
+          var r=await withTO(fetch('https://portfolio-proxy.feel118.workers.dev?t=erapia&p='+encodeURIComponent('/v6/latest/USD'),{cache:'no-store'}),5000);
+          var j=await r.json();
+          return(j.rates&&j.rates.KRW)?{usd:Math.round(j.rates.KRW),jpy:j.rates.JPY?Math.round(j.rates.KRW/j.rates.JPY*100)/100:null,_v:1,src:'erapia-w'}:null;
+        }catch(e){return null;}
+      })(),
+      (async function(){
+        try{
+          var r=await withTO(fetch('https://open.er-api.com/v6/latest/USD',{cache:'no-store'}),5000);
+          var j=await r.json();
+          return(j.rates&&j.rates.KRW)?{usd:Math.round(j.rates.KRW),jpy:j.rates.JPY?Math.round(j.rates.KRW/j.rates.JPY*100)/100:null,_v:1,src:'erapia'}:null;
+        }catch(e){return null;}
+      })(),
+      (async function(){
+        try{
+          var r=await withTO(fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json',{cache:'no-store'}),5000);
+          var j=await r.json();
+          if(!j||!j.usd) return null;
+          var usdKrw=j.usd['krw'],usdJpy=j.usd['jpy'];
+          return usdKrw?{usd:Math.round(usdKrw),jpy:usdJpy?Math.round(usdKrw/usdJpy*100)/100:null,_v:1,src:'cdn'}:null;
+        }catch(e){return null;}
+      })(),
+      (async function(){
+        try{
+          var r=await withTO(fetch('https://api.frankfurter.app/latest?from=USD&to=KRW,JPY'),5000);
+          var j=await r.json();
+          return(j.rates&&j.rates.KRW)?{usd:Math.round(j.rates.KRW),jpy:j.rates.JPY?Math.round(j.rates.KRW/j.rates.JPY*100)/100:null,_v:1,src:'ffktr'}:null;
+        }catch(e){return null;}
+      })()
+    ]);
+  }
+
+  if(fx&&fx.usd){
+    FX.USD=fx.usd;
+    FX._usdLive=true;
+    if(fx.jpy){FX.JPY=fx.jpy;FX._jpyLive=true;}
+    console.log('[FX] 소스:'+fx.src+' USD='+fx.usd+' JPY='+fx.jpy);
+  }
+}
 async function fetchAll(){
   if(_fetchRunning) return;
   _fetchRunning=true;
