@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>풍차계획 포트폴리오 v5.74</title>
+<title>풍차계획 포트폴리오 v5.75</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -865,7 +865,7 @@ var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
   sub: '연금계좌 풍차계획 포트폴리오',
-  version: 'v5.74',   // 버전 — 여기만 수정
+  version: 'v5.75',   // 버전 — 여기만 수정
   birthdate: '', // 생년월일 (YYYY-MM-DD 또는 YY.M.D 형식)
   accMeta: {},
   accOrder: []
@@ -2873,14 +2873,33 @@ function snapNow(){
   var today=new Date().toLocaleDateString('ko-KR');
   var now=new Date().toISOString();
   var t=grandTotal();
+  // 절세계좌 소계 (전체 ACCOUNTS 현재평가액 합계)
+  var taxSave=0;
+  ACCOUNTS.forEach(function(a){
+    a.holdings.forEach(function(h){
+      if(h.isMMF) return;
+      taxSave+=liveP(h)*(h.qty||0);
+    });
+  });
+  // CMA(종합) 현재평가액
+  var cmaVal=0;
+  CMA.holdings.forEach(function(h){cmaVal+=cmaCurKRW(h);});
+  // 가상화폐 현재평가액
+  var cryptoVal=0;
+  var _allCr=[].concat(CRYPTO.bithumb||[],CRYPTO.upbit||[])
+    .concat((CRYPTO.exchanges||[]).reduce(function(a,e){return a.concat(e.holdings||[]);},[])); 
+  _allCr.forEach(function(h){
+      var p=PRICES[h.sym]!=null?PRICES[h.sym]:h.cost;
+      cryptoVal+=p*((h.stk||0)+(h.qty||0));
+    });
   var snaps=loadSnaps();
   var idx=snaps.findIndex(function(s){return s.date===today;});
-  var snap={date:today,ts:now,cur:t.cur,cost:t.cost,pnl:t.pnl,note:''};
+  var snap={date:today,ts:now,cur:t.cur,cost:t.cost,pnl:t.pnl,note:'',
+    taxSave:Math.round(taxSave),cmaVal:Math.round(cmaVal),cryptoVal:Math.round(cryptoVal)};
   if(idx>=0)snaps[idx]=snap;else snaps.push(snap);
   snaps.sort(function(a,b){return a.date<b.date?-1:1;});
   sSet(SNAPKEY,JSON.stringify(snaps));
   renderHistory();
-  // 자산변동 기록 즉시 GitHub push (모든 기기 동기화)
   if(ghGetToken()) ghPush(true);
 }
 var _idxCache={};
@@ -3002,12 +3021,20 @@ async function drawHChart(){
     var tsEsc=d.ts.replace(/'/g,"\\'");
     var noteVal=(d.note||'');
     var noteEsc=noteVal.replace(/'/g,"\\'").replace(/"/g,'&quot;');
+    // 절세/CMA/가상화폐 값 (저장된 값 or '-')
+    var taxStr=d.taxSave!=null?Math.round(d.taxSave).toLocaleString('ko-KR')+'\uc6d0':'-';
+    var cmaStr=d.cmaVal!=null?Math.round(d.cmaVal).toLocaleString('ko-KR')+'\uc6d0':'-';
+    var crStr=d.cryptoVal!=null?Math.round(d.cryptoVal).toLocaleString('ko-KR')+'\uc6d0':'-';
+    var cellSt='white-space:nowrap;font-size:11px';
     return '<tr>'
-      +'<td style="white-space:nowrap;font-size:11px">'+d.label+'</td>'
-      +'<td style="white-space:nowrap">'+Math.round(d.cur).toLocaleString('ko-KR')+'\uc6d0</td>'
-      +'<td class="'+pc(chgAmt)+'" style="white-space:nowrap">'+(prevCur>0?(chgAmt>=0?'+':'')+Math.round(chgAmt).toLocaleString('ko-KR')+'\uc6d0':'-')+'</td>'
-      +'<td class="'+pc(chgRate)+'" style="white-space:nowrap">'+(prevCur>0?(chgRate>=0?'+':'')+chgRate.toFixed(2)+'%':'-')+'</td>'
-      +'<td style="text-align:left;background:#fff"><input class="ed" style="width:100%;font-size:11px;box-sizing:border-box;text-align:left;background:#fff" value="'+noteEsc+'"'
+      +'<td style="'+cellSt+';font-weight:700">'+d.label+'</td>'
+      +'<td style="'+cellSt+'">'+taxStr+'</td>'
+      +'<td style="'+cellSt+'">'+cmaStr+'</td>'
+      +'<td style="'+cellSt+'">'+crStr+'</td>'
+      +'<td style="'+cellSt+';font-weight:700">'+Math.round(d.cur).toLocaleString('ko-KR')+'\uc6d0</td>'
+      +'<td class="'+pc(chgAmt)+'" style="'+cellSt+'">'+(prevCur>0?(chgAmt>=0?'+':'')+Math.round(chgAmt).toLocaleString('ko-KR')+'\uc6d0':'-')+'</td>'
+      +'<td class="'+pc(chgRate)+'" style="'+cellSt+'">'+(prevCur>0?(chgRate>=0?'+':'')+chgRate.toFixed(2)+'%':'-')+'</td>'
+      +'<td style="text-align:left;background:#fff;min-width:80px"><input class="ed" style="width:100%;font-size:11px;box-sizing:border-box;text-align:left;background:#fff" value="'+noteEsc+'"'
         +' onchange="saveSnapNote(\''+tsEsc+'\',this.value)"'
         +' onfocus="this.style.background=\'#fffbeb\'"'
         +' onblur="this.style.background=\'\'"></td>'
@@ -3028,18 +3055,24 @@ async function drawHChart(){
     '<button class="btn" style="padding:3px 10px;font-size:11px;background:#fee2e2;color:#dc2626;border-color:#fca5a5" onclick="deleteAllSnaps()">기록 전체삭제</button>',
     '</div>',
     '<div class="snap-twrap" style="padding:0 13px 13px;overflow-x:auto">',
-    '<table style="table-layout:auto;width:100%;border-collapse:collapse">',
+    '<table style="table-layout:auto;width:100%;border-collapse:collapse;white-space:nowrap">',
     '<colgroup>'
-    +'<col style="width:1px">'
-    +'<col style="width:1px">'
-    +'<col style="width:1px">'
-    +'<col style="width:1px">'
+    +'<col>'
+    +'<col>'
+    +'<col>'
+    +'<col>'
+    +'<col>'
+    +'<col>'
+    +'<col>'
     +'<col style="width:100%;min-width:80px">'
     +'<col style="width:1px">'
     +'</colgroup>',
     '<thead><tr>'
-      +'<th style="text-align:left;white-space:nowrap">\uae30\uac04</th>'
-      +'<th style="white-space:nowrap">\ud3c9\uac00\uc561</th>'
+      +'<th style="text-align:left;white-space:nowrap;font-weight:700">\uae30\uac04</th>'
+      +'<th style="white-space:nowrap">\uc808\uc138\uacc4\uc88c</th>'
+      +'<th style="white-space:nowrap">CMA(\uc885\ud569)</th>'
+      +'<th style="white-space:nowrap">\uac00\uc0c1\ud654\ud3d0</th>'
+      +'<th style="white-space:nowrap;font-weight:700">\ud3c9\uac00\uc561(\ud569\uacc4)</th>'
       +'<th style="white-space:nowrap">\ubcc0\ub3d9\uc561(\uc804\uae30\ub300\ube44)</th>'
       +'<th style="white-space:nowrap">\ubcc0\ub3d9\ub960</th>'
       +'<th style="text-align:left">\ube44\uace0</th>'
