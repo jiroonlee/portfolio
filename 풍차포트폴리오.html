@@ -865,7 +865,7 @@ var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
   sub: '연금계좌 풍차계획 포트폴리오',
-  version: 'v5.77',   // 버전 — 여기만 수정
+  version: 'v5.81',   // 버전 — 여기만 수정
   birthdate: '', // 생년월일 (YYYY-MM-DD 또는 YY.M.D 형식)
   accMeta: {},
   accOrder: []
@@ -995,29 +995,16 @@ function saveData(){
   var today=new Date().toLocaleDateString('ko-KR');
   var now=new Date().toISOString();
   var t=grandTotal();
-  // 절세계좌 소계 (연금계좌+IRP+ISA 등 전체 ACCOUNTS 현재평가액 합계 — 계좌 추가/변경 자동반영)
   var taxSave=0;
-  ACCOUNTS.forEach(function(a){
-    a.holdings.forEach(function(h){
-      if(h.isMMF) return;
-      taxSave+=liveP(h)*(h.qty||0);
-    });
-  });
-  // CMA(종합) 현재평가액
+  ACCOUNTS.forEach(function(a){a.holdings.forEach(function(h){if(h.isMMF)return;taxSave+=liveP(h)*(h.qty||0);});});
   var cmaVal=0;
   CMA.holdings.forEach(function(h){cmaVal+=cmaCurKRW(h);});
-  // 가상화폐 현재평가액
   var cryptoVal=0;
-  var _allCr=[].concat(CRYPTO.bithumb||[],CRYPTO.upbit||[])
-    .concat((CRYPTO.exchanges||[]).reduce(function(a,e){return a.concat(e.holdings||[]);},[]));  
-  _allCr.forEach(function(h){
-    var p=PRICES[h.sym]!=null?PRICES[h.sym]:h.cost;
-    cryptoVal+=p*((h.stk||0)+(h.qty||0));
-  });
+  var _allCr=[].concat(CRYPTO.bithumb||[],CRYPTO.upbit||[]).concat((CRYPTO.exchanges||[]).reduce(function(a,e){return a.concat(e.holdings||[]);},[]));
+  _allCr.forEach(function(h){var p=PRICES[h.sym]!=null?PRICES[h.sym]:h.cost;cryptoVal+=p*((h.stk||0)+(h.qty||0));});
   var snaps=loadSnaps();
   var idx=snaps.findIndex(function(s){return s.date===today;});
-  var snap={date:today,ts:now,cur:t.cur,cost:t.cost,pnl:t.pnl,note:'',
-    taxSave:Math.round(taxSave),cmaVal:Math.round(cmaVal),cryptoVal:Math.round(cryptoVal)};
+  var snap={date:today,ts:now,cur:t.cur,cost:t.cost,pnl:t.pnl,note:'',taxSave:Math.round(taxSave),cmaVal:Math.round(cmaVal),cryptoVal:Math.round(cryptoVal)};
   if(idx>=0)snaps[idx]=snap;else snaps.push(snap);
   snaps.sort(function(a,b){return a.date<b.date?-1:1;});
   sSet(SNAPKEY,JSON.stringify(snaps));
@@ -1071,110 +1058,115 @@ var HIST_SNAPS=[
   {date:'2025. 9. 23.',ts:'2025-09-23T00:00:00.000Z',cur:813132472,cost:0,pnl:0,note:''},
   {date:'2025. 9. 24.',ts:'2025-09-24T00:00:00.000Z',cur:810077578,cost:0,pnl:0,note:''},
   {date:'2025. 9. 26.',ts:'2025-09-26T00:00:00.000Z',cur:811317691,cost:0,pnl:0,note:''},
-  {date:'2025. 9. 29.',ts:'2025-09-29T00:00:00.000Z',cur:809822315,cost:0,pnl:0,note:''},
-  {date:'2025. 9. 30.',ts:'2025-09-30T00:00:00.000Z',cur:812855196,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 2.',ts:'2025-10-02T00:00:00.000Z',cur:822203544,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 3.',ts:'2025-10-03T00:00:00.000Z',cur:825005147,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 4.',ts:'2025-10-04T00:00:00.000Z',cur:824535616,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 6.',ts:'2025-10-06T00:00:00.000Z',cur:827151200,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 7.',ts:'2025-10-07T00:00:00.000Z',cur:828154815,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 8.',ts:'2025-10-08T00:00:00.000Z',cur:827661817,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 9.',ts:'2025-10-09T00:00:00.000Z',cur:828086017,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 10.',ts:'2025-10-10T00:00:00.000Z',cur:837184244,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 11.',ts:'2025-10-11T00:00:00.000Z',cur:828376357,cost:0,pnl:0,note:'미중전쟁 재발(희토료 및 보복관세)'},
-  {date:'2025. 10. 13.',ts:'2025-10-13T00:00:00.000Z',cur:826318502,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 14.',ts:'2025-10-14T00:00:00.000Z',cur:827480832,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 15.',ts:'2025-10-15T00:00:00.000Z',cur:829786464,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 16.',ts:'2025-10-16T00:00:00.000Z',cur:828763841,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 17.',ts:'2025-10-17T00:00:00.000Z',cur:822648683,cost:0,pnl:0,note:'미 지역은행 위기 부각'},
-  {date:'2025. 10. 20.',ts:'2025-10-20T00:00:00.000Z',cur:829776794,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 21.',ts:'2025-10-21T00:00:00.000Z',cur:837884424,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 22.',ts:'2025-10-22T00:00:00.000Z',cur:836048373,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 23.',ts:'2025-10-23T00:00:00.000Z',cur:834029316,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 24.',ts:'2025-10-24T00:00:00.000Z',cur:841092962,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 25.',ts:'2025-10-25T00:00:00.000Z',cur:842479786,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 27.',ts:'2025-10-27T00:00:00.000Z',cur:850117927,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 28.',ts:'2025-10-28T00:00:00.000Z',cur:855297335,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 29.',ts:'2025-10-29T00:00:00.000Z',cur:856027776,cost:0,pnl:0,note:''},
-  {date:'2025. 10. 30.',ts:'2025-10-30T00:00:00.000Z',cur:846707098,cost:0,pnl:0,note:'한미관세협상타결 환율하락, fomc 13월금리매파적발언'},
-  {date:'2025. 10. 31.',ts:'2025-10-31T00:00:00.000Z',cur:842693157,cost:0,pnl:0,note:''},
-  {date:'2025. 11. 4.',ts:'2025-11-04T00:00:00.000Z',cur:822092849,cost:0,pnl:0,note:'셧다운 장기화, 고점 논란 조정'},
-  {date:'2025. 11. 6.',ts:'2025-11-06T00:00:00.000Z',cur:839405195,cost:0,pnl:0,note:''},
-  {date:'2025. 11. 7.',ts:'2025-11-07T00:00:00.000Z',cur:834527685,cost:0,pnl:0,note:''},
-  {date:'2025. 11. 11.',ts:'2025-11-11T00:00:00.000Z',cur:849829037,cost:0,pnl:0,note:'셧다운 종료기대감'},
-  {date:'2025. 11. 12.',ts:'2025-11-12T00:00:00.000Z',cur:850471774,cost:0,pnl:0,note:''},
-  {date:'2025. 11. 14.',ts:'2025-11-14T00:00:00.000Z',cur:815007793,cost:0,pnl:0,note:'물가인상, 금리인하지연, ai버블 우려 등'},
-  {date:'2025. 11. 18.',ts:'2025-11-18T00:00:00.000Z',cur:811592231,cost:0,pnl:0,note:''},
-  {date:'2025. 11. 19.',ts:'2025-11-19T00:00:00.000Z',cur:803869477,cost:0,pnl:0,note:''},
-  {date:'2025. 11. 20.',ts:'2025-11-20T00:00:00.000Z',cur:819490008,cost:0,pnl:0,note:''},
-  {date:'2025. 11. 21.',ts:'2025-11-21T00:00:00.000Z',cur:794309702,cost:0,pnl:0,note:''},
-  {date:'2025. 11. 24.',ts:'2025-11-24T00:00:00.000Z',cur:804116960,cost:0,pnl:0,note:''},
-  {date:'2025. 11. 25.',ts:'2025-11-25T00:00:00.000Z',cur:816828100,cost:0,pnl:0,note:''},
-  {date:'2025. 11. 26.',ts:'2025-11-26T00:00:00.000Z',cur:822806226,cost:0,pnl:0,note:''},
-  {date:'2025. 11. 27.',ts:'2025-11-27T00:00:00.000Z',cur:827003276,cost:0,pnl:0,note:''},
-  {date:'2025. 11. 28.',ts:'2025-11-28T00:00:00.000Z',cur:832091290,cost:0,pnl:0,note:''},
-  {date:'2025. 12. 1.',ts:'2025-12-01T00:00:00.000Z',cur:825233766,cost:0,pnl:0,note:''},
-  {date:'2025. 12. 2.',ts:'2025-12-02T00:00:00.000Z',cur:826417422,cost:0,pnl:0,note:''},
-  {date:'2025. 12. 5.',ts:'2025-12-05T00:00:00.000Z',cur:840177256,cost:0,pnl:0,note:''},
-  {date:'2025. 12. 11.',ts:'2025-12-11T00:00:00.000Z',cur:843363401,cost:0,pnl:0,note:''},
-  {date:'2025. 12. 16.',ts:'2025-12-16T00:00:00.000Z',cur:823566792,cost:0,pnl:0,note:''},
-  {date:'2025. 12. 17.',ts:'2025-12-17T00:00:00.000Z',cur:832273134,cost:0,pnl:0,note:''},
-  {date:'2025. 12. 31.',ts:'2025-12-31T00:00:00.000Z',cur:824987544,cost:0,pnl:0,note:''},
-  {date:'2026. 1. 2.',ts:'2026-01-02T00:00:00.000Z',cur:839489244,cost:0,pnl:0,note:'차값 현숙(2천만원)_연금1800/isa200'},
-  {date:'2026. 1. 5.',ts:'2026-01-05T00:00:00.000Z',cur:849905293,cost:0,pnl:0,note:'현숙 _ 2백ISA입금'},
-  {date:'2026. 1. 6.',ts:'2026-01-06T00:00:00.000Z',cur:859644465,cost:0,pnl:0,note:''},
-  {date:'2026. 1. 9.',ts:'2026-01-09T00:00:00.000Z',cur:858483908,cost:0,pnl:0,note:''},
-  {date:'2026. 1. 10.',ts:'2026-01-10T00:00:00.000Z',cur:860609558,cost:0,pnl:0,note:''},
-  {date:'2026. 1. 13.',ts:'2026-01-13T00:00:00.000Z',cur:878685430,cost:0,pnl:0,note:''},
-  {date:'2026. 1. 14.',ts:'2026-01-14T00:00:00.000Z',cur:880722799,cost:0,pnl:0,note:''},
-  {date:'2026. 1. 19.',ts:'2026-01-19T00:00:00.000Z',cur:871432024,cost:0,pnl:0,note:''},
-  {date:'2026. 1. 20.',ts:'2026-01-20T00:00:00.000Z',cur:867307683,cost:0,pnl:0,note:''},
-  {date:'2026. 1. 21.',ts:'2026-01-21T00:00:00.000Z',cur:861462477,cost:0,pnl:0,note:''},
-  {date:'2026. 1. 22.',ts:'2026-01-22T00:00:00.000Z',cur:864295349,cost:0,pnl:0,note:''},
-  {date:'2026. 1. 23.',ts:'2026-01-23T00:00:00.000Z',cur:866901825,cost:0,pnl:0,note:''},
-  {date:'2026. 1. 26.',ts:'2026-01-26T00:00:00.000Z',cur:851682053,cost:0,pnl:0,note:''},
-  {date:'2026. 1. 27.',ts:'2026-01-27T00:00:00.000Z',cur:858213891,cost:0,pnl:0,note:''},
-  {date:'2026. 1. 28.',ts:'2026-01-28T00:00:00.000Z',cur:854903030,cost:0,pnl:0,note:''},
-  {date:'2026. 1. 29.',ts:'2026-01-29T00:00:00.000Z',cur:853443736,cost:0,pnl:0,note:''},
-  {date:'2026. 1. 30.',ts:'2026-01-30T00:00:00.000Z',cur:838905460,cost:0,pnl:0,note:''},
-  {date:'2026. 2. 2.',ts:'2026-02-02T00:00:00.000Z',cur:829224178,cost:0,pnl:0,note:''},
-  {date:'2026. 2. 3.',ts:'2026-02-03T00:00:00.000Z',cur:849735214,cost:0,pnl:0,note:''},
-  {date:'2026. 2. 4.',ts:'2026-02-04T00:00:00.000Z',cur:848331181,cost:0,pnl:0,note:''},
-  {date:'2026. 2. 6.',ts:'2026-02-06T00:00:00.000Z',cur:827813921,cost:0,pnl:0,note:''},
-  {date:'2026. 2. 9.',ts:'2026-02-09T00:00:00.000Z',cur:850167961,cost:0,pnl:0,note:''},
-  {date:'2026. 2. 10.',ts:'2026-02-10T00:00:00.000Z',cur:849235452,cost:0,pnl:0,note:''},
-  {date:'2026. 2. 12.',ts:'2026-02-12T00:00:00.000Z',cur:839751515,cost:0,pnl:0,note:''},
-  {date:'2026. 2. 13.',ts:'2026-02-13T00:00:00.000Z',cur:825784635,cost:0,pnl:0,note:''},
-  {date:'2026. 2. 19.',ts:'2026-02-19T00:00:00.000Z',cur:831709527,cost:0,pnl:0,note:''},
-  {date:'2026. 2. 20.',ts:'2026-02-20T00:00:00.000Z',cur:833462020,cost:0,pnl:0,note:''},
-  {date:'2026. 2. 24.',ts:'2026-02-24T00:00:00.000Z',cur:826714758,cost:0,pnl:0,note:''},
-  {date:'2026. 2. 26.',ts:'2026-02-26T00:00:00.000Z',cur:828615628,cost:0,pnl:0,note:''},
-  {date:'2026. 2. 27.',ts:'2026-02-27T00:00:00.000Z',cur:829778161,cost:0,pnl:0,note:''},
-  {date:'2026. 3. 2.',ts:'2026-03-02T00:00:00.000Z',cur:829395470,cost:0,pnl:0,note:''},
-  {date:'2026. 3. 3.',ts:'2026-03-03T00:00:00.000Z',cur:835375208,cost:0,pnl:0,note:''},
-  {date:'2026. 3. 4.',ts:'2026-03-04T00:00:00.000Z',cur:831694641,cost:0,pnl:0,note:''},
-  {date:'2026. 3. 5.',ts:'2026-03-05T00:00:00.000Z',cur:844536208,cost:0,pnl:0,note:''},
-  {date:'2026. 3. 6.',ts:'2026-03-06T00:00:00.000Z',cur:843734715,cost:0,pnl:0,note:''},
-  {date:'2026. 3. 10.',ts:'2026-03-10T00:00:00.000Z',cur:838058559,cost:0,pnl:0,note:''},
-  {date:'2026. 3. 11.',ts:'2026-03-11T00:00:00.000Z',cur:840456857,cost:0,pnl:0,note:''},
-  {date:'2026. 3. 13.',ts:'2026-03-13T00:00:00.000Z',cur:837162487,cost:0,pnl:0,note:''},
-  {date:'2026. 3. 16.',ts:'2026-03-16T00:00:00.000Z',cur:835526940,cost:0,pnl:0,note:''},
-  {date:'2026. 3. 17.',ts:'2026-03-17T00:00:00.000Z',cur:838599861,cost:0,pnl:0,note:''},
-  {date:'2026. 3. 18.',ts:'2026-03-18T00:00:00.000Z',cur:846747758,cost:0,pnl:0,note:''},
-  {date:'2026. 3. 19.',ts:'2026-03-19T00:00:00.000Z',cur:836256025,cost:0,pnl:0,note:''},
-  {date:'2026. 3. 20.',ts:'2026-03-20T00:00:00.000Z',cur:834086453,cost:0,pnl:0,note:''},
-  {date:'2026. 3. 23.',ts:'2026-03-23T00:00:00.000Z',cur:816398928,cost:0,pnl:0,note:''},
-  {date:'2026. 3. 26.',ts:'2026-03-26T00:00:00.000Z',cur:829366481,cost:0,pnl:0,note:''},
-  {date:'2026. 3. 30.',ts:'2026-03-30T00:00:00.000Z',cur:802725828,cost:0,pnl:0,note:''},
-  {date:'2026. 4. 1.',ts:'2026-04-01T00:00:00.000Z',cur:828143714,cost:0,pnl:0,note:''},
-  {date:'2026. 4. 2.',ts:'2026-04-02T00:00:00.000Z',cur:823500975,cost:0,pnl:0,note:''},
-  {date:'2026. 4. 6.',ts:'2026-04-06T00:00:00.000Z',cur:833607908,cost:0,pnl:0,note:''},
-  {date:'2026. 4. 9.',ts:'2026-04-09T00:00:00.000Z',cur:841358929,cost:0,pnl:0,note:''},
-  {date:'2026. 4. 14.',ts:'2026-04-14T00:00:00.000Z',cur:849737018,cost:0,pnl:0,note:''},
-  {date:'2026. 4. 16.',ts:'2026-04-16T00:00:00.000Z',cur:862082227,cost:0,pnl:0,note:''},
-  {date:'2026. 4. 17.',ts:'2026-04-17T00:00:00.000Z',cur:868609965,cost:0,pnl:0,note:''},
-  {date:'2026. 4. 21.',ts:'2026-04-21T00:00:00.000Z',cur:874749942,cost:0,pnl:0,note:''},
-  {date:'2026. 4. 22.',ts:'2026-04-22T00:00:00.000Z',cur:874737232,cost:0,pnl:0,note:''}
+  {date:'2025. 9. 29.',ts:'2025-09-29T00:00:00.000Z',cur:809822315,cost:0,pnl:0,note:'',cryptoVal:84498331,cmaVal:115220581,taxSave:610103403},
+  {date:'2025. 9. 30.',ts:'2025-09-30T00:00:00.000Z',cur:812855196,cost:0,pnl:0,note:'',cryptoVal:85484830,cmaVal:115915403,taxSave:611454963},
+  {date:'2025. 10. 2.',ts:'2025-10-02T00:00:00.000Z',cur:823054477,cost:0,pnl:0,note:'',cryptoVal:89420384,cmaVal:113757388,taxSave:619876706},
+  {date:'2025. 10. 3.',ts:'2025-10-03T00:00:00.000Z',cur:825005147,cost:0,pnl:0,note:'',cryptoVal:90884677,cmaVal:114243764,taxSave:619876706},
+  {date:'2025. 10. 4.',ts:'2025-10-04T00:00:00.000Z',cur:824535616,cost:0,pnl:0,note:'',cryptoVal:91226711,cmaVal:113432199,taxSave:619876706},
+  {date:'2025. 10. 6.',ts:'2025-10-06T00:00:00.000Z',cur:827151200,cost:0,pnl:0,note:'',cryptoVal:93315196,cmaVal:113959298,taxSave:619876706},
+  {date:'2025. 10. 7.',ts:'2025-10-07T00:00:00.000Z',cur:828154815,cost:0,pnl:0,note:'',cryptoVal:93895300,cmaVal:114382810,taxSave:619876706},
+  {date:'2025. 10. 8.',ts:'2025-10-08T00:00:00.000Z',cur:827661817,cost:0,pnl:0,note:'',cryptoVal:92108655,cmaVal:115676456,taxSave:619876706},
+  {date:'2025. 10. 9.',ts:'2025-10-09T00:00:00.000Z',cur:828086017,cost:0,pnl:0,note:'',cryptoVal:93049641,cmaVal:115151906,taxSave:619884469},
+  {date:'2025. 10. 10.',ts:'2025-10-10T00:00:00.000Z',cur:837184244,cost:0,pnl:0,note:'',cryptoVal:91754286,cmaVal:115586064,taxSave:629843894},
+  {date:'2025. 10. 11.',ts:'2025-10-11T00:00:00.000Z',cur:828376357,cost:0,pnl:0,note:'미중전쟁 재발(희토료 및 보복관세)',cryptoVal:85844770,cmaVal:112687693,taxSave:629843894},
+  {date:'2025. 10. 13.',ts:'2025-10-13T00:00:00.000Z',cur:826318502,cost:0,pnl:0,note:'',cryptoVal:88654498,cmaVal:112368599,taxSave:625295404},
+  {date:'2025. 10. 14.',ts:'2025-10-14T00:00:00.000Z',cur:827480832,cost:0,pnl:0,note:'',cryptoVal:87194085,cmaVal:113797448,taxSave:626489298},
+  {date:'2025. 10. 15.',ts:'2025-10-15T00:00:00.000Z',cur:829786464,cost:0,pnl:0,note:'',cryptoVal:87612570,cmaVal:115148610,taxSave:627025284},
+  {date:'2025. 10. 16.',ts:'2025-10-16T00:00:00.000Z',cur:828763841,cost:0,pnl:0,note:'',cryptoVal:86492850,cmaVal:116278632,taxSave:625992359},
+  {date:'2025. 10. 17.',ts:'2025-10-17T00:00:00.000Z',cur:822648683,cost:0,pnl:0,note:'미 지역은행 위기 부각',cryptoVal:82689841,cmaVal:115614512,taxSave:624344329},
+  {date:'2025. 10. 20.',ts:'2025-10-20T00:00:00.000Z',cur:829776794,cost:0,pnl:0,note:'',cryptoVal:83957501,cmaVal:114327029,taxSave:631492264},
+  {date:'2025. 10. 21.',ts:'2025-10-21T00:00:00.000Z',cur:837884424,cost:0,pnl:0,note:'',cryptoVal:82421986,cmaVal:115412043,taxSave:640050394},
+  {date:'2025. 10. 22.',ts:'2025-10-22T00:00:00.000Z',cur:836048373,cost:0,pnl:0,note:'',cryptoVal:82333945,cmaVal:113920713,taxSave:639793714},
+  {date:'2025. 10. 23.',ts:'2025-10-23T00:00:00.000Z',cur:834029316,cost:0,pnl:0,note:'',cryptoVal:83096846,cmaVal:112292176,taxSave:638640294},
+  {date:'2025. 10. 24.',ts:'2025-10-24T00:00:00.000Z',cur:841092962,cost:0,pnl:0,note:'',cryptoVal:84197882,cmaVal:112641672,taxSave:644253409},
+  {date:'2025. 10. 25.',ts:'2025-10-25T00:00:00.000Z',cur:842479786,cost:0,pnl:0,note:'',cryptoVal:83984877,cmaVal:114230012,taxSave:644264897},
+  {date:'2025. 10. 27.',ts:'2025-10-27T00:00:00.000Z',cur:850128387,cost:0,pnl:0,note:'',cryptoVal:88485562,cmaVal:111130759,taxSave:650512067},
+  {date:'2025. 10. 28.',ts:'2025-10-28T00:00:00.000Z',cur:855307815,cost:0,pnl:0,note:'',cryptoVal:88775131,cmaVal:111105997,taxSave:655426687},
+  {date:'2025. 10. 29.',ts:'2025-10-29T00:00:00.000Z',cur:856038266,cost:0,pnl:0,note:'',cryptoVal:86849713,cmaVal:110829610,taxSave:658358942},
+  {date:'2025. 10. 30.',ts:'2025-10-30T00:00:00.000Z',cur:846717373,cost:0,pnl:0,note:'한미관세협상타결 환율하락, fomc 13월금리매파적발언',cryptoVal:86111983,cmaVal:109398874,taxSave:651206517},
+  {date:'2025. 10. 31.',ts:'2025-10-31T00:00:00.000Z',cur:842703412,cost:0,pnl:0,note:'',cryptoVal:84434848,cmaVal:109357450,taxSave:648911115},
+  {date:'2025. 11. 4.',ts:'2025-11-04T00:00:00.000Z',cur:822102964,cost:0,pnl:0,note:'셧다운 장기화, 고점 논란 조정',cryptoVal:73722174,cmaVal:107322685,taxSave:641058105},
+  {date:'2025. 11. 6.',ts:'2025-11-06T00:00:00.000Z',cur:839415470,cost:0,pnl:0,note:'',cryptoVal:75440895,cmaVal:111643160,taxSave:652331415},
+  {date:'2025. 11. 7.',ts:'2025-11-07T00:00:00.000Z',cur:834537800,cost:0,pnl:0,note:'',cryptoVal:76625598,cmaVal:109333997,taxSave:648578205},
+  {date:'2025. 11. 11.',ts:'2025-11-11T00:00:00.000Z',cur:849839292,cost:0,pnl:0,note:'셧다운 종료기대감',cryptoVal:77879886,cmaVal:113400761,taxSave:658558645},
+  {date:'2025. 11. 12.',ts:'2025-11-12T00:00:00.000Z',cur:850482064,cost:0,pnl:0,note:'',cryptoVal:76083455,cmaVal:112176959,taxSave:662221650},
+  {date:'2025. 11. 14.',ts:'2025-11-14T00:00:00.000Z',cur:815017873,cost:0,pnl:0,note:'물가인상, 금리인하지연, ai버블 우려 등',cryptoVal:70119829,cmaVal:107647248,taxSave:637250795},
+  {date:'2025. 11. 18.',ts:'2025-11-18T00:00:00.000Z',cur:811602311,cost:0,pnl:0,note:'',cryptoVal:66089004,cmaVal:105718767,taxSave:639794540},
+  {date:'2025. 11. 19.',ts:'2025-11-19T00:00:00.000Z',cur:803879517,cost:0,pnl:0,note:'',cryptoVal:67425185,cmaVal:105548461,taxSave:630905870},
+  {date:'2025. 11. 20.',ts:'2025-11-20T00:00:00.000Z',cur:819500188,cost:0,pnl:0,note:'',cryptoVal:67606457,cmaVal:105331181,taxSave:646562550},
+  {date:'2025. 11. 21.',ts:'2025-11-21T00:00:00.000Z',cur:794319672,cost:0,pnl:0,note:'',cryptoVal:62365483,cmaVal:104738649,taxSave:627215540},
+  {date:'2025. 11. 24.',ts:'2025-11-24T00:00:00.000Z',cur:804126860,cost:0,pnl:0,note:'',cryptoVal:63558988,cmaVal:105525602,taxSave:635042270},
+  {date:'2025. 11. 25.',ts:'2025-11-25T00:00:00.000Z',cur:816838095,cost:0,pnl:0,note:'',cryptoVal:65265090,cmaVal:107780750,taxSave:643792255},
+  {date:'2025. 11. 26.',ts:'2025-11-26T00:00:00.000Z',cur:822816381,cost:0,pnl:0,note:'',cryptoVal:64766582,cmaVal:109719284,taxSave:648330515},
+  {date:'2025. 11. 27.',ts:'2025-11-27T00:00:00.000Z',cur:827013176,cost:0,pnl:0,note:'',cryptoVal:67290437,cmaVal:110112619,taxSave:649610120},
+  {date:'2025. 11. 28.',ts:'2025-11-28T00:00:00.000Z',cur:832101125,cost:0,pnl:0,note:'',cryptoVal:66781852,cmaVal:111407958,taxSave:653911315},
+  {date:'2025. 12. 1.',ts:'2025-12-01T00:00:00.000Z',cur:825243561,cost:0,pnl:0,note:'',cryptoVal:62641670,cmaVal:111397117,taxSave:651204775},
+  {date:'2025. 12. 2.',ts:'2025-12-02T00:00:00.000Z',cur:826427292,cost:0,pnl:0,note:'',cryptoVal:62266936,cmaVal:110562005,taxSave:653598350},
+  {date:'2025. 12. 5.',ts:'2025-12-05T00:00:00.000Z',cur:840187271,cost:0,pnl:0,note:'',cryptoVal:66273926,cmaVal:111189930,taxSave:662723415},
+  {date:'2025. 12. 11.',ts:'2025-12-11T00:00:00.000Z',cur:843373471,cost:0,pnl:0,note:'',cryptoVal:67712882,cmaVal:111887444,taxSave:663773145},
+  {date:'2025. 12. 16.',ts:'2025-12-16T00:00:00.000Z',cur:823576862,cost:0,pnl:0,note:'',cryptoVal:63098717,cmaVal:109877410,taxSave:650600735},
+  {date:'2025. 12. 17.',ts:'2025-12-17T00:00:00.000Z',cur:832283299,cost:0,pnl:0,note:'',cryptoVal:63860687,cmaVal:109709770,taxSave:658712842},
+  {date:'2025. 12. 31.',ts:'2025-12-31T00:00:00.000Z',cur:839499159,cost:0,pnl:0,note:'',cryptoVal:64004034,cmaVal:106494688,taxSave:669000437},
+  {date:'2026. 1. 2.',ts:'2026-01-02T00:00:00.000Z',cur:839499159,cost:0,pnl:0,note:'차값 현숙(2천만원)_연금1800/isa200',cryptoVal:64004034,cmaVal:106494688,taxSave:669000437},
+  {date:'2026. 1. 5.',ts:'2026-01-05T00:00:00.000Z',cur:849915123,cost:0,pnl:0,note:'현숙 _ 2백ISA입금',cryptoVal:66548001,cmaVal:107896834,taxSave:675470287},
+  {date:'2026. 1. 6.',ts:'2026-01-06T00:00:00.000Z',cur:859644465,cost:0,pnl:0,note:'',cryptoVal:67004817,cmaVal:109962353,taxSave:682677294},
+  {date:'2026. 1. 9.',ts:'2026-01-09T00:00:00.000Z',cur:858483908,cost:0,pnl:0,note:'',cryptoVal:66216559,cmaVal:108568605,taxSave:683698744},
+  {date:'2026. 1. 10.',ts:'2026-01-10T00:00:00.000Z',cur:860609558,cost:0,pnl:0,note:'',cryptoVal:65924414,cmaVal:108461800,taxSave:686223344},
+  {date:'2026. 1. 13.',ts:'2026-01-13T00:00:00.000Z',cur:878685430,cost:0,pnl:0,note:'',cryptoVal:66949502,cmaVal:110959809,taxSave:700776119},
+  {date:'2026. 1. 14.',ts:'2026-01-14T00:00:00.000Z',cur:880722799,cost:0,pnl:0,note:'',cryptoVal:69131925,cmaVal:109697517,taxSave:701893356},
+  {date:'2026. 1. 19.',ts:'2026-01-19T00:00:00.000Z',cur:871432024,cost:0,pnl:0,note:'',cryptoVal:66816155,cmaVal:107724853,taxSave:696891016},
+  {date:'2026. 1. 20.',ts:'2026-01-20T00:00:00.000Z',cur:867307683,cost:0,pnl:0,note:'',cryptoVal:65897706,cmaVal:107728493,taxSave:693681485},
+  {date:'2026. 1. 21.',ts:'2026-01-21T00:00:00.000Z',cur:861462477,cost:0,pnl:0,note:'',cryptoVal:63670434,cmaVal:109942557,taxSave:687849485},
+  {date:'2026. 1. 22.',ts:'2026-01-22T00:00:00.000Z',cur:864295349,cost:0,pnl:0,note:'',cryptoVal:63639335,cmaVal:106896018,taxSave:693759996},
+  {date:'2026. 1. 23.',ts:'2026-01-23T00:00:00.000Z',cur:866901825,cost:0,pnl:0,note:'',cryptoVal:54600298,cmaVal:104334687,taxSave:707966841},
+  {date:'2026. 1. 26.',ts:'2026-01-26T00:00:00.000Z',cur:851682053,cost:0,pnl:0,note:'',cryptoVal:53727692,cmaVal:103784014,taxSave:694170348},
+  {date:'2026. 1. 27.',ts:'2026-01-27T00:00:00.000Z',cur:858213891,cost:0,pnl:0,note:'',cryptoVal:53814409,cmaVal:104174589,taxSave:700224893},
+  {date:'2026. 1. 28.',ts:'2026-01-28T00:00:00.000Z',cur:854903030,cost:0,pnl:0,note:'',cryptoVal:54550496,cmaVal:103983426,taxSave:696369108},
+  {date:'2026. 1. 29.',ts:'2026-01-29T00:00:00.000Z',cur:853443736,cost:0,pnl:0,note:'',cryptoVal:53333923,cmaVal:104287649,taxSave:695822163},
+  {date:'2026. 1. 30.',ts:'2026-01-30T00:00:00.000Z',cur:838905460,cost:0,pnl:0,note:'',cryptoVal:46498509,cmaVal:100064913,taxSave:692342038},
+  {date:'2026. 2. 2.',ts:'2026-02-02T00:00:00.000Z',cur:829224178,cost:0,pnl:0,note:'',cryptoVal:44427819,cmaVal:96673404,taxSave:688122955},
+  {date:'2026. 2. 3.',ts:'2026-02-03T00:00:00.000Z',cur:849735214,cost:0,pnl:0,note:'',cryptoVal:45554134,cmaVal:98665510,taxSave:705515570},
+  {date:'2026. 2. 4.',ts:'2026-02-04T00:00:00.000Z',cur:848331181,cost:0,pnl:0,note:'',cryptoVal:44281616,cmaVal:100350870,taxSave:703698695},
+  {date:'2026. 2. 6.',ts:'2026-02-06T00:00:00.000Z',cur:827813921,cost:0,pnl:0,note:'',cryptoVal:37045961,cmaVal:97711591,taxSave:693056370},
+  {date:'2026. 2. 9.',ts:'2026-02-09T00:00:00.000Z',cur:850167961,cost:0,pnl:0,note:'',cryptoVal:40430162,cmaVal:100268474,taxSave:709469325},
+  {date:'2026. 2. 10.',ts:'2026-02-10T00:00:00.000Z',cur:849235452,cost:0,pnl:0,note:'',cryptoVal:39631600,cmaVal:101322277,taxSave:708281575},
+  {date:'2026. 2. 12.',ts:'2026-02-12T00:00:00.000Z',cur:839751515,cost:0,pnl:0,note:'',cryptoVal:37888685,cmaVal:99343770,taxSave:702519060},
+  {date:'2026. 2. 13.',ts:'2026-02-13T00:00:00.000Z',cur:825784635,cost:0,pnl:0,note:'',cryptoVal:38969214,cmaVal:98483691,taxSave:688331730},
+  {date:'2026. 2. 19.',ts:'2026-02-19T00:00:00.000Z',cur:831709527,cost:0,pnl:0,note:'',cryptoVal:38477905,cmaVal:99001162,taxSave:694230460},
+  {date:'2026. 2. 20.',ts:'2026-02-20T00:00:00.000Z',cur:833462020,cost:0,pnl:0,note:'',cryptoVal:38844969,cmaVal:98698041,taxSave:695919010},
+  {date:'2026. 2. 24.',ts:'2026-02-24T00:00:00.000Z',cur:826714758,cost:0,pnl:0,note:'',cryptoVal:35710806,cmaVal:98630758,taxSave:692373195},
+  {date:'2026. 2. 26.',ts:'2026-02-26T00:00:00.000Z',cur:828615628,cost:0,pnl:0,note:'',cryptoVal:38955594,cmaVal:99586759,taxSave:690073275},
+  {date:'2026. 2. 27.',ts:'2026-02-27T00:00:00.000Z',cur:829778161,cost:0,pnl:0,note:'',cryptoVal:38887552,cmaVal:100962845,taxSave:689927765},
+  {date:'2026. 3. 2.',ts:'2026-03-02T00:00:00.000Z',cur:829395470,cost:0,pnl:0,note:'',cryptoVal:37747613,cmaVal:101720092,taxSave:689927765},
+  {date:'2026. 3. 3.',ts:'2026-03-03T00:00:00.000Z',cur:835375208,cost:0,pnl:0,note:'',cryptoVal:38232384,cmaVal:101825349,taxSave:695317475},
+  {date:'2026. 3. 4.',ts:'2026-03-04T00:00:00.000Z',cur:831694641,cost:0,pnl:0,note:'',cryptoVal:40556073,cmaVal:99926884,taxSave:691211685},
+  {date:'2026. 3. 5.',ts:'2026-03-05T00:00:00.000Z',cur:844536208,cost:0,pnl:0,note:'',cryptoVal:40742246,cmaVal:100172117,taxSave:703621845},
+  {date:'2026. 3. 6.',ts:'2026-03-06T00:00:00.000Z',cur:843734715,cost:0,pnl:0,note:'',cryptoVal:39010031,cmaVal:100075149,taxSave:704649535},
+  {date:'2026. 3. 10.',ts:'2026-03-10T00:00:00.000Z',cur:838058559,cost:0,pnl:0,note:'',cryptoVal:39900504,cmaVal:100280766,taxSave:697877290},
+  {date:'2026. 3. 11.',ts:'2026-03-11T00:00:00.000Z',cur:840456857,cost:0,pnl:0,note:'',cryptoVal:39612239,cmaVal:99424923,taxSave:701419695},
+  {date:'2026. 3. 13.',ts:'2026-03-13T00:00:00.000Z',cur:837162487,cost:0,pnl:0,note:'',cryptoVal:40653201,cmaVal:96926526,taxSave:699582760},
+  {date:'2026. 3. 16.',ts:'2026-03-16T00:00:00.000Z',cur:838443870,cost:0,pnl:0,note:'',cryptoVal:42937501,cmaVal:96216824,taxSave:699289545},
+  {date:'2026. 3. 17.',ts:'2026-03-17T00:00:00.000Z',cur:841513016,cost:0,pnl:0,note:'',cryptoVal:43634610,cmaVal:96665107,taxSave:701213300},
+  {date:'2026. 3. 18.',ts:'2026-03-18T00:00:00.000Z',cur:849675953,cost:0,pnl:0,note:'',cryptoVal:43778298,cmaVal:98468300,taxSave:707429355},
+  {date:'2026. 3. 19.',ts:'2026-03-19T00:00:00.000Z',cur:839175670,cost:0,pnl:0,note:'',cryptoVal:41904545,cmaVal:97471145,taxSave:699799980},
+  {date:'2026. 3. 20.',ts:'2026-03-20T00:00:00.000Z',cur:837001453,cost:0,pnl:0,note:'',cryptoVal:41597046,cmaVal:96732706,taxSave:698671700},
+  {date:'2026. 3. 23.',ts:'2026-03-23T00:00:00.000Z',cur:819275113,cost:0,pnl:0,note:'',cryptoVal:40248139,cmaVal:93401366,taxSave:685625609},
+  {date:'2026. 3. 26.',ts:'2026-03-26T00:00:00.000Z',cur:832263126,cost:0,pnl:0,note:'',cryptoVal:40846951,cmaVal:94910139,taxSave:696506035},
+  {date:'2026. 3. 30.',ts:'2026-03-30T00:00:00.000Z',cur:805536838,cost:0,pnl:0,note:'',cryptoVal:39519690,cmaVal:93403958,taxSave:672613190},
+  {date:'2026. 4. 1.',ts:'2026-04-01T00:00:00.000Z',cur:831023234,cost:0,pnl:0,note:'',cryptoVal:40790841,cmaVal:97240450,taxSave:692991943},
+  {date:'2026. 4. 2.',ts:'2026-04-02T00:00:00.000Z',cur:826373900,cost:0,pnl:0,note:'',cryptoVal:39399491,cmaVal:95917764,taxSave:691056645},
+  {date:'2026. 4. 6.',ts:'2026-04-06T00:00:00.000Z',cur:836494663,cost:0,pnl:0,note:'',cryptoVal:40967614,cmaVal:96694514,taxSave:698832535},
+  {date:'2026. 4. 9.',ts:'2026-04-09T00:00:00.000Z',cur:836494663,cost:0,pnl:0,note:'',cryptoVal:40967614,cmaVal:96694514,taxSave:698832535},
+  {date:'2026. 4. 14.',ts:'2026-04-14T00:00:00.000Z',cur:852674063,cost:0,pnl:0,note:'',cryptoVal:42888560,cmaVal:92433444,taxSave:717352060},
+  {date:'2026. 4. 16.',ts:'2026-04-16T00:00:00.000Z',cur:865097777,cost:0,pnl:0,note:'',cryptoVal:42795859,cmaVal:94107219,taxSave:728194700},
+  {date:'2026. 4. 17.',ts:'2026-04-17T00:00:00.000Z',cur:868609965,cost:0,pnl:0,note:'',cryptoVal:43436953,cmaVal:93621982,taxSave:731551030},
+  {date:'2026. 4. 21.',ts:'2026-04-21T00:00:00.000Z',cur:874749942,cost:0,pnl:0,note:'',cryptoVal:43273932,cmaVal:93131000,taxSave:738345010},
+  {date:'2026. 4. 22.',ts:'2026-04-22T00:00:00.000Z',cur:874737232,cost:0,pnl:0,note:'',cryptoVal:44527966,cmaVal:91752671,taxSave:738456595},
+  {date:'2026. 4. 24.',ts:'2026-04-24T00:00:00.000Z',cur:879170208,cost:0,pnl:0,note:'',taxSave:743673490,cmaVal:91790616,cryptoVal:43706103},
+  {date:'2026. 4. 30.',ts:'2026-04-30T00:00:00.000Z',cur:876981404,cost:0,pnl:0,note:'',taxSave:741975860,cmaVal:91945728,cryptoVal:43059816},
+  {date:'2026. 5. 3.',ts:'2026-05-03T00:00:00.000Z',cur:874092862,cost:0,pnl:0,note:'',taxSave:738867075,cmaVal:91931965,cryptoVal:43293822},
+  {date:'2026. 5. 4.',ts:'2026-05-04T00:00:00.000Z',cur:888507707,cost:0,pnl:0,note:'',taxSave:750649580,cmaVal:93514845,cryptoVal:44343282},
+  {date:'2026. 5. 6.',ts:'2026-05-06T00:00:00.000Z',cur:892129062,cost:0,pnl:0,note:'',taxSave:754480720,cmaVal:93120566,cryptoVal:44527776}
 ];
 var SNAP_DEL_KEY='fp_snap_del';
 function loadSnaps(){
@@ -1185,9 +1177,21 @@ function loadSnaps(){
   var delSet={};
   deleted.forEach(function(ts){delSet[ts]=1;});
   // HIST_SNAPS와 localStorage 병합: 같은 날짜면 localStorage 우선, 삭제목록 제외
+  // HIST_SNAPS를 기준으로 먼저 map 구성
+  var histMap={};
+  HIST_SNAPS.forEach(function(h){if(!delSet[h.ts])histMap[h.date]=h;});
   var map={};
   HIST_SNAPS.forEach(function(h){if(!delSet[h.ts])map[h.date]=h;});
-  stored.forEach(function(s){if(!delSet[s.ts])map[s.date]=s;});
+  stored.forEach(function(s){
+    if(delSet[s.ts]) return;
+    // stored에 taxSave 없고 HIST_SNAPS에 있으면 → HIST_SNAPS 값으로 보완
+    var hist=histMap[s.date];
+    if(hist&&hist.taxSave!=null){
+      // HIST_SNAPS에 taxSave 있으면 → cur 포함 전체 보완 (부동소수점 오차 포함)
+      s=Object.assign({},s,{cur:hist.cur,taxSave:hist.taxSave,cmaVal:hist.cmaVal,cryptoVal:hist.cryptoVal});
+    }
+    map[s.date]=s;
+  });
   return Object.values(map).sort(function(a,b){return a.ts<b.ts?-1:1;});
 }
 
@@ -3807,16 +3811,16 @@ function exportToExcel(){
 
   // ── 6. 자산변동 ──
   var snaps=loadSnaps();
-  var snapR=[['날짜','평가액(원)','억원','변동액(전기대비)','변동률(전기대비)','비고']];
+  var snapR=[['날짜','절세계좌(원)','CMA(원)','가상화폐(원)','평가액(원)','억원','변동액(전기대비)','변동률(전기대비)','비고']];
   var rev=snaps.slice().reverse();
   rev.forEach(function(d,idx){
     var prev=idx<rev.length-1?rev[idx+1].cur:0;
     var chgAmt=prev>0?d.cur-prev:0;
     var chgRate=prev>0?(d.cur-prev)/prev:0;
-    snapR.push([d.date,d.cur,Math.round(d.cur/100000000*10)/10,prev>0?chgAmt:'',prev>0?chgRate:'',d.note||'']);
+    snapR.push([d.date,d.taxSave!=null?d.taxSave:'',d.cmaVal!=null?d.cmaVal:'',d.cryptoVal!=null?d.cryptoVal:'',d.cur,Math.round(d.cur/100000000*10)/10,prev>0?chgAmt:'',prev>0?chgRate:'',d.note||'']);
   });
   var wsSnap=XLSX.utils.aoa_to_sheet(snapR);
-  wsSnap['!cols']=[{wch:14},{wch:16},{wch:8},{wch:16},{wch:12},{wch:40}];
+  wsSnap['!cols']=[{wch:14},{wch:16},{wch:14},{wch:14},{wch:16},{wch:8},{wch:16},{wch:12},{wch:40}];
   XLSX.utils.book_append_sheet(wb,wsSnap,'자산변동');
 
   // ── 7. 월별 분배금 ──
@@ -4200,7 +4204,13 @@ async function ghPush(silent){
           if(_obj.snaps&&_obj.snaps.length){
             var _smap={};
             snaps.forEach(function(s){_smap[s.date]=s;});
-            _obj.snaps.forEach(function(s){if(!_smap[s.date]||s.ts>_smap[s.date].ts)_smap[s.date]=s;});
+            _obj.snaps.forEach(function(s){
+            if(!_smap[s.date]||s.ts>_smap[s.date].ts){
+              var _ex2=_smap[s.date];
+              if(_ex2&&s.taxSave==null&&_ex2.taxSave!=null){s=Object.assign({},s,{taxSave:_ex2.taxSave,cmaVal:_ex2.cmaVal,cryptoVal:_ex2.cryptoVal});}
+              _smap[s.date]=s;
+            }
+          });
             snaps=Object.values(_smap).sort(function(a,b){return a.date<b.date?-1:1;});
             sSet(SNAPKEY,JSON.stringify(snaps));
           }
@@ -4255,7 +4265,7 @@ async function ghPull(force){
     var localSaved=sGet('fp_last_save')||'0';
     if(!force&&obj.saved&&obj.saved<=localSaved) return false;
     // ── 스마트 병합: saved 타임스탬프 비교
-    var localSaved2=sGet('fp2_last_save')||'0';
+    var localSaved2=sGet('fp_last_save')||'0';
     var ghSaved=obj.saved||'0';
     var ghNewer=(ghSaved>localSaved2);
     if(ghNewer){
@@ -4279,7 +4289,12 @@ async function ghPull(force){
     if(obj.snaps&&obj.snaps.length){
       obj.snaps.forEach(function(s){
         // 더 최신 ts = 더 최신 기기에서 기록한 값
-        if(!mergedMap[s.date]||s.ts>mergedMap[s.date].ts) mergedMap[s.date]=s;
+        if(!mergedMap[s.date]||s.ts>mergedMap[s.date].ts){
+          // GitHub 스냅에 taxSave 없으면 기존 값 보존
+          var _ex=mergedMap[s.date];
+          if(_ex&&s.taxSave==null&&_ex.taxSave!=null){s=Object.assign({},s,{taxSave:_ex.taxSave,cmaVal:_ex.cmaVal,cryptoVal:_ex.cryptoVal});}
+          mergedMap[s.date]=s;
+        }
       });
     }
     var mergedSnaps=Object.values(mergedMap).sort(function(a,b){return a.date<b.date?-1:1;});

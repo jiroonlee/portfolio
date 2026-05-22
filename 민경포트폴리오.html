@@ -866,7 +866,7 @@ var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
   sub: '연금계좌 풍차계획 포트폴리오',
-  version: 'v5.75',   // 버전 — 여기만 수정
+  version: 'v5.81',   // 버전 — 여기만 수정
   birthdate: '', // 생년월일 (YYYY-MM-DD 또는 YY.M.D 형식)
   accMeta: {},
   accOrder: []
@@ -998,7 +998,14 @@ function saveData(){
   var t=grandTotal();
   var snaps=loadSnaps();
   var idx=snaps.findIndex(function(s){return s.date===today;});
-  var snap={date:today,ts:now,cur:t.cur,cost:t.cost,pnl:t.pnl,note:''};
+  var taxSave=0;
+  ACCOUNTS.forEach(function(a){a.holdings.forEach(function(h){if(h.isMMF)return;taxSave+=liveP(h)*(h.qty||0);});});
+  var cmaVal=0;
+  CMA.holdings.forEach(function(h){cmaVal+=cmaCurKRW(h);});
+  var cryptoVal=0;
+  var _allCr=[].concat(CRYPTO.bithumb||[],CRYPTO.upbit||[]).concat((CRYPTO.exchanges||[]).reduce(function(a,e){return a.concat(e.holdings||[]);},[]));
+  _allCr.forEach(function(h){var p=PRICES[h.sym]!=null?PRICES[h.sym]:h.cost;cryptoVal+=p*((h.stk||0)+(h.qty||0));});
+  var snap={date:today,ts:now,cur:t.cur,cost:t.cost,pnl:t.pnl,note:'',taxSave:Math.round(taxSave),cmaVal:Math.round(cmaVal),cryptoVal:Math.round(cryptoVal)};
   if(idx>=0)snaps[idx]=snap;else snaps.push(snap);
   snaps.sort(function(a,b){return a.date<b.date?-1:1;});
   sSet(SNAPKEY,JSON.stringify(snaps));
@@ -1013,7 +1020,26 @@ function saveData(){
     alert('\u2705 저장 완료 ('+today+')\n총평가액: '+fmt(t.cur)+'원');
   }
 }
-var HIST_SNAPS=[];
+var HIST_SNAPS=[
+  {date:'2025. 7. 11.',ts:'2025-07-11T00:00:00.000Z',cur:189829726,cost:0,pnl:0,note:''},
+  {date:'2025. 7. 23.',ts:'2025-07-23T00:00:00.000Z',cur:195603461,cost:0,pnl:0,note:''},
+  {date:'2025. 8. 24.',ts:'2025-08-24T00:00:00.000Z',cur:204516156,cost:0,pnl:0,note:''},
+  {date:'2025. 8. 25.',ts:'2025-08-25T00:00:00.000Z',cur:205351417,cost:0,pnl:0,note:''},
+  {date:'2025. 9. 2.',ts:'2025-09-02T00:00:00.000Z',cur:204562551,cost:0,pnl:0,note:''},
+  {date:'2025. 9. 18.',ts:'2025-09-18T00:00:00.000Z',cur:217914832,cost:0,pnl:0,note:''},
+  {date:'2025. 10. 2.',ts:'2025-10-02T00:00:00.000Z',cur:224893644,cost:0,pnl:0,note:'',taxSave:143237673,cmaVal:77117719,cryptoVal:4538252},
+  {date:'2025. 10. 3.',ts:'2025-10-03T00:00:00.000Z',cur:223961583,cost:0,pnl:0,note:'',taxSave:143237673,cmaVal:76096054,cryptoVal:4627856},
+  {date:'2025. 10. 4.',ts:'2025-10-04T00:00:00.000Z',cur:222768925,cost:0,pnl:0,note:'',taxSave:143237673,cmaVal:74892491,cryptoVal:4638761},
+  {date:'2025. 10. 11.',ts:'2025-10-11T00:00:00.000Z',cur:224538409,cost:0,pnl:0,note:'',taxSave:145726838,cmaVal:74436625,cryptoVal:4374947},
+  {date:'2025. 10. 22.',ts:'2025-10-22T00:00:00.000Z',cur:228610555,cost:0,pnl:0,note:'',taxSave:147144112,cmaVal:77240082,cryptoVal:4226360},
+  {date:'2025. 10. 24.',ts:'2025-10-24T00:00:00.000Z',cur:231806872,cost:0,pnl:0,note:'',taxSave:148579361,cmaVal:78950880,cryptoVal:4276631},
+  {date:'2025. 10. 27.',ts:'2025-10-27T00:00:00.000Z',cur:233416256,cost:0,pnl:0,note:'',taxSave:150095871,cmaVal:78925177,cryptoVal:4395207},
+  {date:'2025. 10. 28.',ts:'2025-10-28T00:00:00.000Z',cur:238884699,cost:0,pnl:0,note:'',taxSave:152733086,cmaVal:81767801,cryptoVal:4383812},
+  {date:'2025. 11. 6.',ts:'2025-11-06T00:00:00.000Z',cur:239725391,cost:0,pnl:0,note:'',taxSave:152232501,cmaVal:83729355,cryptoVal:3763535},
+  {date:'2025. 11. 11.',ts:'2025-11-11T00:00:00.000Z',cur:242063057,cost:0,pnl:0,note:'',taxSave:153810676,cmaVal:84375329,cryptoVal:3877052},
+  {date:'2025. 12. 31.',ts:'2025-12-31T00:00:00.000Z',cur:233609642,cost:0,pnl:0,note:'',taxSave:151153596,cmaVal:79222364,cryptoVal:3233682},
+  {date:'2026. 4. 18.',ts:'2026-04-18T00:00:00.000Z',cur:236647337,cost:0,pnl:0,note:'',taxSave:167322575,cmaVal:66728569,cryptoVal:2596193}
+];
 var SNAP_DEL_KEY='fp2_snap_del';
 function loadSnaps(){
   var stored;
@@ -1023,9 +1049,21 @@ function loadSnaps(){
   var delSet={};
   deleted.forEach(function(ts){delSet[ts]=1;});
   // HIST_SNAPS와 localStorage 병합: 같은 날짜면 localStorage 우선, 삭제목록 제외
+  // HIST_SNAPS를 기준으로 먼저 map 구성
+  var histMap={};
+  HIST_SNAPS.forEach(function(h){if(!delSet[h.ts])histMap[h.date]=h;});
   var map={};
   HIST_SNAPS.forEach(function(h){if(!delSet[h.ts])map[h.date]=h;});
-  stored.forEach(function(s){if(!delSet[s.ts])map[s.date]=s;});
+  stored.forEach(function(s){
+    if(delSet[s.ts]) return;
+    // stored에 taxSave 없고 HIST_SNAPS에 있으면 → HIST_SNAPS 값으로 보완
+    var hist=histMap[s.date];
+    if(hist&&hist.taxSave!=null){
+      // HIST_SNAPS에 taxSave 있으면 → cur 포함 전체 보완 (부동소수점 오차 포함)
+      s=Object.assign({},s,{cur:hist.cur,taxSave:hist.taxSave,cmaVal:hist.cmaVal,cryptoVal:hist.cryptoVal});
+    }
+    map[s.date]=s;
+  });
   return Object.values(map).sort(function(a,b){return a.ts<b.ts?-1:1;});
 }
 
@@ -2711,7 +2749,7 @@ var PERIODS=[['daily','\uc77c\ubcc4'],['weekly','\uc8fc\ubcc4'],['monthly','\uc6
 function wkNum(d){var dt=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));dt.setUTCDate(dt.getUTCDate()+4-(dt.getUTCDay()||7));var y=new Date(Date.UTC(dt.getUTCFullYear(),0,1));return Math.ceil(((dt-y)/86400000+1)/7);}
 function snapKey(ts,p){var d=new Date(ts);var Y=d.getFullYear(),M=String(d.getMonth()+1).padStart(2,'0'),D=String(d.getDate()).padStart(2,'0');if(p==='daily')return Y+'-'+M+'-'+D;if(p==='weekly')return Y+'-W'+String(wkNum(d)).padStart(2,'0');if(p==='monthly')return Y+'-'+M;if(p==='quarterly')return Y+'-Q'+Math.ceil((d.getMonth()+1)/3);if(p==='semi')return Y+(d.getMonth()<6?'-S1':'-S2');return String(Y);}
 function snapLbl(ts,p){var d=new Date(ts);var Y=d.getFullYear(),M=String(d.getMonth()+1).padStart(2,'0'),D=String(d.getDate()).padStart(2,'0');if(p==='daily')return Y+'.'+M+'/'+D;if(p==='weekly')return Y+'W'+wkNum(d);if(p==='monthly')return Y+'.'+M;if(p==='quarterly')return Y+'Q'+Math.ceil((d.getMonth()+1)/3);if(p==='semi')return Y+(d.getMonth()<6?'\uc0c1':'\ud558');return String(Y);}
-function aggSnaps(p){var snaps=loadSnaps();if(!snaps.length)return[];var map={};snaps.forEach(function(s){var k=snapKey(s.ts,p);map[k]={label:snapLbl(s.ts,p),cur:s.cur,cost:s.cost,pnl:s.pnl,ts:s.ts,note:s.note||''};});return Object.values(map).sort(function(a,b){return new Date(a.ts)-new Date(b.ts);});}
+function aggSnaps(p){var snaps=loadSnaps();if(!snaps.length)return[];var map={};snaps.forEach(function(s){var k=snapKey(s.ts,p);map[k]={label:snapLbl(s.ts,p),cur:s.cur,cost:s.cost,pnl:s.pnl,ts:s.ts,note:s.note||'',taxSave:s.taxSave!=null?s.taxSave:null,cmaVal:s.cmaVal!=null?s.cmaVal:null,cryptoVal:s.cryptoVal!=null?s.cryptoVal:null};});return Object.values(map).sort(function(a,b){return new Date(a.ts)-new Date(b.ts);});}
 function renderHistory(){
   var ptabs=PERIODS.map(function(kl){return'<button class="ptab'+(kl[0]===_hPeriod?' on':'')+'" onclick="switchPeriod(\''+kl[0]+'\')">'+kl[1]+'</button>';}).join('');
   document.getElementById('pg-history').innerHTML=[
@@ -3642,16 +3680,16 @@ function exportToExcel(){
 
   // ── 6. 자산변동 ──
   var snaps=loadSnaps();
-  var snapR=[['날짜','평가액(원)','억원','변동액(전기대비)','변동률(전기대비)','비고']];
+  var snapR=[['날짜','절세계좌(원)','CMA(원)','가상화폐(원)','평가액(원)','억원','변동액(전기대비)','변동률(전기대비)','비고']];
   var rev=snaps.slice().reverse();
   rev.forEach(function(d,idx){
     var prev=idx<rev.length-1?rev[idx+1].cur:0;
     var chgAmt=prev>0?d.cur-prev:0;
     var chgRate=prev>0?(d.cur-prev)/prev:0;
-    snapR.push([d.date,d.cur,Math.round(d.cur/100000000*10)/10,prev>0?chgAmt:'',prev>0?chgRate:'',d.note||'']);
+    snapR.push([d.date,d.taxSave!=null?d.taxSave:'',d.cmaVal!=null?d.cmaVal:'',d.cryptoVal!=null?d.cryptoVal:'',d.cur,Math.round(d.cur/100000000*10)/10,prev>0?chgAmt:'',prev>0?chgRate:'',d.note||'']);
   });
   var wsSnap=XLSX.utils.aoa_to_sheet(snapR);
-  wsSnap['!cols']=[{wch:14},{wch:16},{wch:8},{wch:16},{wch:12},{wch:40}];
+  wsSnap['!cols']=[{wch:14},{wch:16},{wch:14},{wch:14},{wch:16},{wch:8},{wch:16},{wch:12},{wch:40}];
   XLSX.utils.book_append_sheet(wb,wsSnap,'자산변동');
 
   // ── 7. 월별 분배금 ──
@@ -4035,7 +4073,13 @@ async function ghPush(silent){
           if(_obj.snaps&&_obj.snaps.length){
             var _smap={};
             snaps.forEach(function(s){_smap[s.date]=s;});
-            _obj.snaps.forEach(function(s){if(!_smap[s.date]||s.ts>_smap[s.date].ts)_smap[s.date]=s;});
+            _obj.snaps.forEach(function(s){
+            if(!_smap[s.date]||s.ts>_smap[s.date].ts){
+              var _ex2=_smap[s.date];
+              if(_ex2&&s.taxSave==null&&_ex2.taxSave!=null){s=Object.assign({},s,{taxSave:_ex2.taxSave,cmaVal:_ex2.cmaVal,cryptoVal:_ex2.cryptoVal});}
+              _smap[s.date]=s;
+            }
+          });
             snaps=Object.values(_smap).sort(function(a,b){return a.date<b.date?-1:1;});
             sSet(SNAPKEY,JSON.stringify(snaps));
           }
@@ -4114,7 +4158,12 @@ async function ghPull(force){
     if(obj.snaps&&obj.snaps.length){
       obj.snaps.forEach(function(s){
         // 더 최신 ts = 더 최신 기기에서 기록한 값
-        if(!mergedMap[s.date]||s.ts>mergedMap[s.date].ts) mergedMap[s.date]=s;
+        if(!mergedMap[s.date]||s.ts>mergedMap[s.date].ts){
+          // GitHub 스냅에 taxSave 없으면 기존 값 보존
+          var _ex=mergedMap[s.date];
+          if(_ex&&s.taxSave==null&&_ex.taxSave!=null){s=Object.assign({},s,{taxSave:_ex.taxSave,cmaVal:_ex.cmaVal,cryptoVal:_ex.cryptoVal});}
+          mergedMap[s.date]=s;
+        }
       });
     }
     var mergedSnaps=Object.values(mergedMap).sort(function(a,b){return a.date<b.date?-1:1;});
@@ -4430,7 +4479,7 @@ function migrateTickers(){
 }
 
 /* ===== 연초 당해납입/인출 자동 리셋 ===== */
-var YR_RESET_KEY='fp_yr_reset';
+var YR_RESET_KEY='fp2_yr_reset';
 function checkYearReset(){
   var curY=new Date().getFullYear();
   var savedY=parseInt(sGet(YR_RESET_KEY)||'0');
