@@ -354,6 +354,10 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
 .pw-btn:hover{background:#0c3e9e}
 .pw-err{background:#fde8e8;color:#c81e1e;border-radius:6px;padding:9px;font-size:12px;margin-bottom:12px;display:none}
 .pw-info{font-size:11px;color:#9ca3af;margin-top:12px}
+
+
+
+  .strat-edit:focus { outline: 2px solid #93c5fd !important; background:#f0f9ff; border-radius:3px; }
 </style>
 </head>
 <body>
@@ -866,7 +870,7 @@ var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
   sub: '연금계좌 풍차계획 포트폴리오',
-  version: 'v5.81',   // 버전 — 여기만 수정
+  version: 'v5.89',   // 버전 — 여기만 수정
   birthdate: '', // 생년월일 (YYYY-MM-DD 또는 YY.M.D 형식)
   accMeta: {},
   accOrder: []
@@ -1633,6 +1637,7 @@ function renderDistDashboard(){
 /* ===== 사적연금 통합관리 ===== */
 var PENSION_KEY='fp2_pension_v1';
 var PENSION_STRATEGY_KEY='fp2_pension_strategy';
+var PORTFOLIO_STRAT_KEY='fp2_pension_v1';
 
 function pensionGet(){try{return JSON.parse(sGet(PENSION_KEY)||'{}');}catch(e){return {};}}
 function pensionSet(obj){sSet(PENSION_KEY,JSON.stringify(obj));}
@@ -2610,6 +2615,302 @@ function renderCrypto(force){
 
 
 
+
+
+
+
+
+/* ===== 포트폴리오 운영전략 대시보드 ===== */
+var _STRAT_DEF=[
+  {id:'income', label:'현금흐름 (Income)',    tickers:['441640','0144L0','CRCL'],
+   role:'월배당을 통한 은퇴 생활비 창출', strategy:'50% 내외 장기보유 (분배금 재투자)'},
+  {id:'tech',   label:'테마성장 (Tech)',      tickers:['379810','426030','457480','483340','438100'],
+   role:'기술 혁신 및 장기 자본 차익', strategy:'30~40% 내외 장기투자'},
+  {id:'safe',   label:'안전자산/원자재',      tickers:['0066W0','1540','2621'],
+   role:'인플레이션 방어 및 포트폴리오 보호', strategy:'5% 내외 유지'},
+  {id:'value',  label:'경기민감/가치주',      tickers:['1632'],
+   role:'금리 인상기 대응 및 보조 인컴', strategy:'5% 내외 유지'},
+  {id:'crypto', label:'가상자산 및 혁신성장', tickers:['BTC','ETH','SOL','LINK'],
+   role:'디지털 금, 초과 수익 및 헤지', strategy:'매도 후 생활비 또는 절세계좌 이전'}
+];
+var _stratData=null;
+
+function stratLoad(){
+  if(_stratData) return _stratData;
+  try{
+    var s=sGet(PORTFOLIO_STRAT_KEY);
+    if(s){
+      var parsed=JSON.parse(s);
+      _stratData=parsed;
+    } else {
+      _stratData=JSON.parse(JSON.stringify(_STRAT_DEF));
+    }
+  } catch(e){ _stratData=JSON.parse(JSON.stringify(_STRAT_DEF)); }
+  return _stratData;
+}
+function stratSave(){ sSet(PORTFOLIO_STRAT_KEY, JSON.stringify(_stratData)); }
+
+/* 전체 종목 목록 (이름+티커) */
+function stratAllItems(){
+  var items=[];
+  function addItem(n,tk){
+    var key=tk||n;
+    if(!items.find(function(x){return x.key===key;}))
+      items.push({key:key, name:n||tk||'', tk:tk||''});
+  }
+  ACCOUNTS.forEach(function(acc){
+    acc.holdings.forEach(function(h){
+      if(h.isMMF) return;
+      addItem(h.n||'', h.tk||'');
+    });
+  });
+  CMA.holdings.forEach(function(h){
+    if(h.n && h.n.indexOf('\uc11c\ud074')>=0) addItem(h.n,'CRCL');
+    else addItem(h.n||'', h.tk||'');
+  });
+  var allCr=[].concat(CRYPTO.bithumb||[],CRYPTO.upbit||[])
+    .concat((CRYPTO.exchanges||[]).reduce(function(a,e){return a.concat(e.holdings||[]);},[]));
+  allCr.forEach(function(h){ addItem(h.sym||'', h.sym||''); });
+  return items;
+}
+
+/* 평가액 계산 */
+function stratCalcValues(){
+  var data=stratLoad();
+  var tkMap={};
+  ACCOUNTS.forEach(function(acc){
+    acc.holdings.forEach(function(h){
+      if(h.isMMF) return;
+      var v=liveP(h)*(h.qty||0);
+      var key=h.tk||h.n||'';
+      if(key) tkMap[key]=(tkMap[key]||0)+v;
+    });
+  });
+  CMA.holdings.forEach(function(h){
+    var v=cmaCurKRW(h);
+    if(h.n&&h.n.indexOf('\uc11c\ud074')>=0){ tkMap['CRCL']=(tkMap['CRCL']||0)+v; }
+    else if(h.tk){ tkMap[h.tk]=(tkMap[h.tk]||0)+v; }
+    if(h.isRP||(h.n&&(h.n.indexOf('RP')>=0||h.n.indexOf('CMA')>=0))){
+      tkMap['__rp__']=(tkMap['__rp__']||0)+v;
+    }
+  });
+  var allCr=[].concat(CRYPTO.bithumb||[],CRYPTO.upbit||[])
+    .concat((CRYPTO.exchanges||[]).reduce(function(a,e){return a.concat(e.holdings||[]);},[]));
+  allCr.forEach(function(h){
+    var p=PRICES[h.sym]!=null?PRICES[h.sym]:h.cost;
+    tkMap[h.sym]=(tkMap[h.sym]||0)+p*((h.stk||0)+(h.qty||0));
+  });
+  return data.map(function(cat){
+    var total=0;
+    (cat.tickers||[]).forEach(function(tk){ total+=(tkMap[tk]||0); });
+    if(cat.id==='safe') total+=(tkMap['__rp__']||0);
+    return {id:cat.id,label:cat.label,val:Math.round(total),
+            role:cat.role,strategy:cat.strategy,tickers:cat.tickers||[]};
+  });
+}
+
+/* 구성종목 요약 표시 */
+function stratTickerLabel(tickers){
+  if(!tickers||!tickers.length) return '<span style="color:#9ca3af;font-style:italic">클릭하여 선택</span>';
+  var all=stratAllItems();
+  var names=tickers.map(function(tk){
+    var item=all.find(function(x){return x.key===tk;});
+    return item?item.tk||item.name:tk;
+  });
+  var MAX=2;
+  var lines=[];
+  var used=0;
+  for(var i=0;i<names.length;i++){
+    if(lines.length===0){ lines.push(names[i]); used=1; continue; }
+    var trial=lines[lines.length-1]+', '+names[i];
+    if(trial.length<=22){ lines[lines.length-1]=trial; used++; }
+    else if(lines.length<MAX){ lines.push(names[i]); used++; }
+    else { lines[MAX-1]+=' 등 '+(names.length-used+1)+'개'; break; }
+  }
+  return lines.join('<br>');
+}
+
+/* 인라인 편집 */
+function stratEditField(idx,field,el){
+  var data=stratLoad();
+  if(!data[idx]) return;
+  data[idx][field]=el.innerText.trim();
+  stratSave();
+}
+function stratEditLabel(idx,el){
+  var data=stratLoad();
+  if(!data[idx]) return;
+  data[idx].label=el.innerText.trim();
+  stratSave();
+}
+
+/* 행 추가 */
+function stratAddRow(){
+  var data=stratLoad();
+  data.push({id:'cat_'+Date.now(),label:'새 분류',tickers:[],role:'',strategy:''});
+  stratSave(); _stratData=null;
+  renderHoldings();
+}
+
+/* 행 삭제 */
+function stratDelRow(idx){
+  var data=stratLoad();
+  if(data.length<=1) return;
+  data.splice(idx,1);
+  stratSave(); _stratData=null;
+  renderHoldings();
+}
+
+/* 구성종목 모달 */
+function stratOpenModal(idx){
+  var data=stratLoad();
+  var cat=data[idx];
+  if(!cat) return;
+  var items=stratAllItems();
+  /* 기존 선택 순서 보존 */
+  var orderedKeys=cat.tickers.slice();
+  var chks='';
+  /* 먼저 기존 선택 종목 (선택 순서대로) */
+  orderedKeys.forEach(function(key){
+    var item=items.find(function(x){return x.key===key;});
+    if(!item) return;
+    var label=item.name&&item.tk&&item.name!==item.tk?item.name+' ('+item.tk+')':item.name||item.tk;
+    chks+='<label style="display:flex;align-items:center;gap:8px;padding:4px 0;cursor:pointer">'
+      +'<input type="checkbox" value="'+item.key+'" checked style="width:14px;height:14px;flex-shrink:0">'
+      +'<span style="font-size:12px">'+label+'</span></label>';
+  });
+  /* 미선택 종목 */
+  items.forEach(function(item){
+    if(orderedKeys.indexOf(item.key)>=0) return;
+    var label=item.name&&item.tk&&item.name!==item.tk?item.name+' ('+item.tk+')':item.name||item.tk;
+    chks+='<label style="display:flex;align-items:center;gap:8px;padding:4px 0;cursor:pointer">'
+      +'<input type="checkbox" value="'+item.key+'" style="width:14px;height:14px;flex-shrink:0">'
+      +'<span style="font-size:12px">'+label+'</span></label>';
+  });
+  var mhtml='<div id="strat-modal" style="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:center;justify-content:center" onclick="if(event.target===this)stratCloseModal()">'
+    +'<div style="background:#fff;border-radius:12px;padding:20px 24px;min-width:300px;max-width:420px;max-height:80vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.2)">'
+    +'<div style="font-size:13px;font-weight:700;color:#1e3a8a;margin-bottom:4px">'+cat.label+' — 구성 종목 선택</div>'
+    +'<div style="font-size:11px;color:#9ca3af;margin-bottom:10px">체크한 순서대로 정렬됩니다</div>'
+    +'<div id="strat-chk-list" style="max-height:320px;overflow-y:auto;border:1px solid #e5e7eb;border-radius:6px;padding:6px 10px">'+chks+'</div>'
+    +'<div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">'
+    +'<button onclick="stratCloseModal()" style="padding:6px 16px;border:1px solid #d1d5db;border-radius:6px;background:#f9fafb;cursor:pointer;font-size:12px">취소</button>'
+    +'<button id="strat-save-btn" style="padding:6px 16px;border:none;border-radius:6px;background:#1a56db;color:#fff;cursor:pointer;font-size:12px;font-weight:700">저장</button>'
+    +'</div></div></div>';
+  var el=document.getElementById('strat-modal');
+  if(el) el.remove();
+  document.body.insertAdjacentHTML('beforeend',mhtml);
+  /* 체크 이벤트: 새로 체크하면 목록 맨 아래로 이동 */
+  document.getElementById('strat-chk-list').addEventListener('change',function(e){
+    if(!e.target.matches('input[type=checkbox]')) return;
+    var label=e.target.closest('label');
+    if(!label) return;
+    var list=document.getElementById('strat-chk-list');
+    if(e.target.checked){ list.appendChild(label); }
+  });
+  document.getElementById('strat-save-btn').onclick=function(){stratSaveModal(idx);};
+}
+function stratCloseModal(){
+  var el=document.getElementById('strat-modal');
+  if(el) el.remove();
+}
+function stratSaveModal(idx){
+  var data=stratLoad();
+  if(!data[idx]){ stratCloseModal(); return; }
+  var cbs=document.querySelectorAll('#strat-chk-list input[type=checkbox]');
+  var sel=[];
+  cbs.forEach(function(cb){ if(cb.checked) sel.push(cb.value); });
+  /* 선택 순서 유지: checked 순서가 곧 클릭 순서 */
+  data[idx].tickers=sel;
+  stratSave();
+  stratCloseModal();
+  renderHoldings();
+}
+
+/* 대시보드 렌더 */
+function renderStratDashboard(){
+  var cats=stratCalcValues();
+  var grand=cats.reduce(function(s,cat){return s+cat.val;},0)||1;
+  var DOTS=['#1a56db','#7c3aed','#057a55','#d97706','#f59e0b','#dc2626','#0891b2'];
+  var TH='padding:7px 8px;font-size:10px;color:#4b5563;font-weight:700;background:#f1f5f9;box-shadow:inset 0 -2px 0 #d1d9e0;white-space:nowrap;';
+  var trs='';
+  for(var i=0;i<cats.length;i++){
+    var cat=cats[i]; var dot=DOTS[i%DOTS.length];
+    var pct=(cat.val/grand*100).toFixed(2)+'%'; var ri=String(i);
+    trs+=''
+      +'<tr>'
+      +'<td style="padding:6px 8px;white-space:nowrap;position:sticky;left:0;background:#fff;z-index:2;vertical-align:middle;border-bottom:1px solid #e5e7eb">'
+        +'<div style="display:flex;align-items:center;gap:4px;min-width:0">'
+          +'<span style="width:8px;height:8px;border-radius:2px;background:'+dot+';flex-shrink:0;display:inline-block"></span>'
+          +'<span contenteditable="true" spellcheck="false" class="strat-edit" data-sidx="'+ri+'" data-sfield="label"'
+            +' style="font-weight:700;font-size:12px;color:#1e3a8a;outline:none;cursor:text;white-space:nowrap">'+cat.label+'</span>'
+          +'<button class="strat-del-btn" data-sidx="'+ri+'" style="flex-shrink:0;border:none;background:none;color:#d1d5db;cursor:pointer;font-size:15px;padding:0 2px;line-height:1;margin-left:2px" title="삭제">×</button>'
+        +'</div>'
+      +'</td>'
+      +'<td class="strat-modal-td" data-sidx="'+ri+'" style="padding:6px 8px;cursor:pointer;width:150px;max-width:180px;vertical-align:middle;border-bottom:1px solid #e5e7eb" title="클릭하여 종목 선택">'
+        +'<div style="font-size:11px;color:#374151;line-height:1.55;word-break:break-all;text-align:left;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden">'+stratTickerLabel(cat.tickers)+'</div>'
+      +'</td>'
+      +'<td style="padding:6px 8px;text-align:right;font-weight:700;color:#1e3a8a;white-space:nowrap;vertical-align:middle;border-bottom:1px solid #e5e7eb">'+fmt(cat.val)+'원</td>'
+      +'<td style="padding:6px 8px;text-align:right;font-weight:700;color:#1e3a8a;vertical-align:middle;white-space:nowrap;border-bottom:1px solid #e5e7eb">'+pct+'</td>'
+      +'<td style="padding:6px 10px;vertical-align:middle;min-width:180px;border-bottom:1px solid #e5e7eb">'
+        +'<div contenteditable="true" spellcheck="false" class="strat-edit" data-sidx="'+ri+'" data-sfield="role"'
+          +' style="font-size:11px;color:#374151;line-height:1.55;word-break:break-word;overflow-wrap:break-word;text-align:left;outline:none;cursor:text;white-space:pre-wrap">'+cat.role+'</div>'
+      +'</td>'
+      +'<td style="padding:6px 10px;vertical-align:middle;min-width:190px;border-bottom:1px solid #e5e7eb">'
+        +'<div contenteditable="true" spellcheck="false" class="strat-edit" data-sidx="'+ri+'" data-sfield="strategy"'
+          +' style="font-size:11px;color:#374151;line-height:1.55;word-break:break-word;overflow-wrap:break-word;text-align:left;outline:none;cursor:text;white-space:pre-wrap">'+cat.strategy+'</div>'
+      +'</td>'
+      +'</tr>';
+  }
+  var sumRow=''
+    +'<tr style="background:#fafbff">'
+    +'<td style="padding:7px 8px;font-weight:700;font-size:11px;color:#1e3a8a;position:sticky;left:0;background:#fafbff;z-index:2" colspan="2">합 계</td>'
+    +'<td style="padding:7px 8px;text-align:right;font-weight:700;color:#1e3a8a">'+fmt(grand)+'원</td>'
+    +'<td style="padding:7px 8px;text-align:right;font-weight:700;color:#1e3a8a">100%</td>'
+    +'<td colspan="2"></td>'
+    +'</tr>';
+  return ''
+    +'<div class="sec" style="margin-bottom:10px">'
+    +'<div class="sechdr"><span class="sectitle">포트폴리오 구성종목 및 운영전략</span></div>'
+    +'<div class="twrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch;padding:0">'
+    +'<table id="strat-tbl" style="table-layout:auto;border-collapse:collapse;width:100%;min-width:700px">'
+    +'<thead><tr>'
+      +'<th style="'+TH+'text-align:left;position:sticky;left:0;z-index:3;cursor:pointer" onclick="stratAddRow()" title="클릭하여 행 추가">자산 분류</th>'
+      +'<th style="'+TH+'text-align:left;width:150px">구성 종목</th>'
+      +'<th style="'+TH+'text-align:right">평가 금액 (원)</th>'
+      +'<th style="'+TH+'text-align:right">비중</th>'
+      +'<th style="'+TH+'text-align:left;min-width:180px">성격 및 역할</th>'
+      +'<th style="'+TH+'text-align:left;min-width:190px">운영전략</th>'
+    +'</tr></thead>'
+    +'<tbody>'+trs+sumRow+'</tbody>'
+    +'</table></div></div>';
+}
+/* strat-tbl 이벤트 — renderHoldings 호출 후 등록 */
+function stratBindEvents(){
+  var tbl=document.getElementById('strat-tbl');
+  if(!tbl) return;
+  tbl.onclick=function(e){
+    var del=e.target.closest('.strat-del-btn');
+    if(del){stratDelRow(parseInt(del.getAttribute('data-sidx')));return;}
+    var td=e.target.closest('.strat-modal-td');
+    if(td){stratOpenModal(parseInt(td.getAttribute('data-sidx')));return;}
+  };
+  tbl.addEventListener('blur',function(e){
+    var el=e.target;
+    if(!el.classList.contains('strat-edit')) return;
+    var idx2=parseInt(el.getAttribute('data-sidx'));
+    var field=el.getAttribute('data-sfield');
+    if(isNaN(idx2)||!field) return;
+    if(field==='label') stratEditLabel(idx2,el); else stratEditField(idx2,field,el);
+  },true);
+  tbl.addEventListener('keydown',function(e){
+    if(e.key==='Enter'&&e.target.classList.contains('strat-edit')){
+      var f=e.target.getAttribute('data-sfield');
+      if(f==='role'||f==='strategy'){e.preventDefault();document.execCommand('insertLineBreak');}
+    }
+  });
+}
+/* ===== 끝 ===== */
+
 /* ===== 종목총괄 렌더 ===== */
 function renderHoldings(){
   var totalCur=0;
@@ -2703,6 +3004,7 @@ function renderHoldings(){
   var gDist=rows.reduce(function(s,r){return s+(r.dpu&&r.totalQty?Math.round(r.dpu*r.totalQty):0);},0);
 
   document.getElementById('pg-holdings').innerHTML=[
+    renderStratDashboard(),
     '<div class="sec"><div class="sechdr">',
     '<span class="sectitle">\ud22c\uc790\uc885\ubaa9 \ucd1d\uad04</span>',
     '<span class="secsub"></span></div>',
@@ -2738,6 +3040,7 @@ function renderHoldings(){
     '</tr>',
     '</table></div></div>'
   ].join('');
+  setTimeout(stratBindEvents,0);
 }
 
 
