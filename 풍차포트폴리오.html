@@ -752,8 +752,8 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
 </div>
 <div class="nav">
   <div class="ntab on"  onclick="go('overview',this)">전체현황</div>
-  <div class="ntab" onclick="go('pension',this)">사적연금</div>
   <div class="ntab" onclick="go('holdings',this)">종목총괄</div>
+  <div class="ntab" onclick="go('pension',this)">사적연금</div>
   <div class="ntab" onclick="go('mf-ira',this)">퇴직연금(미래)</div>
   <div class="ntab" onclick="go('mf-pension',this)">개인연금(미래)</div>
   <div class="ntab" onclick="go('mf-isa',this)">ISA(미래)</div>
@@ -767,8 +767,8 @@ tbody tr:hover:not(.trow):not(.nrow):not(.xhdr) td{
 <!-- 모바일 하단 퀵 메뉴 -->
 <!-- 모바일 계좌 선택 시트 -->
 <div class="page on" id="pg-overview"></div>
-<div class="page" id="pg-pension"></div>
 <div class="page" id="pg-holdings"></div>
+<div class="page" id="pg-pension"></div>
 <div class="page" id="pg-mf-ira"></div>
 <div class="page" id="pg-mf-pension"></div>
 <div class="page" id="pg-mf-isa"></div>
@@ -869,7 +869,7 @@ var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
   sub: '연금계좌 풍차계획 포트폴리오',
-  version: 'v5.91',   // 버전 — 여기만 수정
+  version: 'v5.92',   // 버전 — 여기만 수정
   birthdate: '', // 생년월일 (YYYY-MM-DD 또는 YY.M.D 형식)
   accMeta: {},
   accOrder: []
