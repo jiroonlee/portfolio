@@ -870,7 +870,7 @@ var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
   sub: '연금계좌 풍차계획 포트폴리오',
-  version: 'v5.92',   // 버전 — 여기만 수정
+  version: 'v5.93',   // 버전 — 여기만 수정
   birthdate: '', // 생년월일 (YYYY-MM-DD 또는 YY.M.D 형식)
   accMeta: {},
   accOrder: []
@@ -945,8 +945,8 @@ function renderNav(){
   if(!navEl) return;
   var fixed=[
     {id:'overview',label:'전체현황'},
-    {id:'pension', label:'사적연금'},
-    {id:'holdings',label:'종목총괄'}
+    {id:'holdings',label:'종목총괄'},
+    {id:'pension', label:'사적연금'}
   ];
   var accTabs=ACCOUNTS.map(function(acc){
     return {id:acc.id, label:acc.name};
