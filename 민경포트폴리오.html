@@ -870,7 +870,7 @@ var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
   sub: '연금계좌 풍차계획 포트폴리오',
-  version: 'v5.93',   // 버전 — 여기만 수정
+  version: 'v5.96',   // 버전 — 여기만 수정
   birthdate: '', // 생년월일 (YYYY-MM-DD 또는 YY.M.D 형식)
   accMeta: {},
   accOrder: []
@@ -1635,9 +1635,9 @@ function renderDistDashboard(){
 
 
 /* ===== 사적연금 통합관리 ===== */
-var PENSION_KEY='fp2_pension_v1';
+var PENSION_KEY='fp2_pension_data';
 var PENSION_STRATEGY_KEY='fp2_pension_strategy';
-var PORTFOLIO_STRAT_KEY='fp2_pension_v1';
+var PORTFOLIO_STRAT_KEY='fp2_strat_v1';
 
 function pensionGet(){try{return JSON.parse(sGet(PENSION_KEY)||'{}');}catch(e){return {};}}
 function pensionSet(obj){sSet(PENSION_KEY,JSON.stringify(obj));}
@@ -4824,6 +4824,23 @@ function startApp(){
     CRYPTO=JSON.parse(JSON.stringify(DEF.crypto));
     loadMeta();
   }
+  /* ── 사적연금 키 오염 복구 (fp_pension_v1 ↔ fp_strat_v1 충돌 수정) ── */
+  (function(){
+    try{
+      var raw=sGet('fp2_pension_v1');
+      if(!raw) return;
+      var parsed=JSON.parse(raw);
+      // 전략 데이터는 배열(id,label,tickers 포함), 사적연금은 객체
+      if(Array.isArray(parsed)&&parsed.length>0&&parsed[0].id&&parsed[0].tickers){
+        // fp_pension_v1에 전략 데이터가 잘못 저장된 경우
+        // → fp_strat_v1로 이동 (없는 경우만)
+        if(!sGet('fp2_strat_v1')) sSet('fp2_strat_v1',raw);
+        // fp_pension_v1 초기화 (사적연금 데이터 복원)
+        sSet('fp2_pension_v1','{}');
+      }
+    }catch(e){}
+  })();
+  /* ── 끝 ── */
   // 연초 당해납입/인출 자동 리셋
   try{checkYearReset();}catch(e){}
   renderAppHeader();
