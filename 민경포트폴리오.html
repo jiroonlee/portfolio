@@ -870,7 +870,7 @@ var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
   sub: '연금계좌 풍차계획 포트폴리오',
-  version: 'v5.96',   // 버전 — 여기만 수정
+  version: 'v5.97',   // 버전 — 여기만 수정
   birthdate: '', // 생년월일 (YYYY-MM-DD 또는 YY.M.D 형식)
   accMeta: {},
   accOrder: []
@@ -4013,6 +4013,19 @@ function exportToExcel(){
   var wsDist=XLSX.utils.aoa_to_sheet(distR);
   wsDist['!cols']=[{wch:8},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10},{wch:12}];
   XLSX.utils.book_append_sheet(wb,wsDist,'월별분배금');
+
+
+  // ── 8. 포트폴리오 운영전략 ──
+  var cats=stratCalcValues();
+  var grand=cats.reduce(function(s,cat){return s+cat.val;},0)||1;
+  var stratR=[['자산 분류','구성 종목','평가 금액 (원)','비중 (%)','성격 및 역할','운영전략']];
+  cats.forEach(function(cat){
+    stratR.push([cat.label,cat.tickers.join(', '),cat.val,Math.round(cat.val/grand*10000)/100,cat.role,cat.strategy]);
+  });
+  stratR.push(['합 계','',grand,100,'','']);
+  var wsStrat=XLSX.utils.aoa_to_sheet(stratR);
+  wsStrat['!cols']=[{wch:20},{wch:35},{wch:16},{wch:10},{wch:35},{wch:40}];
+  XLSX.utils.book_append_sheet(wb,wsStrat,'운영전략');
 
   // ── 다운로드 ──
   var dateStr=new Date().toLocaleDateString('ko-KR').replace(/\. /g,'-').replace('.','');
