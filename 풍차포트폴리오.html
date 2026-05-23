@@ -869,7 +869,7 @@ var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
   sub: '연금계좌 풍차계획 포트폴리오',
-  version: 'v6.02',   // 버전 — 여기만 수정
+  version: 'v6.05',   // 버전 — 여기만 수정
   birthdate: '', // 생년월일 (YYYY-MM-DD 또는 YY.M.D 형식)
   accMeta: {},
   accOrder: []
@@ -1902,8 +1902,17 @@ function renderPension(){
     var savedType=saved['type_'+p.id]; // 'retire' | 'personal' | undefined
     var isRetireAcc=savedType==='retire'||(savedType==null&&extraVal>0);
 
-    var retireVal=isRetireAcc?extraVal:0;
-    var nontaxVal=(!isRetireAcc)?extraVal:0; // 개인연금: extraVal=비과세재원
+    // 당해인출(withdrawalsYr) 차감: 비과세재원 → 이연퇴직금 순서로 차감
+    var _witYr=acc?(acc.withdrawalsYr||0):0;
+    var retireVal=0, nontaxVal=0;
+    if(isRetireAcc){
+      // 퇴직연금: extraVal=이연퇴직금 (비과세재원 없음)
+      retireVal=Math.max(0,extraVal-_witYr);
+    } else {
+      // 개인연금: extraVal=비과세재원
+      // 비과세 먼저 차감, 부족하면 이연퇴직금(여기선 없으므로 0)
+      nontaxVal=Math.max(0,extraVal-_witYr);
+    }
 
     var started=saved['started_'+p.id]!=null?saved['started_'+p.id]:p.defaultStarted;
     var savedAge=saved['age_'+p.id]||0;
@@ -1962,7 +1971,7 @@ function renderPension(){
     }
     // incl_ 키 잔존 데이터 정리 (source 무관)
     if(saved['incl_'+p.id]!=null){ delete saved['incl_'+p.id]; _needSave=true; }
-    var freeWithdraw=retireVal+nontaxVal;
+    var freeWithdraw=Math.max(0,retireVal+nontaxVal);
 
     return {p:p,curTotal:curTotal,extraVal:extraVal,
       isRetireAcc:isRetireAcc,retireVal:retireVal,nontaxVal:nontaxVal,
@@ -2418,7 +2427,15 @@ function renderKR(acc, cid) {
   html += mkIV('\uc218\uc775\ub960(\uc2e4\ub0a9)', fmtPct(pnlReal), pc(pnlReal), cid+'_pnlreal');
   html += mkIVg('\uc6d4\ubd84\ubc30\uae08', fmt(tDist)+'\uc6d0', cid+'_dist');
   // extraLabel (이연퇴직금, 비과세재원 등)
-  if (acc.extraLabel) html += mkIE(acc.extraLabel+'(\uc6d0)', acc.extraVal||0, id, 'extraVal');
+  // 원본(총액) 편집 + 당해인출 차감 후 잔여값 자동 표시
+  if (acc.extraLabel) {
+    var _extraTotal  = acc.extraVal||0;
+    var _extraRemain = Math.max(0, _extraTotal - witYr);
+    // 원본 총액 — 편집 가능
+    html += mkIE(acc.extraLabel+'(\uc6d0)', _extraTotal, id, 'extraVal');
+    // 잔여액 — 읽기전용 자동계산 (당해인출 차감)
+    html += mkIV(acc.extraLabel+' 잔여(\uc6d0)', fmt(_extraRemain)+'\uc6d0', witYr>0?'nvy':'', cid+'_extraRemain');
+  }
   html += '</div></div>';
   html += '<div style="display:flex;justify-content:flex-end;padding:4px 0 2px">';
   html += '<button class="btn btn-add" style="padding:3px 10px;font-size:11px" '
