@@ -869,7 +869,7 @@ var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
   sub: '연금계좌 풍차계획 포트폴리오',
-  version: 'v6.05',   // 버전 — 여기만 수정
+  version: 'v6.06',   // 버전 — 여기만 수정
   birthdate: '', // 생년월일 (YYYY-MM-DD 또는 YY.M.D 형식)
   accMeta: {},
   accOrder: []
@@ -1268,6 +1268,12 @@ function iChange(el) {
     a.withdrawalsYr = raw;
     renderKR(a, 'pg-'+accId);
     // 사적연금 수령금액 즉시 반영
+    try{ if(document.getElementById('pg-pension')) renderPension(); }catch(e){}
+  } else if (field === 'extraVal') {
+    // 셀 표시값은 잔여값(extraVal - withdrawalsYr)이므로
+    // 역산해서 원본총액 저장: extraVal = 입력값 + withdrawalsYr
+    a.extraVal = raw + (a.withdrawalsYr||0);
+    renderKR(a, 'pg-'+accId);
     try{ if(document.getElementById('pg-pension')) renderPension(); }catch(e){}
   } else {
     a[field] = raw;
@@ -2427,14 +2433,12 @@ function renderKR(acc, cid) {
   html += mkIV('\uc218\uc775\ub960(\uc2e4\ub0a9)', fmtPct(pnlReal), pc(pnlReal), cid+'_pnlreal');
   html += mkIVg('\uc6d4\ubd84\ubc30\uae08', fmt(tDist)+'\uc6d0', cid+'_dist');
   // extraLabel (이연퇴직금, 비과세재원 등)
-  // 원본(총액) 편집 + 당해인출 차감 후 잔여값 자동 표시
+  // 셀에 잔여값(총액-당해인출) 표시 — 이것이 각 연금시트의 원본값
+  // 사적연금 시트는 이 값을 읽어서 표시
   if (acc.extraLabel) {
     var _extraTotal  = acc.extraVal||0;
     var _extraRemain = Math.max(0, _extraTotal - witYr);
-    // 원본 총액 — 편집 가능
-    html += mkIE(acc.extraLabel+'(\uc6d0)', _extraTotal, id, 'extraVal');
-    // 잔여액 — 읽기전용 자동계산 (당해인출 차감)
-    html += mkIV(acc.extraLabel+' 잔여(\uc6d0)', fmt(_extraRemain)+'\uc6d0', witYr>0?'nvy':'', cid+'_extraRemain');
+    html += mkIE(acc.extraLabel+'(\uc6d0)', _extraRemain, id, 'extraVal');
   }
   html += '</div></div>';
   html += '<div style="display:flex;justify-content:flex-end;padding:4px 0 2px">';
