@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>풍차계획 포트폴리오 v5.75</title>
+<title>풍차계획 포트폴리오 v5.76</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -1663,6 +1663,49 @@ function distSaveMonth(y,m,v){
   distSet(saved);
   renderDistDashboard();
   autoSync();
+}
+
+/* ── 월 전환 시 이전달 자동 저장 ──
+   앱 시작/복귀 시 호출. 마지막으로 current였던 달(저장된 ym)과
+   현재달이 다르면, 그 사이 모든 달을 getCurGDist()로 자동 채움.
+   단, 이미 수동으로 저장된 값(>0)은 덮어쓰지 않음. */
+var DIST_LAST_KEY='fp_dist_last_ym';
+function checkMonthRollover(){
+  try{
+    var now=new Date(), curY=now.getFullYear(), curM=now.getMonth()+1;
+    var lastYM=sGet(DIST_LAST_KEY); // 형식: "YYYY-MM"
+    var lastY, lastM;
+    if(lastYM){
+      var parts=lastYM.split('-');
+      lastY=parseInt(parts[0]); lastM=parseInt(parts[1]);
+    } else {
+      // 첫 실행: 현재달을 기준으로 기록만 남기고 종료
+      sSet(DIST_LAST_KEY,curY+'-'+(curM<10?'0':'')+curM);
+      return;
+    }
+    // 현재달과 같으면 할 일 없음
+    if(lastY===curY&&lastM===curM) return;
+    // 마지막 저장 이후 ~ 현재달 직전까지 순회하며 미저장 달 채움
+    var saved=distGet();
+    var curDist=getCurGDist(); // 현재 포트폴리오 기준 월분배금
+    var y=lastY, m=lastM;
+    while(!(y===curY&&m===curM)){
+      var key='y'+y;
+      if(!saved[key]) saved[key]={};
+      var mKey='m'+m;
+      // 저장값이 없거나 0인 경우에만 자동 채움
+      if(saved[key][mKey]==null||saved[key][mKey]===0){
+        saved[key][mKey]=curDist;
+      }
+      // 다음달로 이동
+      m++; if(m>12){m=1;y++;}
+    }
+    distSet(saved);
+    // 마지막 저장 연월 갱신
+    sSet(DIST_LAST_KEY,curY+'-'+(curM<10?'0':'')+curM);
+    autoSync();
+    console.log('[월전환] '+lastY+'-'+lastM+' → '+curY+'-'+curM+' 자동 저장 완료');
+  }catch(e){console.warn('checkMonthRollover error',e);}
 }
 
 function distSelectYear(y){
@@ -5160,6 +5203,8 @@ function startApp(){
   /* ── 끝 ── */
   // 연초 당해납입/인출 자동 리셋
   try{checkYearReset();}catch(e){}
+  // 월 전환 시 이전달 분배금 자동 저장
+  try{checkMonthRollover();}catch(e){}
   try{cleanInclData();}catch(e){} // incl_ 오염 데이터 정리
   renderAppHeader();
   try{renderNav();}catch(e){}
@@ -5188,6 +5233,8 @@ function startApp(){
   var _lastFetch=0;
   document.addEventListener('visibilitychange',function(){
     if(document.visibilityState==='visible'){
+      // 월 전환 확인 (탭 복귀 시)
+      try{checkMonthRollover();}catch(e){}
       // 시세 갱신 (마지막 갱신 후 30초 이상 지났으면)
       var now=Date.now();
       if(now-_lastFetch>60000){_lastFetch=now;fetchAll();}
