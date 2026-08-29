@@ -869,7 +869,7 @@ var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
   sub: '연금계좌 풍차계획 포트폴리오',
-  version: 'v6.06',   // 버전 — 여기만 수정
+  version: 'v6.08',   // 버전 — 여기만 수정
   birthdate: '', // 생년월일 (YYYY-MM-DD 또는 YY.M.D 형식)
   accMeta: {},
   accOrder: []
@@ -3246,6 +3246,187 @@ function stratBindEvents(){
 }
 /* ===== 끝 ===== */
 
+/* ===== 자산구성/통화별 카드 - 종목 선택 (comp) ===== */
+var _COMP_PREFIX=(PENSION_KEY.split('_')[0])+'_';
+var ASSET_COMP_KEY=_COMP_PREFIX+'asset_comp_v1';
+var CUR_COMP_KEY=_COMP_PREFIX+'cur_comp_v1';
+var ASSET_COMP_DEF=[
+  {id:'cc',    label:'커버드콜 ETF'},
+  {id:'main',  label:'본주 ETF'},
+  {id:'crypto',label:'가상화폐'},
+  {id:'cash',  label:'현금성(RP/외화 등)'}
+];
+var CUR_COMP_DEF=[
+  {id:'usd',   label:'달러자산(USD)'},
+  {id:'jpy',   label:'엔화자산(JPY)'},
+  {id:'krw',   label:'원화자산(KRW)'},
+  {id:'crypto',label:'가상화폐'}
+];
+var _compData={asset:null,cur:null};
+var _compCashKw=['CD금리','MMF','머니마켓','현금성','단기채','단기자금'];
+function _compIsCash(n){return n&&_compCashKw.some(function(kw){return n.indexOf(kw)>=0;});}
+var _compUsdKw=['미국','나스닥','테슬라','구글','커버드콜','국제금','US본드','S&P'];
+var _compJpyKw=['일본','TOPIX','Japan','엔화'];
+
+/* 전체 종목 목록 (comp 전용 — 통화/현금 분류용 부가정보 포함) */
+function compAllItems(){
+  var items=[];
+  function addItem(n,tk,cur,isCrypto){
+    var key=tk||n; if(!key) return;
+    if(!items.find(function(x){return x.key===key;}))
+      items.push({key:key,name:n||tk||'',tk:tk||'',cur:cur||null,isCrypto:!!isCrypto});
+  }
+  ACCOUNTS.forEach(function(acc){
+    acc.holdings.forEach(function(h){
+      if(h.isMMF) return;
+      addItem(h.n||'', h.tk||'');
+    });
+  });
+  CMA.holdings.forEach(function(h){
+    if(h.n && h.n.indexOf('서클')>=0) addItem(h.n,'CRCL',h.cur);
+    else addItem(h.n||'', h.tk||'', h.cur);
+  });
+  var allCr=[].concat(CRYPTO.bithumb||[],CRYPTO.upbit||[])
+    .concat((CRYPTO.exchanges||[]).reduce(function(a,e){return a.concat(e.holdings||[]);},[]));
+  allCr.forEach(function(h){ addItem(h.sym||'', h.sym||'', null, true); });
+  return items;
+}
+
+/* 종목별 평가금액(원화) 맵 */
+function compValueMap(){
+  var vmap={};
+  ACCOUNTS.forEach(function(acc){
+    acc.holdings.forEach(function(h){
+      if(h.isMMF) return;
+      var v=liveP(h)*(h.qty||0);
+      var key=h.tk||h.n||'';
+      if(key) vmap[key]=(vmap[key]||0)+v;
+    });
+  });
+  CMA.holdings.forEach(function(h){
+    var v=cmaCurKRW(h);
+    var key=(h.n&&h.n.indexOf('서클')>=0)?'CRCL':(h.tk||h.n||'');
+    if(key) vmap[key]=(vmap[key]||0)+v;
+  });
+  var allCr=[].concat(CRYPTO.bithumb||[],CRYPTO.upbit||[])
+    .concat((CRYPTO.exchanges||[]).reduce(function(a,e){return a.concat(e.holdings||[]);},[]));
+  allCr.forEach(function(h){
+    var p=PRICES[h.sym]!=null?PRICES[h.sym]:h.cost;
+    var key=h.sym||'';
+    if(key) vmap[key]=(vmap[key]||0)+p*((h.stk||0)+(h.qty||0));
+  });
+  return vmap;
+}
+
+function _autoAssetCat(item){
+  if(item.isCrypto) return 'crypto';
+  if(_compIsCash(item.name)) return 'cash';
+  if(item.name && item.name.indexOf('커버드콜')>=0) return 'cc';
+  return 'main';
+}
+function _autoCurCat(item){
+  if(item.isCrypto) return 'crypto';
+  if(item.cur==='USD') return 'usd';
+  if(item.cur==='JPY') return 'jpy';
+  if(_compUsdKw.some(function(kw){return item.name.indexOf(kw)>=0;})) return 'usd';
+  if(_compJpyKw.some(function(kw){return item.name.indexOf(kw)>=0;})) return 'jpy';
+  return 'krw';
+}
+
+/* 저장된 선택이 없으면 기존 자동분류 로직으로 최초 1회 초기화 */
+function compLoad(type){
+  if(_compData[type]) return _compData[type];
+  var key=type==='asset'?ASSET_COMP_KEY:CUR_COMP_KEY;
+  var def=type==='asset'?ASSET_COMP_DEF:CUR_COMP_DEF;
+  var classify=type==='asset'?_autoAssetCat:_autoCurCat;
+  var loaded=null;
+  try{ var s=sGet(key); if(s) loaded=JSON.parse(s); }catch(e){ loaded=null; }
+  if(loaded && loaded.length===def.length){
+    _compData[type]=loaded;
+    return loaded;
+  }
+  var items=compAllItems();
+  var data=def.map(function(c){return {id:c.id,label:c.label,tickers:[]};});
+  items.forEach(function(item){
+    var cid=classify(item);
+    var cat=data.find(function(c){return c.id===cid;});
+    if(cat) cat.tickers.push(item.key);
+  });
+  _compData[type]=data;
+  sSet(key,JSON.stringify(data));
+  return data;
+}
+function compSave(type){ sSet(type==='asset'?ASSET_COMP_KEY:CUR_COMP_KEY, JSON.stringify(_compData[type])); autoSync(); }
+
+function compCalcValues(type){
+  var data=compLoad(type);
+  var vmap=compValueMap();
+  return data.map(function(cat){
+    var total=0;
+    (cat.tickers||[]).forEach(function(tk){ total+=(vmap[tk]||0); });
+    return {id:cat.id,label:cat.label,val:Math.round(total),tickers:cat.tickers||[]};
+  });
+}
+
+/* 종목 선택 모달 (종목총괄의 포트폴리오 구성종목 선택과 동일한 방식) */
+function compOpenModal(type,idx){
+  var data=compLoad(type);
+  var cat=data[idx];
+  if(!cat) return;
+  var items=compAllItems();
+  var orderedKeys=cat.tickers.slice();
+  var chks='';
+  orderedKeys.forEach(function(key){
+    var item=items.find(function(x){return x.key===key;});
+    if(!item) return;
+    var label=item.name&&item.tk&&item.name!==item.tk?item.name+' ('+item.tk+')':(item.name||item.tk);
+    chks+='<label style="display:flex;align-items:center;gap:8px;padding:4px 0;cursor:pointer">'
+      +'<input type="checkbox" value="'+item.key+'" checked style="width:14px;height:14px;flex-shrink:0">'
+      +'<span style="font-size:12px">'+label+'</span></label>';
+  });
+  items.forEach(function(item){
+    if(orderedKeys.indexOf(item.key)>=0) return;
+    var label=item.name&&item.tk&&item.name!==item.tk?item.name+' ('+item.tk+')':(item.name||item.tk);
+    chks+='<label style="display:flex;align-items:center;gap:8px;padding:4px 0;cursor:pointer">'
+      +'<input type="checkbox" value="'+item.key+'" style="width:14px;height:14px;flex-shrink:0">'
+      +'<span style="font-size:12px">'+label+'</span></label>';
+  });
+  var mhtml='<div id="comp-modal" style="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:center;justify-content:center" onclick="if(event.target===this)compCloseModal()">'
+    +'<div style="background:#fff;border-radius:12px;padding:20px 24px;min-width:300px;max-width:420px;max-height:80vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.2)">'
+    +'<div style="font-size:13px;font-weight:700;color:#1e3a8a;margin-bottom:4px">'+cat.label+' — 구성 종목 선택</div>'
+    +'<div style="font-size:11px;color:#9ca3af;margin-bottom:10px">체크한 종목의 평가금액 합계로 계산됩니다</div>'
+    +'<div id="comp-chk-list" style="max-height:320px;overflow-y:auto;border:1px solid #e5e7eb;border-radius:6px;padding:6px 10px">'+chks+'</div>'
+    +'<div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">'
+    +'<button onclick="compCloseModal()" style="padding:6px 16px;border:1px solid #d1d5db;border-radius:6px;background:#f9fafb;cursor:pointer;font-size:12px">취소</button>'
+    +'<button id="comp-save-btn" style="padding:6px 16px;border:none;border-radius:6px;background:#1a56db;color:#fff;cursor:pointer;font-size:12px;font-weight:700">저장</button>'
+    +'</div></div></div>';
+  var el=document.getElementById('comp-modal');
+  if(el) el.remove();
+  document.body.insertAdjacentHTML('beforeend',mhtml);
+  document.getElementById('comp-chk-list').addEventListener('change',function(e){
+    if(!e.target.matches('input[type=checkbox]')) return;
+    var label=e.target.closest('label');
+    if(!label) return;
+    var list=document.getElementById('comp-chk-list');
+    if(e.target.checked){ list.appendChild(label); }
+  });
+  document.getElementById('comp-save-btn').onclick=function(){ compSaveModal(type,idx); };
+}
+function compCloseModal(){ var el=document.getElementById('comp-modal'); if(el) el.remove(); }
+function compSaveModal(type,idx){
+  var data=compLoad(type);
+  if(!data[idx]){ compCloseModal(); return; }
+  var cbs=document.querySelectorAll('#comp-chk-list input[type=checkbox]');
+  var sel=[];
+  cbs.forEach(function(cb){ if(cb.checked) sel.push(cb.value); });
+  data[idx].tickers=sel;
+  compSave(type);
+  compCloseModal();
+  renderOverview();
+}
+/* ===== comp 끝 ===== */
+
+
 /* ===== 종목총괄 렌더 ===== */
 function renderHoldings(){
   var totalCur=0;
@@ -4452,109 +4633,51 @@ function renderOverview(){
   var gReal=gDep-gWit, gPnl=gCur-gCost;
   var gPnlR=gCost>0?gPnl/gCost:0, gPnlRL=gReal>0?(gCur-gReal)/gReal:0;
 
-  /* ── 자산구성 계산 ── */
-  var _cashKw=['CD\uae08\ub9ac','MMF','\uba38\ub2c8\ub9c8\ucf13','\ud604\uae08\uc131','\ub2e8\uae30\ucc44','\ub2e8\uae30\uc790\uae08'];
-  function _isCashH(n){return n&&_cashKw.some(function(kw){return n.indexOf(kw)>=0;});}
-  var catCC=0, catMain=0, catCash=0;
-  ACCOUNTS.forEach(function(acc){
-    acc.holdings.forEach(function(h){
-      if(h.isMMF) return;  // gCur와 동일하게 isMMF 제외
-      var v=liveP(h)*(h.qty||0);
-      if(_isCashH(h.n)){catCash+=v;}
-      else if(h.n&&h.n.indexOf('\ucee4\ubc84\ub4dc\ucf5c')>=0){catCC+=v;}
-      else{catMain+=v;}
-    });
-  });
-  CMA.holdings.forEach(function(h){
-    var v=cmaCurKRW(h);
-    if(h.isRP||_isCashH(h.n)) catCash+=v; else catMain+=v;
-  });
-  var catCrypto=crV;
-  var catTotal=catCC+catMain+catCrypto+catCash;
-  function cpct(v){return catTotal>0?(v/catTotal*100).toFixed(1):'0.0';}
-  var pCC=+cpct(catCC), pMain=+cpct(catMain), pCrypto=+cpct(catCrypto), pCash=+cpct(catCash);
-
-  /* ── 통화별 자산현황 계산 ── */
-  var curUSD=0, curJPY=0, curKRW=0;
-  var _usdKw=['\ubbf8\uad6d','\ub098\uc2a4\ub2e5','\ud14c\uc2ac\ub77c','\uad6c\uae00','\ucee4\ubc84\ub4dc\ucf5c','\uad6d\uc81c\uae08','US\ubd04\ub4dc','S&P'];
-  var _jpyKw=['\uc77c\ubcf8','TOPIX','Japan','\uc5d4\ud654'];
-  ACCOUNTS.forEach(function(acc){
-    acc.holdings.forEach(function(h){
-      if(h.isMMF) return;
-      var v=liveP(h)*(h.qty||0);
-      var n=h.n||'';
-      if(_usdKw.some(function(kw){return n.indexOf(kw)>=0;})) curUSD+=v;
-      else if(_jpyKw.some(function(kw){return n.indexOf(kw)>=0;})) curJPY+=v;
-      else curKRW+=v;
-    });
-  });
-  CMA.holdings.forEach(function(h){
-    var v=cmaCurKRW(h);
-    if(h.cur==='USD') curUSD+=v;
-    else if(h.cur==='JPY') curJPY+=v;
-    else curKRW+=v;
-  });
-  var curCrypto=crV;
-  var curTotal=curUSD+curJPY+curKRW+curCrypto||1;
-  function cpctC(v){return(v/curTotal*100).toFixed(1);}
-  var pUSD=+cpctC(curUSD),pJPY=+cpctC(curJPY),pKRW=+cpctC(curKRW),pCrypto2=+cpctC(curCrypto);
-
-
+  /* ── 자산구성 현황 (comp: 클릭하여 종목 선택 가능) ── */
+  var assetCats=compCalcValues('asset');
+  var catTotal=assetCats.reduce(function(s,c){return s+c.val;},0)||1;
+  var ASSET_DOT=['#6c2bd9','#1a56db','#f59e0b','#057a55'];
+  var ASSET_BG=['#f0ebff','#ebf3ff','#fffbeb','#e8f7f1'];
+  var ASSET_BORDER=['#c4b5fd','#93c5fd','#fcd34d','#6ee7b7'];
+  var ASSET_COLOR=['#6c2bd9','#1a56db','#b45309','#057a55'];
   var compSection=[
     '<div class="sec"><div class="sechdr">',
-    '<span class="sectitle">\uc790\uc0b0\uad6c\uc131 \ud604\ud669</span>',
-    '<span class="secsub">\ud604\uc7ac\ud3c9\uac00\uc561 \uae30\uc900</span></div>',
-    /* 범례 + 카드 */
+    '<span class="sectitle">자산구성 현황</span>',
+    '<span class="secsub">현재평가액 기준 · 카드를 클릭하면 종목을 선택/수정할 수 있습니다</span></div>',
     '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:6px;padding:8px 12px 12px">',
-    /* 커버드콜 */
-    '<div style="background:#f0ebff;border:1px solid #c4b5fd;border-radius:6px;padding:8px 10px">',
-    '<div style="display:flex;align-items:center;gap:5px;margin-bottom:4px">',
-    '<div style="width:10px;height:10px;border-radius:2px;background:#6c2bd9;flex-shrink:0"></div>',
-    '<span style="font-size:10px;font-weight:700;color:#6c2bd9">\ucee4\ubc84\ub4dc\ucf5c ETF</span></div>',
-    '<div style="font-size:14px;font-weight:700;color:#6c2bd9">'+fmt(catCC)+'\uc6d0 ('+pCC+'%)</div>',
-    '</div>',
-    /* 본주 ETF */
-    '<div style="background:#ebf3ff;border:1px solid #93c5fd;border-radius:6px;padding:8px 10px">',
-    '<div style="display:flex;align-items:center;gap:5px;margin-bottom:4px">',
-    '<div style="width:10px;height:10px;border-radius:2px;background:#1a56db;flex-shrink:0"></div>',
-    '<span style="font-size:10px;font-weight:700;color:#1a56db">\ubcf8\uc8fc ETF</span></div>',
-    '<div style="font-size:14px;font-weight:700;color:#1a56db">'+fmt(catMain)+'\uc6d0 ('+pMain+'%)</div>',
-    '</div>',
-    /* 가상화폐 */
-    '<div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:6px;padding:8px 10px">',
-    '<div style="display:flex;align-items:center;gap:5px;margin-bottom:4px">',
-    '<div style="width:10px;height:10px;border-radius:2px;background:#f59e0b;flex-shrink:0"></div>',
-    '<span style="font-size:10px;font-weight:700;color:#b45309">\uac00\uc0c1\ud654\ud3d0</span></div>',
-    '<div style="font-size:14px;font-weight:700;color:#b45309">'+fmt(catCrypto)+'\uc6d0 ('+pCrypto+'%)</div>',
-    '</div>',
-    /* 현금성 */
-    '<div style="background:#e8f7f1;border:1px solid #6ee7b7;border-radius:6px;padding:8px 10px">',
-    '<div style="display:flex;align-items:center;gap:5px;margin-bottom:4px">',
-    '<div style="width:10px;height:10px;border-radius:2px;background:#057a55;flex-shrink:0"></div>',
-    '<span style="font-size:10px;font-weight:700;color:#057a55">\ud604\uae08\uc131(RP/\uc678\ud654 \ub4f1)</span></div>',
-    '<div style="font-size:14px;font-weight:700;color:#057a55">'+fmt(catCash)+'\uc6d0 ('+pCash+'%)</div>',
-    '</div>',
+    assetCats.map(function(cat,i){
+      var pct=catTotal>0?(cat.val/catTotal*100).toFixed(1):'0.0';
+      return '<div onclick="compOpenModal(\'asset\','+i+')" title="클릭하여 구성 종목 선택" style="cursor:pointer;background:'+ASSET_BG[i%4]+';border:1px solid '+ASSET_BORDER[i%4]+';border-radius:6px;padding:8px 10px">'
+        +'<div style="display:flex;align-items:center;gap:5px;margin-bottom:4px">'
+        +'<div style="width:10px;height:10px;border-radius:2px;background:'+ASSET_DOT[i%4]+';flex-shrink:0"></div>'
+        +'<span style="font-size:10px;font-weight:700;color:'+ASSET_COLOR[i%4]+'">'+cat.label+'</span></div>'
+        +'<div style="font-size:14px;font-weight:700;color:'+ASSET_COLOR[i%4]+'">'+fmt(cat.val)+'원 ('+pct+'%)</div>'
+        +'</div>';
+    }).join(''),
     '</div></div>'
   ].join('');
 
-  /* ── 통화별 자산현황 섹션 ── */
-    function _cCard(dot,label,color,bg,border,pct,val,sub){
-    return '<div style="background:'+bg+';border:1px solid '+border+';border-radius:6px;padding:8px 10px">'
-      +'<div style="display:flex;align-items:center;gap:5px;margin-bottom:4px">'
-      +'<div style="width:10px;height:10px;border-radius:2px;background:'+dot+';flex-shrink:0"></div>'
-      +'<span style="font-size:10px;font-weight:700;color:'+color+'">'+label+'</span></div>'
-      +'<div style="font-size:14px;font-weight:700;color:'+color+'">'+val+'</div>'
-      +'</div>';
-  }
+  /* ── 통화별 자산현황 (comp: 클릭하여 종목 선택 가능) ── */
+  var curCatsC=compCalcValues('cur');
+  var curTotalC=curCatsC.reduce(function(s,c){return s+c.val;},0)||1;
+  var CUR_DOT=['#16a34a','#d97706','#1a56db','#f59e0b'];
+  var CUR_BG=['#f0fdf4','#fffbeb','#eff6ff','#fffbeb'];
+  var CUR_BORDER=['#86efac','#fcd34d','#93c5fd','#fcd34d'];
+  var CUR_COLOR=['#15803d','#92400e','#1e3a8a','#92400e'];
   var curSection=[
     '<div class="sec"><div class="sechdr">',
-    '<span class="sectitle">\ud1b5\ud654\ubcc4 \uc790\uc0b0\ud604\ud669</span>',
-    '<span class="secsub">\ud604\uc7ac\ud3c9\uac00\uc561 \uae30\uc900(\uc6d0\ud654\ud658\uc0b0)</span></div>',
+    '<span class="sectitle">통화별 자산현황</span>',
+    '<span class="secsub">현재평가액 기준(원화환산) · 카드를 클릭하면 종목을 선택/수정할 수 있습니다</span></div>',
     '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:6px;padding:8px 12px 12px">',
-    _cCard('#16a34a','\uB2EC\uB7EC\uC790\uC0B0(USD)','#15803d','#f0fdf4','#86efac',pUSD,fmt(curUSD)+'\uc6d0 ('+pUSD+'%)',''),
-    _cCard('#d97706','\uc5d4\ud654\uc790\uc0b0(JPY)','#92400e','#fffbeb','#fcd34d',pJPY,fmt(curJPY)+'\uc6d0 ('+pJPY+'%)',''),
-    _cCard('#1a56db','\uc6d0\ud654\uc790\uc0b0(KRW)','#1e3a8a','#eff6ff','#93c5fd',pKRW,fmt(curKRW)+'\uc6d0 ('+pKRW+'%)',''),
-    _cCard('#f59e0b','\uac00\uc0c1\ud654\ud3d0','#92400e','#fffbeb','#fcd34d',pCrypto2,fmt(curCrypto)+'\uc6d0 ('+pCrypto2+'%)',''),
+    curCatsC.map(function(cat,i){
+      var pct=curTotalC>0?(cat.val/curTotalC*100).toFixed(1):'0.0';
+      return '<div onclick="compOpenModal(\'cur\','+i+')" title="클릭하여 구성 종목 선택" style="cursor:pointer;background:'+CUR_BG[i%4]+';border:1px solid '+CUR_BORDER[i%4]+';border-radius:6px;padding:8px 10px">'
+        +'<div style="display:flex;align-items:center;gap:5px;margin-bottom:4px">'
+        +'<div style="width:10px;height:10px;border-radius:2px;background:'+CUR_DOT[i%4]+';flex-shrink:0"></div>'
+        +'<span style="font-size:10px;font-weight:700;color:'+CUR_COLOR[i%4]+'">'+cat.label+'</span></div>'
+        +'<div style="font-size:14px;font-weight:700;color:'+CUR_COLOR[i%4]+'">'+fmt(cat.val)+'원 ('+pct+'%)</div>'
+        +'</div>';
+    }).join(''),
     '</div></div>'
   ].join('');
 
@@ -4753,6 +4876,7 @@ async function ghPush(silent){
         });
         return _pd;
       })(),pensionStrategy:pensionStrategyGet(),
+      compData:{asset:compLoad('asset'),cur:compLoad('cur')},
       snapDel:JSON.parse(sGet(SNAP_DEL_KEY)||'[]'),
       appMeta:JSON.parse(JSON.stringify(APP_META))};
     var apiBase='https://api.github.com/repos/'+GH_REPO+'/contents/'+GH_FILE;
@@ -4836,6 +4960,11 @@ async function ghPull(force){
     // 과세재원 아닌 incl_ 값 정리
     try{ cleanInclData(); }catch(e){}
     if(obj.pensionStrategy) sSet(PENSION_STRATEGY_KEY,obj.pensionStrategy);
+    if(obj.compData){
+      if(obj.compData.asset) sSet(ASSET_COMP_KEY,JSON.stringify(obj.compData.asset));
+      if(obj.compData.cur) sSet(CUR_COMP_KEY,JSON.stringify(obj.compData.cur));
+      _compData.asset=null;_compData.cur=null;
+    }
     if(obj.snapDel&&obj.snapDel.length) sSet(SNAP_DEL_KEY,JSON.stringify(obj.snapDel));
     if(obj.appMeta){
       var _am=JSON.parse(JSON.stringify(obj.appMeta));
