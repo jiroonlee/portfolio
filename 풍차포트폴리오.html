@@ -869,7 +869,7 @@ var ACCOUNTS, CMA, CRYPTO;
 var APP_META = {
   title: '🌸 수익은 길게, 손실은 짧게!!!',
   sub: '연금계좌 풍차계획 포트폴리오',
-  version: 'v6.09',   // 버전 — 여기만 수정
+  version: 'v6.10',   // 버전 — 여기만 수정
   birthdate: '', // 생년월일 (YYYY-MM-DD 또는 YY.M.D 형식)
   accMeta: {},
   accOrder: []
@@ -2982,7 +2982,7 @@ function stratLoad(){
   } catch(e){ _stratData=JSON.parse(JSON.stringify(_STRAT_DEF)); }
   return _stratData;
 }
-function stratSave(){ sSet(PORTFOLIO_STRAT_KEY, JSON.stringify(_stratData)); autoSync(); }
+function stratSave(){ sSet(PORTFOLIO_STRAT_KEY, JSON.stringify(_stratData)); if(ghGetToken()) ghPush(true); }
 
 /* 전체 종목 목록 (이름+티커) */
 function stratAllItems(){
@@ -3356,7 +3356,7 @@ function compLoad(type){
   sSet(key,JSON.stringify(data));
   return data;
 }
-function compSave(type){ sSet(type==='asset'?ASSET_COMP_KEY:CUR_COMP_KEY, JSON.stringify(_compData[type])); autoSync(); }
+function compSave(type){ sSet(type==='asset'?ASSET_COMP_KEY:CUR_COMP_KEY, JSON.stringify(_compData[type])); if(ghGetToken()) ghPush(true); }
 
 function compCalcValues(type){
   var data=compLoad(type);
@@ -4831,7 +4831,12 @@ function ghForcePull(){
     else alert('\uc2e4\ud328\nPC\uc5d0\uc11c \uba3c\uc800 \uc800\uc7a5 \ud6c4 \uc2dc\ub3c4\ud558\uc138\uc694.');
   });
 }
-async function ghPush(silent){
+var _ghPushChain=Promise.resolve();
+function ghPush(silent){
+  _ghPushChain=_ghPushChain.then(function(){return _ghPushImpl(silent);},function(){return _ghPushImpl(silent);});
+  return _ghPushChain;
+}
+async function _ghPushImpl(silent){
   var btn=document.getElementById('gh-btn');
   var token=ghGetToken();
   if(!token){if(!silent)alert('\ud1a0\ud070\uc744 \uba3c\uc800 \uc785\ub825\ud558\uc138\uc694.');return;}
