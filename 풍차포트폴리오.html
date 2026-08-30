@@ -4643,7 +4643,7 @@ function renderOverview(){
   var compSection=[
     '<div class="sec"><div class="sechdr">',
     '<span class="sectitle">자산구성 현황</span>',
-    '<span class="secsub">현재평가액 기준 · 카드를 클릭하면 종목을 선택/수정할 수 있습니다</span></div>',
+    '<span class="secsub"></span></div>',
     '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:6px;padding:8px 12px 12px">',
     assetCats.map(function(cat,i){
       var pct=catTotal>0?(cat.val/catTotal*100).toFixed(1):'0.0';
@@ -4667,7 +4667,7 @@ function renderOverview(){
   var curSection=[
     '<div class="sec"><div class="sechdr">',
     '<span class="sectitle">통화별 자산현황</span>',
-    '<span class="secsub">현재평가액 기준(원화환산) · 카드를 클릭하면 종목을 선택/수정할 수 있습니다</span></div>',
+    '<span class="secsub"></span></div>',
     '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:6px;padding:8px 12px 12px">',
     curCatsC.map(function(cat,i){
       var pct=curTotalC>0?(cat.val/curTotalC*100).toFixed(1):'0.0';
@@ -4877,6 +4877,7 @@ async function ghPush(silent){
         return _pd;
       })(),pensionStrategy:pensionStrategyGet(),
       compData:{asset:compLoad('asset'),cur:compLoad('cur')},
+      stratData:stratLoad(),
       snapDel:JSON.parse(sGet(SNAP_DEL_KEY)||'[]'),
       appMeta:JSON.parse(JSON.stringify(APP_META))};
     var apiBase='https://api.github.com/repos/'+GH_REPO+'/contents/'+GH_FILE;
@@ -4965,6 +4966,7 @@ async function ghPull(force){
       if(obj.compData.cur) sSet(CUR_COMP_KEY,JSON.stringify(obj.compData.cur));
       _compData.asset=null;_compData.cur=null;
     }
+    if(obj.stratData){ sSet(PORTFOLIO_STRAT_KEY,JSON.stringify(obj.stratData)); _stratData=null; }
     if(obj.snapDel&&obj.snapDel.length) sSet(SNAP_DEL_KEY,JSON.stringify(obj.snapDel));
     if(obj.appMeta){
       var _am=JSON.parse(JSON.stringify(obj.appMeta));
